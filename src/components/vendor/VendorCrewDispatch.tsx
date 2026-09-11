@@ -322,7 +322,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
 
       {/* Add Crew Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs text-right">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs text-right usil-modal-scroll">
           <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 space-y-4 card-shadow">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-extrabold text-slate-900">إضافة عضو فريق جديد</h3>
@@ -421,7 +421,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
 
       {/* Log Work Hours & Shift Modal */}
       {showWorkLogModal && selectedCrewForLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs text-right">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs text-right usil-modal-scroll">
           <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 space-y-4 card-shadow max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">

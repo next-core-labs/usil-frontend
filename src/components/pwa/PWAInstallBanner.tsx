@@ -82,7 +82,7 @@ export const PWAInstallBanner: React.FC = () => {
       {/* Floating Modern PWA Install Banner */}
       <aside 
         aria-label="تثبيت تطبيق يوصل"
-        className="fixed bottom-[5.75rem] md:top-3 md:bottom-auto left-3 right-3 sm:left-auto sm:right-6 sm:max-w-md z-30 bg-[#0A1A33] text-white p-3.5 rounded-2xl shadow-2xl border border-[#C0A16B]/40 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-300 pointer-events-auto"
+        className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] md:top-3 md:bottom-auto left-3 right-3 sm:left-auto sm:right-6 sm:max-w-md z-30 bg-[#0A1A33] text-white p-3.5 rounded-2xl shadow-2xl border border-[#C0A16B]/40 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-300 pointer-events-auto"
       >
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#155EEF] to-[#2E90FA] p-0.5 flex-shrink-0 shadow-md">
@@ -130,7 +130,7 @@ export const PWAInstallBanner: React.FC = () => {
 
       {/* iOS Safari Step-by-Step Modal Guide */}
       {showIOSGuide && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-4 usil-safe-bottom">
           <div className="bg-[#0A1A33] border border-slate-700 w-full max-w-sm rounded-3xl p-5 text-white shadow-2xl text-right animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">

@@ -546,7 +546,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
   return (
     <div
       id="crew-field-portal-modal"
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 md:p-6 text-right font-sans"
+      className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 md:p-6 text-right font-sans usil-modal-scroll"
     >
       <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[94vh] animate-in fade-in zoom-in-95 duration-200">
         

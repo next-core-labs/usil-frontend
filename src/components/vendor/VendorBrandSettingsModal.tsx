@@ -57,7 +57,7 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 usil-modal-scroll">
       <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" onClick={onClose} />
 
       <div className="relative w-full max-w-4xl bg-white rounded-3xl border border-slate-200 card-shadow z-10 my-auto text-right overflow-hidden flex flex-col max-h-[90vh]">

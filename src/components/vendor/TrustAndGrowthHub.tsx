@@ -841,7 +841,7 @@ export const TrustAndGrowthHub: React.FC<TrustAndGrowthHubProps> = ({
       )}
 
       {isCreateContractOpen && createPortal(
-        <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
+        <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 usil-modal-scroll" dir="rtl">
           <form onSubmit={handleCreateContract} className="bg-white text-slate-900 rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto p-6 space-y-4 border border-slate-200 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black">إنشاء عقد ضيافة لمناسبة</h3>
@@ -906,7 +906,7 @@ export const TrustAndGrowthHub: React.FC<TrustAndGrowthHubProps> = ({
       )}
 
       {activeContractModal && createPortal(
-        <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
+        <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 usil-modal-scroll" dir="rtl">
           <div className="bg-white text-slate-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-5 border border-slate-200 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
@@ -991,7 +991,7 @@ export const TrustAndGrowthHub: React.FC<TrustAndGrowthHubProps> = ({
 
       {/* New Interactive Quotation Modal */}
       {newQuoteModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 usil-modal-scroll">
           <form onSubmit={handleCreateQuotation} className="bg-white rounded-2xl w-full max-w-lg p-6 space-y-4 border border-slate-200 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
@@ -1117,7 +1117,7 @@ export const TrustAndGrowthHub: React.FC<TrustAndGrowthHubProps> = ({
 
       {/* New Gift Card Modal */}
       {newGiftCardModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 usil-modal-scroll">
           <form onSubmit={handleCreateGiftCard} className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4 border border-slate-200 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">

@@ -22,7 +22,7 @@ export function VendorHubPicker({
   onSelect: (hub: VendorHubRow) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[90] bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-3" dir="rtl">
+    <div className="fixed inset-0 z-[90] bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 usil-safe-bottom" dir="rtl">
       <div className="w-full max-w-lg rounded-3xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 flex items-start justify-between gap-3">
           <div>
@@ -41,7 +41,7 @@ export function VendorHubPicker({
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="max-h-[60vh] overflow-y-auto p-3 space-y-2">
+        <div className="max-h-[60dvh] overflow-y-auto overscroll-contain p-3 space-y-2">
           {loading ? <p className="text-sm text-slate-500 p-4">جارٍ تحميل حسابات الموردين…</p> : null}
           {error ? <p className="text-sm text-rose-600 p-4">{error}</p> : null}
           {!loading && !hubs.length ? (

@@ -30,7 +30,7 @@ export const ServiceComparisonFloatingBar: React.FC<ServiceComparisonFloatingBar
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 80, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-        className="fixed bottom-24 md:bottom-6 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-40 max-w-2xl w-full pointer-events-auto"
+        className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] md:bottom-6 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-40 max-w-2xl w-full pointer-events-auto"
       >
         <div className="bg-slate-900/95 text-white backdrop-blur-md rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-2xl border border-slate-700/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-right">
           

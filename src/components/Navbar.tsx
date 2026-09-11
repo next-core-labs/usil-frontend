@@ -103,6 +103,25 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const [legalOpen, setLegalOpen] = useState(false);
   const legalRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // The mobile app bar stacks a search row, a category rail and a lane rail
+  // under the brand row, so its height swings between ~64px and ~280px.
+  // Anchor scrolling (#services-section) needs the live value, not a guess.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const publish = () => {
+      document.documentElement.style.setProperty(
+        '--usil-header-h',
+        `${Math.round(el.getBoundingClientRect().height)}px`,
+      );
+    };
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const applySearch = (raw: string) => {
     const next = raw.trim();
@@ -167,10 +186,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white border-b border-[#E4E7EC] pointer-events-auto">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 w-full bg-white border-b border-[#E4E7EC] pointer-events-auto"
+    >
+      {/* Keeps the light status-bar icons readable where the system bar draws
+          over the web view (Android 15 edge-to-edge, iOS notch). 0px on web. */}
+      <div aria-hidden className="usil-statusbar-scrim" />
       <div className="container mx-auto px-3 sm:px-4 lg:px-8 h-16 flex items-center gap-2 sm:gap-3">
         <div
-          className="flex items-center gap-2 shrink-0 cursor-pointer"
+          className="flex items-center gap-2 shrink-0 min-w-0 cursor-pointer"
           onClick={() => {
             if (viewMode !== 'client') onToggleViewMode();
             else onGoHome?.();
@@ -195,7 +220,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         )}
 
-        <div className="relative z-[60] flex items-center gap-1.5 sm:gap-2 shrink-0 ms-auto pointer-events-auto">
+        <div className="relative z-[60] flex items-center gap-1 sm:gap-2 min-w-0 ms-auto pointer-events-auto">
           <div className="relative w-9 h-9 shrink-0 hidden sm:block" title={currency}>
             <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center pointer-events-none">
               <Coins className="w-4 h-4 text-[#155EEF]" />
@@ -369,17 +394,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenAuth('login')}
-                className="relative z-[60] min-h-[44px] h-11 px-2.5 rounded-lg bg-slate-100 text-slate-800 text-xs font-bold inline-flex items-center gap-1 pointer-events-auto touch-manipulation"
+                className="relative z-[60] shrink-0 whitespace-nowrap min-h-[44px] h-11 px-2 sm:px-2.5 rounded-lg bg-slate-100 text-slate-800 text-xs font-bold inline-flex items-center gap-1 pointer-events-auto touch-manipulation"
               >
-                <User className="w-3.5 h-3.5" />
+                <User className="w-3.5 h-3.5 shrink-0" />
                 <span>حساب</span>
               </button>
               <button
                 type="button"
                 onClick={() => onOpenAuth('register')}
-                className="relative z-[60] min-h-[44px] h-11 px-2.5 sm:px-3 rounded-lg bg-[#155EEF] hover:bg-[#0F45B5] text-white text-xs font-bold inline-flex items-center gap-1 pointer-events-auto touch-manipulation"
+                className="relative z-[60] shrink-0 whitespace-nowrap min-h-[44px] h-11 px-2 sm:px-3 rounded-lg bg-[#155EEF] hover:bg-[#0F45B5] text-white text-xs font-bold inline-flex items-center gap-1 pointer-events-auto touch-manipulation"
               >
-                <UserPlus className="w-3.5 h-3.5" />
+                <UserPlus className="w-3.5 h-3.5 shrink-0" />
                 <span>إنشاء حساب</span>
               </button>
             </>
@@ -427,7 +452,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {viewMode === 'client' && (
             <button
               onClick={onOpenCart}
-              className="relative h-9 px-3 rounded-lg bg-[#0A1A33] hover:bg-[#20304C] text-white font-bold text-xs inline-flex items-center gap-1.5"
+              className="relative h-9 px-3 rounded-lg bg-[#0A1A33] hover:bg-[#20304C] text-white font-bold text-xs hidden sm:inline-flex items-center gap-1.5 shrink-0"
             >
               <ShoppingBag className="w-4 h-4" />
               <span className="hidden sm:inline">السلة</span>

@@ -251,7 +251,7 @@ export function VendorListingsPanel({
       )}
 
       {open ? (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 usil-modal-scroll">
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>

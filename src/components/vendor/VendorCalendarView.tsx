@@ -447,7 +447,7 @@ export const VendorCalendarView: React.FC<VendorCalendarViewProps> = ({
 
       {/* Block Date Modal */}
       {showBlockModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs usil-modal-scroll">
           <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 space-y-4 dropdown-shadow text-right">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h4 className="text-base font-bold text-slate-900">حظر وإغلاق موعد في التقويم</h4>

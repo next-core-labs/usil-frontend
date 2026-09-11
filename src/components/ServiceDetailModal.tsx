@@ -59,7 +59,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 overflow-y-auto pointer-events-auto">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 pointer-events-auto usil-modal-scroll">
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"

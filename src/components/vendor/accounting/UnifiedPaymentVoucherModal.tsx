@@ -181,7 +181,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 text-right">
+    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 text-right usil-modal-scroll">
       <div className="w-full max-w-4xl bg-white rounded-3xl border border-slate-200 card-shadow overflow-hidden flex flex-col my-auto max-h-[92vh]">
         
         {/* Top Modal Controls Header (Screen Only) */}

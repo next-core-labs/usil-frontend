@@ -154,7 +154,7 @@ export const VendorTapToPayNfcModal: React.FC<VendorTapToPayNfcModalProps> = ({
   return (
     <div
       id="vendor-tap-to-pay-modal"
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 text-right font-sans"
+      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 text-right font-sans usil-modal-scroll"
     >
       <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         

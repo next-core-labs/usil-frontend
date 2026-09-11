@@ -79,7 +79,7 @@ export const ServiceComparisonModal: React.FC<ServiceComparisonModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto font-sans">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 font-sans usil-modal-scroll">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"

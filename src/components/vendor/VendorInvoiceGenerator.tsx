@@ -515,7 +515,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
 
       {/* Create New Invoice Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs usil-modal-scroll">
           <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-3xl p-6 space-y-5 dropdown-shadow max-h-[85vh] overflow-y-auto text-right">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">

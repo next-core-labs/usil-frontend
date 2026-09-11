@@ -1618,7 +1618,13 @@ export default function App() {
             <div className="mt-4">
               <HowUsilWorks />
             </div>
-            <section id="services-section" className="scroll-mt-44 mt-5">
+            <section
+              id="services-section"
+              /* --usil-header-h is published by Navbar; the mobile app bar is
+                 ~270px tall, far past the old 11rem guess, so smooth-scrolling
+                 here used to land the heading underneath it. */
+              className="mt-5 scroll-mt-[calc(var(--usil-header-h,11rem)+0.75rem)]"
+            >
               <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
               <div className="lg:w-56 xl:w-60 shrink-0">
               <CategoryFilterBar
@@ -1821,7 +1827,7 @@ export default function App() {
 
           {/* Event Quote Calculator Modal */}
           {isCalculatorOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 usil-modal-scroll">
               <div
                 className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
                 onClick={() => setIsCalculatorOpen(false)}
@@ -1949,8 +1955,14 @@ export default function App() {
         cartCount={cartItems.length}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenVoiceAI={() => setIsVoiceAIOpen(true)}
-        onOpenTracker={showEventTracker ? () => setIsTrackerOpen(true) : undefined}
+        // Always reachable from the bar: the modal takes a tracking code, so it
+        // is useful even before this device has a live event of its own.
+        onOpenTracker={() => setIsTrackerOpen(true)}
         onOpenCrewPortal={() => setIsCrewPortalOpen(true)}
+        onGoHome={() => {
+          goHome();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         onOpenAuth={() => {
           setAuthDefaultMode('login');
           setIsAuthOpen(true);
@@ -1971,7 +1983,7 @@ export default function App() {
       ) : null}
 
       {isAuthOpen ? (
-        <div className="fixed inset-0 z-[80] overflow-y-auto bg-slate-900/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[80] overflow-y-auto bg-slate-900/40 backdrop-blur-sm usil-safe-overlay">
           <LoginScreen
             defaultMode={authDefaultMode}
             verifyPrefill={

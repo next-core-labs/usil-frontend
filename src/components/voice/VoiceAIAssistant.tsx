@@ -234,7 +234,7 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs text-right animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs text-right animate-in fade-in duration-200 usil-modal-scroll">
       <div
         className={`bg-white rounded-3xl w-full border border-slate-200 shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
           isExpanded ? 'max-w-4xl h-[90vh]' : 'max-w-2xl h-[640px]'

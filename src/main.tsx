@@ -4,8 +4,13 @@ import './i18n';
 import { CurrencyProvider } from './context/CurrencyContext.tsx';
 import App from './App.tsx';
 import './index.css';
-import { bootNativeShell, isNativeApp } from './native';
+import { bootNativeShell, hideNativeSplash, isNativeApp } from './native';
+import { installNativeApiOrigin } from './native-origin';
 import { AppErrorBoundary } from './components/AppErrorBoundary';
+
+// Must precede the first request or render so /api and /uploads resolve
+// against the live API instead of the local bundle.
+installNativeApiOrigin();
 
 bootNativeShell();
 
@@ -46,3 +51,5 @@ createRoot(document.getElementById('root')!).render(
     </AppErrorBoundary>
   </StrictMode>,
 );
+
+hideNativeSplash();

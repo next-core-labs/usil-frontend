@@ -44,7 +44,7 @@ export function RegionGate({ open, required = false, selected, onSelect, onClose
           onClick={onClose}
         />
       ) : null}
-      <div className="relative w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl p-5 sm:p-6 text-right">
+      <div className="relative w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto overscroll-contain rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl p-5 sm:p-6 text-right usil-safe-bottom">
         {!required && onClose ? (
           <button
             type="button"

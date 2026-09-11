@@ -6,20 +6,24 @@
   "scope": "/",
   "id": "/?source=pwa",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
   "orientation": "portrait-primary",
   "theme_color": "#0A1A33",
   "background_color": "#0A1A33",
   "lang": "ar",
   "dir": "rtl",
-  "categories": ["lifestyle", "business", "events", "shopping"],
+  "categories": [
+    "lifestyle",
+    "business",
+    "events",
+    "shopping"
+  ],
   "icons": [
-    {
-      "src": "/icons/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",

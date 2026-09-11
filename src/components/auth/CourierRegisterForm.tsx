@@ -120,7 +120,7 @@ export function CourierRegisterForm({
   };
 
   return (
-    <div dir="rtl" className="fixed inset-0 z-[90] bg-[#0A1A33]/80 backdrop-blur-sm overflow-y-auto">
+    <div dir="rtl" className="fixed inset-0 z-[90] bg-[#0A1A33]/80 backdrop-blur-sm overflow-y-auto usil-safe-overlay">
       <div className="min-h-full flex items-center justify-center p-4">
         <div className="w-full max-w-xl bg-white rounded-3xl border border-[#E4E7EC] shadow-2xl relative">
           <button

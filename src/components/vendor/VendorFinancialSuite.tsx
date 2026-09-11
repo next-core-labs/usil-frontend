@@ -480,7 +480,7 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
 
       {/* WITHDRAW MODAL */}
       {showWithdrawModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs usil-modal-scroll">
           <div className="w-full max-w-md bg-white rounded-3xl p-6 space-y-4 text-right card-shadow">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h4 className="text-base font-extrabold text-slate-900">

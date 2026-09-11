@@ -901,7 +901,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
 
       {/* Add Entry Modal with Hours Automation Calculator */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs text-right">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs text-right usil-modal-scroll">
           <div className="w-full max-w-lg bg-white rounded-3xl p-6 space-y-4 card-shadow max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">

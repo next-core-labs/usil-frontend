@@ -257,7 +257,7 @@ async function getOrderLiveStatus(trackingCode) {
 
       {/* Full Client Screen Preview Modal */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs p-2 sm:p-4 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs p-2 sm:p-4 flex items-center justify-center usil-modal-scroll">
           <div className="relative w-full max-w-3xl bg-white rounded-3xl overflow-hidden shadow-2xl my-auto max-h-[92vh] flex flex-col">
             
             <div className="p-4 bg-slate-900 text-white flex items-center justify-between shrink-0">

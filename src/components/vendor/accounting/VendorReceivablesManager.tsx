@@ -378,7 +378,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
 
       {/* PAYMENT MODAL (تسجيل سداد دفعة وتوليد سند قبض) */}
       {selectedDebtForPayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs usil-modal-scroll">
           <div className="w-full max-w-lg bg-white rounded-3xl p-6 space-y-5 text-right card-shadow">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -475,7 +475,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
 
       {/* WHATSAPP REMINDER PREVIEW MODAL */}
       {reminderModalDebt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs usil-modal-scroll">
           <div className="w-full max-w-lg bg-white rounded-3xl p-6 space-y-4 text-right card-shadow">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -529,7 +529,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
 
       {/* RECEIPT VOUCHER SUCCESS MODAL (سند القبض الفوري) */}
       {receiptSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs usil-modal-scroll">
           <div className="w-full max-w-md bg-white rounded-3xl p-6 space-y-4 text-right card-shadow border border-emerald-200">
             
             <div className="text-center space-y-1">

@@ -429,7 +429,7 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
 
       {/* Review Submission Modal for Vendor */}
       {activeReviewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs text-right">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs text-right usil-modal-scroll">
           <div className="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in">
             {/* Header */}
             <div className="bg-gradient-to-r from-[#0A1A33] to-[#155EEF] p-5 text-white flex items-center justify-between">

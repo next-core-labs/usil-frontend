@@ -32,11 +32,17 @@ html, body {
   color: var(--ink);
 }
 
-html.usil-native,
-html.usil-native body {
+/* Safe-area insets are applied by the elements that actually touch the screen
+   edges (app bar scrim, bottom nav, full-screen overlays) — never here.
+   Padding both html AND body double-counted every inset, which pushed the app
+   bar a full status-bar height below the notch and left a dead navy strip at
+   the bottom. */
+html.usil-native {
   background-color: #0A1A33;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+}
+
+html.usil-native body {
+  background-color: var(--paper);
 }
 
 body {
@@ -157,13 +163,57 @@ h3 {
 
 /* ===== MOBILE RESPONSIVENESS FIXES ===== */
 
+/* `clip` — not `hidden`. `overflow-x: hidden` forces the used overflow-y to
+   `auto`, which turns <body> into a scroll container and silently kills
+   `position: sticky` on the app bar. `clip` contains stray horizontal
+   overflow without creating a scrollport, so the app bar still pins. */
 html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
+  overflow-x: clip;
 }
 
 img {
   max-width: 100%;
+}
+
+/* Navy strip behind a translucent (edge-to-edge) status bar, so the white
+   status-bar icons stay readable over the white app bar. Collapses to 0 on
+   web and on devices without a top inset. */
+.usil-statusbar-scrim {
+  height: env(safe-area-inset-top);
+  background-color: #0A1A33;
+}
+
+.usil-safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.usil-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Full-screen overlays: always scrollable, and never centred so tall content
+   spills out of reach above the fold (auto block margins centre short panels
+   but collapse instead of clipping tall ones). */
+.usil-modal-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.usil-modal-scroll > * {
+  margin-block: auto;
+}
+
+html.usil-native .usil-modal-scroll {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/* Full-screen overlays that already manage their own scrolling — they only
+   need to keep close buttons clear of the system bars. */
+html.usil-native .usil-safe-overlay {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* 1-col product grid on very narrow screens */
