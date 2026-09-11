@@ -1,0 +1,20 @@
+يوصل / Usil — frontend (React + Vite)
+
+The backend is a separate project: ../usil backend
+
+Development — run both:
+
+  1) backend
+     cd "../usil backend"
+     npm install
+     npm run dev              # http://127.0.0.1:43147
+
+  2) frontend
+     cd usil
+     npm install
+     npm run dev              # http://127.0.0.1:3000  (/api and /uploads proxy to the backend)
+
+Production — the backend serves the built SPA:
+
+  cd usil && npm run build
+  cd "../usil backend" && npm run sync:web && npm run build && npm start

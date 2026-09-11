@@ -1,0 +1,11 @@
+{
+  "name": "يوصل | سوق توريد المناسبات ومركز تشغيل المورّدين",
+  "description": "منصة يوصل (Usil) المتكاملة لحجز وتوريد الضيافة والمناسبات ومركز تشغيل المورّدين (Vendor OS): تشمل تخصيص بطاقات لوحة التحكم بالسحب والإفلات (Drag & Drop)، الدفع الإلكتروني المباشر (Apple Pay / مدى)، تتبع الطلبات الحي، بوابة الطاقم الميداني والحضور بـ GPS، الفواتير الإلكترونية ZATCA، مسير الأجور، وقائمة الدخل P&L.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

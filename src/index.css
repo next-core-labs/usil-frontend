@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+:root {
+  --navy: #0A1A33;
+  --navy-700: #20304C;
+  --navy-500: #5A6A85;
+  --navy-300: #C6CDD9;
+  --navy-100: #F1F3F7;
+  --action: #155EEF;
+  --action-hover: #0F45B5;
+  --action-pressed: #0A2E78;
+  --action-100: #EAF0FE;
+  --sky: #5B8DEF;
+  --sand: #C0A16B;
+  --success: #12B76A;
+  --warning: #F79009;
+  --danger: #D92D20;
+  --ink: #101828;
+  --ink-2: #475467;
+  --ink-3: #667085;
+  --muted: #98A2B3;
+  --line: #E4E7EC;
+  --paper: #F7F8FA;
+  --surface: #FFFFFF;
+  --dark-surface: #131A26;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--paper);
+  color: var(--ink);
+}
+
+html.usil-native,
+html.usil-native body {
+  background-color: #0A1A33;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+body {
+  font-family: "IBM Plex Sans Arabic", "Almarai", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, .font-display {
+  font-family: "Almarai", "IBM Plex Sans Arabic", sans-serif;
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  font-family: "IBM Plex Sans Arabic", "Almarai", sans-serif;
+  font-weight: 600;
+}
+
+.font-latin {
+  font-family: "Archivo", "IBM Plex Sans Arabic", sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.font-mono, .font-kicker {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.kicker {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sand);
+}
+
+.card-shadow {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px -18px rgba(10, 26, 51, 0.18);
+}
+
+.card-shadow-hover {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 16px 36px -20px rgba(10, 26, 51, 0.22);
+}
+
+.navy-rule {
+  height: 1px;
+  background: var(--line);
+}
+
+/* Brand pattern — 96px tile, use only once per layout, behind logo or a single heading. */
+.pattern-navy {
+  background-color: var(--navy);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Crect x='10' y='30' width='76' height='36' rx='14' fill='none' stroke='%23ffffff' stroke-opacity='0.10' stroke-width='1.25'/%3E%3Ccircle cx='48' cy='48' r='9' fill='none' stroke='%23ffffff' stroke-opacity='0.10' stroke-width='1.25'/%3E%3Cline x1='0' y1='48' x2='96' y2='48' stroke='%23ffffff' stroke-opacity='0.08' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 96px 96px;
+}
+
+.pattern-subtle {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Crect x='10' y='30' width='76' height='36' rx='14' fill='none' stroke='%230A1A33' stroke-opacity='0.07' stroke-width='1.25'/%3E%3Ccircle cx='48' cy='48' r='9' fill='none' stroke='%230A1A33' stroke-opacity='0.07' stroke-width='1.25'/%3E%3Cline x1='0' y1='48' x2='96' y2='48' stroke='%230A1A33' stroke-opacity='0.05' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 96px 96px;
+}
+
+.btn-action {
+  background: var(--action);
+  color: #fff;
+}
+.btn-action:hover {
+  background: var(--action-hover);
+}
+.btn-action:active {
+  background: var(--action-pressed);
+}
+
+@keyframes usil-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+.rise {
+  animation: usil-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--paper); }
+::-webkit-scrollbar-thumb { background: var(--navy-300); border-radius: 99px; }
+
+.safe-area-pb {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+@media (max-width: 767px) {
+  .usil-main-pad {
+    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .usil-product-card,
+  .usil-product-card * {
+    touch-action: manipulation;
+  }
+
+  .usil-bottom-nav {
+    pointer-events: auto;
+  }
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* ===== MOBILE RESPONSIVENESS FIXES ===== */
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* 1-col product grid on very narrow screens */
+@media (max-width: 479px) {
+  .grid-cols-1.sm\:grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
