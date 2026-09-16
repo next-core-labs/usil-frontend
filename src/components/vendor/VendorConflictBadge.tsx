@@ -56,18 +56,18 @@ export const VendorConflictBadge: React.FC<VendorConflictBadgeProps> = ({
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold border ${bgColor}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-bold border ${bgColor}`}>
         <Icon className="w-3 h-3" />
         <span>{label}</span>
       </span>
 
       {hasConflict ? (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-medium bg-rose-50 text-rose-800 border border-rose-200">
           <AlertTriangle className="w-3 h-3 text-rose-600" />
           <span>تنبيه: تعارض في التوقيت!</span>
         </span>
       ) : (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
           <CheckCircle className="w-3 h-3 text-emerald-600" />
           <span>مؤكد بدون تعارض</span>
         </span>

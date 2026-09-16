@@ -86,11 +86,11 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
       {/* Header Banner */}
       <div className="p-6 rounded-3xl bg-white border border-slate-200 card-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 text-xs font-bold border border-emerald-200">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 text-xs font-medium border border-emerald-200">
             <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
             <span>WhatsApp Business API — مزامنة محادثات العملاء المباشرة</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
             صندوق محادثات الواتساب وإرسال عروض الأسعار
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-normal">
@@ -99,7 +99,7 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 font-mono">
+          <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-medium flex items-center gap-1.5 font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>API متصل (رقم معتمد)</span>
           </span>
@@ -120,7 +120,7 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 placeholder="بحث في محادثات العملاء أو الجوال..."
-                className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#155EEF]"
+                className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-action"
               />
               <Search className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-2.5" />
             </div>
@@ -135,21 +135,21 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
                   key={thread.id}
                   onClick={() => setSelectedThreadId(thread.id)}
                   className={`p-3.5 cursor-pointer transition-colors flex items-start gap-3 ${
-                    isSelected ? 'bg-white shadow-xs border-r-4 border-r-[#155EEF]' : 'hover:bg-slate-100/70'
+                    isSelected ? 'bg-white shadow-xs border-r-4 border-r-action' : 'hover:bg-slate-100/70'
                   }`}
                 >
                   <img
                     src={thread.clientAvatar && !thread.clientAvatar.includes('unsplash') ? thread.clientAvatar : ''}
                     alt=""
-                    className="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 bg-[#0A1A33]"
+                    className="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 bg-navy"
                   />
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1 mb-1">
-                      <h4 className="text-xs font-bold text-slate-900 truncate">
+                      <h4 className="text-xs font-medium text-slate-900 truncate">
                         {thread.clientName}
                       </h4>
-                      <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                      <span className="text-2xs text-slate-400 font-mono shrink-0">
                         {thread.lastMessageTime}
                       </span>
                     </div>
@@ -160,13 +160,13 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
 
                     <div className="flex items-center justify-between pt-1.5">
                       {thread.statusTag && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
+                        <span className="px-2 py-0.5 rounded text-2xs font-medium bg-slate-100 text-slate-700">
                           {thread.statusTag}
                         </span>
                       )}
 
                       {thread.unreadCount > 0 && (
-                        <span className="w-4 h-4 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center font-mono">
+                        <span className="w-4 h-4 rounded-full bg-emerald-500 text-white text-2xs font-medium flex items-center justify-center font-mono">
                           {thread.unreadCount}
                         </span>
                       )}
@@ -188,12 +188,12 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
                   <img
                     src={activeThread.clientAvatar && !activeThread.clientAvatar.includes('unsplash') ? activeThread.clientAvatar : ''}
                     alt=""
-                    className="w-10 h-10 rounded-full object-cover border border-slate-200 bg-[#0A1A33]"
+                    className="w-10 h-10 rounded-full object-cover border border-slate-200 bg-navy"
                   />
                   <div>
                     <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                       <span>{activeThread.clientName}</span>
-                      <span className="text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-normal">
+                      <span className="text-2xs text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-normal">
                         متصل الآن
                       </span>
                     </h4>
@@ -208,7 +208,7 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
                     href={`https://wa.me/${activeThread.clientPhone.replace(/[^0-9]/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                    className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-medium flex items-center gap-1.5 transition-colors"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     <span>فتح في تطبيق واتساب</span>
@@ -228,7 +228,7 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
                       <div
                         className={`max-w-md p-3.5 rounded-2xl text-xs space-y-2 leading-relaxed ${
                           isVendor
-                            ? 'bg-[#0A1A33] text-white rounded-br-xs'
+                            ? 'bg-navy text-white rounded-br-xs'
                             : 'bg-white border border-slate-200 text-slate-800 rounded-bl-xs card-shadow'
                         }`}
                       >
@@ -238,18 +238,18 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
                         {msg.attachmentType === 'quote_card' && msg.attachmentData && (
                           <div className="p-3 rounded-xl bg-white/10 border border-white/20 text-right space-y-2 mt-2">
                             <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
-                              <span className="font-bold text-white text-[11px]">
+                              <span className="font-medium text-white text-2xs">
                                 {msg.attachmentData.title}
                               </span>
                               <span className="font-mono font-bold text-emerald-400">
                                 {msg.attachmentData.amount} ر.س
                               </span>
                             </div>
-                            <div className="text-[10px] text-slate-300 space-y-1">
+                            <div className="text-2xs text-slate-300 space-y-1">
                               <div>📅 تاريخ المناسبة: {msg.attachmentData.date}</div>
                               <div>💰 العربون المطلوب: {msg.attachmentData.deposit} ر.س</div>
                             </div>
-                            <div className="text-[10px] text-emerald-300 font-bold bg-emerald-950/40 p-1.5 rounded text-center">
+                            <div className="text-2xs text-emerald-300 font-medium bg-emerald-950/40 p-1.5 rounded text-center">
                               ✓ عرض سعر معتمد مع تأكيد خلو التعارض
                             </div>
                           </div>
@@ -258,20 +258,20 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
                         {/* Invoice Attachment */}
                         {msg.attachmentType === 'invoice_pdf' && msg.attachmentData && (
                           <div className="p-3 rounded-xl bg-white/10 border border-white/20 text-right space-y-1.5 mt-2">
-                            <div className="flex items-center justify-between font-bold text-white text-[11px]">
+                            <div className="flex items-center justify-between font-medium text-white text-2xs">
                               <span>فاتورة ضريبية #{msg.attachmentData.invoiceNo}</span>
                               <span className="font-mono text-emerald-400">{msg.attachmentData.total} ر.س</span>
                             </div>
-                            <span className="text-[10px] text-amber-300 block">
+                            <span className="text-2xs text-amber-300 block">
                               الحالة: بانتظار سداد الدفعة الأولى
                             </span>
                           </div>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1 px-1 font-mono">
+                      <div className="flex items-center gap-1 text-2xs text-slate-400 mt-1 px-1 font-mono">
                         <span>{msg.timestamp}</span>
-                        {isVendor && <CheckCheck className="w-3 h-3 text-[#155EEF]" />}
+                        {isVendor && <CheckCheck className="w-3 h-3 text-action" />}
                       </div>
                     </div>
                   );
@@ -280,14 +280,14 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
 
               {/* Quick Template Triggers Bar */}
               <div className="p-2 border-t border-slate-100 bg-slate-50 flex items-center gap-2 overflow-x-auto">
-                <span className="text-[11px] font-bold text-slate-500 shrink-0 px-2">
+                <span className="text-2xs font-medium text-slate-500 shrink-0 px-2">
                   ردود سريعة وقوالب:
                 </span>
                 
                 <button
                   type="button"
                   onClick={handleSendInstantQuote}
-                  className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-bold shrink-0 flex items-center gap-1 transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-2xs font-medium shrink-0 flex items-center gap-1 transition-colors"
                 >
                   <DollarSign className="w-3 h-3 text-emerald-600" />
                   <span>إرسال عرض سعر فوري</span>
@@ -296,16 +296,16 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
                 <button
                   type="button"
                   onClick={handleSendInvoiceLink}
-                  className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-bold shrink-0 flex items-center gap-1 transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-2xs font-medium shrink-0 flex items-center gap-1 transition-colors"
                 >
-                  <FileText className="w-3 h-3 text-[#155EEF]" />
+                  <FileText className="w-3 h-3 text-action" />
                   <span>إرسال فاتورة ضريبية</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleSendArrivalConfirmation}
-                  className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-bold shrink-0 flex items-center gap-1 transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-2xs font-medium shrink-0 flex items-center gap-1 transition-colors"
                 >
                   <CheckCircle2 className="w-3 h-3 text-blue-600" />
                   <span>تأكيد تحرك الطاقم</span>
@@ -319,13 +319,13 @@ export const VendorWhatsAppInbox: React.FC<VendorWhatsAppInboxProps> = ({
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder="اكتب رسالتك للعميل (سيتم إرسالها عبر WhatsApp API مباشرة)..."
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#155EEF] focus:bg-white"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-action focus:bg-white"
                 />
 
                 <button
                   type="submit"
                   disabled={!inputText.trim()}
-                  className="px-4 py-2.5 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] disabled:opacity-40 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all"
+                  className="px-4 py-2.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed disabled:opacity-40 text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-all"
                 >
                   <Send className="w-3.5 h-3.5 rotate-180" />
                   <span>إرسال</span>

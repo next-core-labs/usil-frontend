@@ -165,11 +165,11 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
       {/* Header Banner */}
       <div className="p-6 rounded-3xl bg-white border border-slate-200 card-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-bold border border-blue-200">
-            <FileText className="w-3.5 h-3.5 text-[#155EEF]" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium border border-blue-200">
+            <FileText className="w-3.5 h-3.5 text-action" />
             <span>مولّد الفواتير وعقود التوريد بهويتك الخاصة (White-label & ZATCA Compliant)</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
             عروض الأسعار والفواتير الرسمية المعتمدة
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-normal">
@@ -181,16 +181,16 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
           {onOpenBrandSettings && (
             <button
               onClick={onOpenBrandSettings}
-              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-medium flex items-center gap-2 transition-colors"
             >
-              <Building2 className="w-4 h-4 text-[#155EEF]" />
+              <Building2 className="w-4 h-4 text-action" />
               <span>تعديل بيانات البراند والختم</span>
             </button>
           )}
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-xs transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white text-xs sm:text-sm font-medium flex items-center gap-2 shadow-xs transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>إنشاء فاتورة / عرض سعر جديد</span>
@@ -207,7 +207,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
             <h3 className="text-sm font-bold text-slate-900">
               سجل الفواتير الصادرة ({invoices.length})
             </h3>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+            <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
               محدث
             </span>
           </div>
@@ -222,26 +222,26 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                   onClick={() => setSelectedInvoice(inv)}
                   className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-blue-50/80 border-[#155EEF] shadow-xs'
+                      ? 'bg-blue-50/80 border-action shadow-xs'
                       : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-bold text-slate-900 truncate">
+                    <span className="text-xs font-medium text-slate-900 truncate">
                       {inv.clientName}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-500 font-bold">
+                    <span className="text-2xs font-mono text-slate-500 font-medium">
                       {inv.invoiceNumber}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="font-mono font-bold text-[#155EEF]">
+                    <span className="font-mono font-bold text-action">
                       {inv.total.toLocaleString('ar-SA')} ر.س
                     </span>
 
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      className={`px-2 py-0.5 rounded text-2xs font-bold ${
                         inv.status === 'paid'
                           ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                           : inv.status === 'partial'
@@ -253,7 +253,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-200/60">
+                  <div className="flex items-center justify-between text-2xs pt-1.5 border-t border-slate-200/60">
                     <span className={`font-bold px-1.5 py-0.5 rounded ${isExt ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'}`}>
                       {isExt ? '🏷️ براندك (0% عمولة)' : '🌐 طلب يوصل (15% عمولة)'}
                     </span>
@@ -265,7 +265,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                           e.stopPropagation();
                           generateZatcaInvoicePDF(inv, brandSettings);
                         }}
-                        className="p-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#155EEF] transition-colors"
+                        className="p-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-action transition-colors"
                         title="تحميل PDF ضريبي معتمد"
                       >
                         <Download className="w-3 h-3" />
@@ -286,7 +286,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
               {/* Actions Bar */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono text-xs font-bold text-slate-500">
+                  <span className="font-mono text-xs font-medium text-slate-500">
                     رقم الوثيقة: {selectedInvoice.invoiceNumber}
                   </span>
                   
@@ -307,8 +307,8 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                   {/* Download ZATCA Tax Invoice PDF Button */}
                   <button
                     onClick={handleDownloadZatcaPdf}
-                    className="px-3.5 py-2 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all hover:scale-[1.02]"
-                    title="تحميل الفاتورة بصيغة PDF الرسمية المعتمدة لمتطلبات هيئة الزكاة والضريبة والجمارك ZATCA"
+                    className="px-3.5 py-2 rounded-xl bg-action hover:bg-action-hover text-white text-xs font-medium flex items-center gap-1.5 shadow-xs transition-all hover:scale-[1.02]"
+                    title="تحميل الفاتورة بصيغة PDF الرسمية المعتمدة لمتطلبات هيئة الزكاة والضريبة والجمارك ZATCA" aria-label="تحميل الفاتورة بصيغة PDF الرسمية المعتمدة لمتطلبات هيئة الزكاة والضريبة والجمارك ZATCA"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>تحميل فاتورة ZATCA PDF</span>
@@ -318,8 +318,8 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                   {(selectedInvoice.depositPaid > 0 || selectedInvoice.status === 'paid' || selectedInvoice.status === 'partial') && (
                     <button
                       onClick={handleDownloadDepositReceipt}
-                      className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
-                      title="تحميل سند قبض الدفعة كملف PDF رسمي"
+                      className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-medium flex items-center gap-1.5 transition-colors"
+                      title="تحميل سند قبض الدفعة كملف PDF رسمي" aria-label="تحميل سند قبض الدفعة كملف PDF رسمي"
                     >
                       <Receipt className="w-3.5 h-3.5 text-emerald-600" />
                       <span>سند قبض PDF</span>
@@ -332,7 +332,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 transition-colors"
+                    className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1 transition-colors"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
                     <span>واتساب</span>
@@ -340,17 +340,17 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
 
                   <button
                     onClick={handleCopyInvoiceLink}
-                    className="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 flex items-center gap-1 transition-colors"
-                    title="نسخ رابط الفاتورة والتتبع"
+                    className="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700 flex items-center gap-1 transition-colors"
+                    title="نسخ رابط الفاتورة والتتبع" aria-label="نسخ رابط الفاتورة والتتبع"
                   >
-                    <Copy className="w-3.5 h-3.5 text-[#155EEF]" />
+                    <Copy className="w-3.5 h-3.5 text-action" />
                     <span>{copiedLink ? '✓' : 'نسخ'}</span>
                   </button>
 
                   <button
                     onClick={handlePrint}
-                    className="px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center gap-1 transition-colors"
-                    title="طباعة عبر المتصفح"
+                    className="px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium flex items-center gap-1 transition-colors"
+                    title="طباعة عبر المتصفح" aria-label="طباعة عبر المتصفح"
                   >
                     <Printer className="w-3.5 h-3.5 text-slate-700" />
                     <span>طباعة</span>
@@ -367,16 +367,16 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                     className="w-14 h-14 rounded-2xl object-cover border border-slate-200 bg-white"
                   />
                   <div>
-                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                    <h3 className="text-lg sm:text-xl font-bold text-slate-900">
                       {brandSettings.brandName}
                     </h3>
                     <p className="text-xs text-slate-500 font-medium">
                       {brandSettings.slogan}
                     </p>
-                    <p className="text-[11px] text-slate-500 font-mono pt-0.5">
+                    <p className="text-2xs text-slate-500 font-mono pt-0.5">
                       س.ت: {brandSettings.crNumber} • الرقم الضريبي: {brandSettings.vatNumber}
                     </p>
-                    <p className="text-[11px] text-slate-500 font-mono">
+                    <p className="text-2xs text-slate-500 font-mono">
                       {brandSettings.city} • جوال: {brandSettings.phone}
                     </p>
                   </div>
@@ -387,7 +387,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                   <div className="w-20 h-20 bg-slate-900 rounded-xl flex items-center justify-center text-white mx-auto">
                     <QrCode className="w-14 h-14 text-white" />
                   </div>
-                  <span className="text-[9px] text-slate-500 font-bold block">
+                  <span className="text-2xs text-slate-500 font-medium block">
                     رمز التحقق الضريبي ZATCA
                   </span>
                 </div>
@@ -403,7 +403,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
               {/* Bill To & Event Details */}
               <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
                 <div className="space-y-1">
-                  <span className="text-slate-500 font-bold block text-[11px]">موجّه إلى العميل:</span>
+                  <span className="text-slate-500 font-medium block text-2xs">موجّه إلى العميل:</span>
                   <div className="text-slate-900 font-bold text-sm">{selectedInvoice.clientName}</div>
                   <div className="text-slate-600 font-mono">{selectedInvoice.clientPhone}</div>
                   {selectedInvoice.clientTaxId && (
@@ -412,7 +412,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                 </div>
 
                 <div className="space-y-1 text-left">
-                  <span className="text-slate-500 font-bold block text-[11px]">بيانات المناسبة والتواريخ:</span>
+                  <span className="text-slate-500 font-medium block text-2xs">بيانات المناسبة والتواريخ:</span>
                   <div className="text-slate-900 font-semibold">تاريخ الفعالية: {selectedInvoice.eventDate}</div>
                   <div className="text-slate-600 font-mono">تاريخ الإصدار: {selectedInvoice.issueDate}</div>
                   <div className="text-slate-600 font-mono">طريقة الدفع: {selectedInvoice.paymentMethod}</div>
@@ -460,7 +460,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
 
                   <div className="space-y-1">
                     <span className="text-slate-700 font-bold block">شروط التوريد والخدمة:</span>
-                    <p className="text-slate-500 leading-relaxed font-normal whitespace-pre-line text-[11px]">
+                    <p className="text-slate-500 leading-relaxed font-normal whitespace-pre-line text-2xs">
                       {selectedInvoice.terms || brandSettings.invoiceFooterNotes}
                     </p>
                   </div>
@@ -473,7 +473,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                         alt="الختم الرسمي"
                         className="w-16 h-16 object-contain mix-blend-multiply opacity-80"
                       />
-                      <span className="text-[10px] text-slate-500 font-bold">الختم والتوقيع المعتمد للمنشأة</span>
+                      <span className="text-2xs text-slate-500 font-medium">الختم والتوقيع المعتمد للمنشأة</span>
                     </div>
                   )}
                 </div>
@@ -488,17 +488,17 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                     <span>ضريبة القيمة المضافة (15%):</span>
                     <span className="font-mono font-bold">{selectedInvoice.taxAmount.toLocaleString('ar-SA')} ر.س</span>
                   </div>
-                  <div className="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+                  <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-200">
                     <span>الإجمالي الكلي:</span>
-                    <span className="font-mono text-[#155EEF]">{selectedInvoice.total.toLocaleString('ar-SA')} ر.س</span>
+                    <span className="font-mono text-action">{selectedInvoice.total.toLocaleString('ar-SA')} ر.س</span>
                   </div>
 
                   <div className="pt-2 border-t border-slate-200 space-y-1.5">
-                    <div className="flex justify-between text-emerald-800 font-bold text-[11px]">
+                    <div className="flex justify-between text-emerald-800 font-medium text-2xs">
                       <span>العربون المدفوع:</span>
                       <span className="font-mono">{selectedInvoice.depositPaid.toLocaleString('ar-SA')} ر.س</span>
                     </div>
-                    <div className="flex justify-between text-rose-800 font-bold text-xs">
+                    <div className="flex justify-between text-rose-800 font-medium text-xs">
                       <span>المتبقي عند التنفيذ:</span>
                       <span className="font-mono">{selectedInvoice.remainingBalance.toLocaleString('ar-SA')} ر.س</span>
                     </div>
@@ -520,12 +520,12 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 className="text-base font-extrabold text-slate-900">إنشاء فاتورة / عرض سعر رسمي جديد</h3>
+                <h3 className="text-base font-bold text-slate-900">إنشاء فاتورة / عرض سعر رسمي جديد</h3>
                 <p className="text-xs text-slate-500">تصدر بالكامل باسم براندك وشعارك وسجلك التجاري</p>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="text-slate-400 hover:text-slate-800 text-xs font-bold"
+                className="text-slate-400 hover:text-slate-800 text-xs font-medium"
               >
                 إلغاء
               </button>
@@ -535,8 +535,8 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
               
               {/* Channel Selector */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">مصدر الحجز</label>
-                <div className="grid grid-cols-3 gap-2 text-xs font-bold">
+                <label className="block text-2xs font-medium text-slate-700 mb-1">مصدر الحجز</label>
+                <div className="grid grid-cols-3 gap-2 text-xs font-medium">
                   {[
                     { id: 'external_phone', label: 'حجز اتصال مباشر (0% عمولة)' },
                     { id: 'pos_cashier', label: 'كاشير المحل / المعرض (0% عمولة)' },
@@ -548,7 +548,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                       onClick={() => setChannelSource(ch.id as any)}
                       className={`p-2.5 rounded-xl border text-center transition-all ${
                         channelSource === ch.id
-                          ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
+                          ? 'bg-navy text-white border-navy'
                           : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                       }`}
                     >
@@ -560,47 +560,47 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">اسم العميل</label>
+                  <label className="block text-2xs font-medium text-slate-700 mb-1">اسم العميل</label>
                   <input
                     type="text"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     placeholder="مثال: فهد الدوسري"
                     required
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-action"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">رقم الجوال</label>
+                  <label className="block text-2xs font-medium text-slate-700 mb-1">رقم الجوال</label>
                   <input
                     type="text"
                     value={clientPhone}
                     onChange={(e) => setClientPhone(e.target.value)}
                     placeholder="05XXXXXXXX"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono focus:outline-none focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono focus:outline-none focus:border-action"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">تاريخ المناسبة</label>
+                  <label className="block text-2xs font-medium text-slate-700 mb-1">تاريخ المناسبة</label>
                   <input
                     type="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-action"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">العربون المسدد مسبقاً</label>
+                  <label className="block text-2xs font-medium text-slate-700 mb-1">العربون المسدد مسبقاً</label>
                   <input
                     type="number"
                     value={depositPaid}
                     onChange={(e) => setDepositPaid(Number(e.target.value))}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono font-bold focus:outline-none focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono font-medium focus:outline-none focus:border-action"
                   />
                 </div>
               </div>
@@ -608,11 +608,11 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
               {/* Items in modal */}
               <div className="space-y-2 pt-2 border-t border-slate-100">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold text-slate-700">بنود الخدمة والأسعار</label>
+                  <label className="text-2xs font-medium text-slate-700">بنود الخدمة والأسعار</label>
                   <button
                     type="button"
                     onClick={handleAddItem}
-                    className="text-[11px] text-[#155EEF] font-bold flex items-center gap-1 hover:underline"
+                    className="text-2xs text-action font-medium flex items-center gap-1 hover:underline"
                   >
                     <Plus className="w-3 h-3" />
                     <span>إضافة بند آخر</span>
@@ -656,7 +656,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
               </div>
 
               {/* Total summary */}
-              <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between text-xs font-bold text-blue-900">
+              <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between text-xs font-medium text-blue-900">
                 <span>الإجمالي شامل الضريبة (15%):</span>
                 <span className="text-sm font-mono">{grandTotal.toLocaleString('ar-SA')} ر.س</span>
               </div>
@@ -664,14 +664,14 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
               <div className="pt-2 flex items-center gap-3">
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white text-xs sm:text-sm font-bold shadow-xs transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-action hover:bg-action-hover text-white text-xs sm:text-sm font-medium shadow-xs transition-colors"
                 >
                   إصدار الفاتورة وحفظها بعلامتك
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold"
+                  className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-medium"
                 >
                   تراجع
                 </button>

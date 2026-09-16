@@ -242,15 +242,15 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with Human-like Voice AI Branding */}
-        <div className="bg-gradient-to-r from-[#0A1A33] via-[#0F284D] to-[#155EEF] p-4 sm:p-5 text-white flex items-center justify-between gap-3 shrink-0 border-b border-white/10">
+        <div className="bg-gradient-to-r from-navy via-[#0F284D] to-action p-4 sm:p-5 text-white flex items-center justify-between gap-3 shrink-0 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 text-[#C0A16B]">
+              <div className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 text-sand">
                 <Bot className="w-6 h-6" />
               </div>
               {/* Pulsing Status Dot */}
               <span
-                className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#0A1A33] ${
+                className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-navy ${
                   isSpeaking
                     ? 'bg-emerald-400 animate-ping'
                     : isListening
@@ -262,8 +262,8 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
 
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-base sm:text-lg text-white">وكيل يوصل الصوتي الذكي</h3>
-                <span className="px-2 py-0.5 rounded-full bg-[#C0A16B]/20 text-[#C0A16B] text-[10px] font-bold border border-[#C0A16B]/30 font-mono">
+                <h3 className="font-bold text-base sm:text-lg text-white">وكيل يوصل الصوتي الذكي</h3>
+                <span className="px-2 py-0.5 rounded-full bg-sand/20 text-sand text-2xs font-medium border border-sand/30 font-mono">
                   VOICE AI ⚡
                 </span>
               </div>
@@ -328,7 +328,7 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
               {[40, 75, 95, 60, 85, 45, 90, 65].map((h, i) => (
                 <span
                   key={i}
-                  className="w-1 bg-[#C0A16B] rounded-full animate-bounce"
+                  className="w-1 bg-sand rounded-full animate-bounce"
                   style={{
                     height: `${h * 0.22}px`,
                     animationDelay: `${i * 0.12}s`,
@@ -343,11 +343,11 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
         {/* Messages List Area */}
         <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 bg-slate-50">
           {speechError && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs font-bold flex items-center justify-between">
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs font-medium flex items-center justify-between">
               <span>{speechError}</span>
               <button
                 onClick={() => setSpeechError(null)}
-                className="text-amber-900 underline text-[11px]"
+                className="text-amber-900 underline text-2xs"
               >
                 تجاهل
               </button>
@@ -368,8 +368,8 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
                 <div
                   className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
                     msg.sender === 'user'
-                      ? 'bg-[#155EEF] text-white'
-                      : 'bg-[#0A1A33] text-[#C0A16B]'
+                      ? 'bg-action text-white'
+                      : 'bg-navy text-sand'
                   }`}
                 >
                   {msg.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
@@ -379,14 +379,14 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
                 <div
                   className={`p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                     msg.sender === 'user'
-                      ? 'bg-[#155EEF] text-white rounded-tr-xs shadow-xs'
+                      ? 'bg-action text-white rounded-tr-xs shadow-xs'
                       : 'bg-white text-slate-800 border border-slate-200 rounded-tl-xs shadow-xs'
                   }`}
                 >
                   <p className="font-medium">{msg.text}</p>
 
                   <div
-                    className={`mt-1.5 flex items-center gap-2 text-[10px] ${
+                    className={`mt-1.5 flex items-center gap-2 text-2xs ${
                       msg.sender === 'user' ? 'text-blue-200 justify-end' : 'text-slate-400'
                     }`}
                   >
@@ -395,7 +395,7 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
                       <button
                         onClick={() => speakText(msg.text)}
                         title="إعادة نطق الإجابة"
-                        className="hover:text-[#155EEF] transition-colors"
+                        className="hover:text-action transition-colors"
                       >
                         <Volume2 className="w-3 h-3 inline" />
                       </button>
@@ -407,8 +407,8 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
               {/* Interactive Service Recommendations from Voice AI */}
               {msg.suggestedServiceIds && msg.suggestedServiceIds.length > 0 && (
                 <div className="mt-3 mr-10.5 space-y-2 w-full max-w-[90%]">
-                  <div className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-[#155EEF]" />
+                  <div className="text-2xs font-medium text-slate-500 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-action" />
                     <span>الخدمات المقترحة صوتياً لمناسبتك:</span>
                   </div>
 
@@ -420,7 +420,7 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
                       return (
                         <div
                           key={service.id}
-                          className="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs hover:border-[#155EEF]/50 transition-all flex flex-col justify-between"
+                          className="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs hover:border-action/50 transition-all flex flex-col justify-between"
                         >
                           <div className="flex gap-2.5 items-start">
                             <img
@@ -429,17 +429,17 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
                               className="w-14 h-14 rounded-xl object-cover shrink-0 border border-slate-100"
                             />
                             <div className="flex-1 min-w-0">
-                              <span className="text-[10px] font-bold text-[#155EEF] bg-blue-50 px-1.5 py-0.5 rounded">
+                              <span className="text-2xs font-medium text-action bg-blue-50 px-1.5 py-0.5 rounded">
                                 {service.categoryName}
                               </span>
-                              <h4 className="font-bold text-xs text-slate-900 truncate mt-0.5">
+                              <h4 className="font-medium text-xs text-slate-900 truncate mt-0.5">
                                 {service.title}
                               </h4>
                               <div className="flex items-center gap-1 mt-1">
-                                <span className="font-black text-slate-900 text-xs">
+                                <span className="font-medium text-slate-900 text-xs">
                                   {service.price.toLocaleString('ar-SA')} ر.س
                                 </span>
-                                <span className="text-[10px] text-slate-400">/{service.priceUnit}</span>
+                                <span className="text-2xs text-slate-400">/{service.priceUnit}</span>
                               </div>
                             </div>
                           </div>
@@ -447,14 +447,14 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
                           <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-2">
                             <button
                               onClick={() => onAddToCart(service)}
-                              className="flex-1 py-1.5 px-2.5 rounded-lg bg-[#0A1A33] hover:bg-[#101828] text-white font-bold text-[11px] flex items-center justify-center gap-1 transition-colors"
+                              className="flex-1 py-1.5 px-2.5 rounded-lg bg-navy hover:bg-ink text-white font-medium text-2xs flex items-center justify-center gap-1 transition-colors"
                             >
-                              <ShoppingBag className="w-3 h-3 text-[#C0A16B]" />
+                              <ShoppingBag className="w-3 h-3 text-sand" />
                               <span>إضافة للسلة</span>
                             </button>
                             <button
                               onClick={() => onOpenServiceDetails(service)}
-                              className="py-1.5 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] transition-colors"
+                              className="py-1.5 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-2xs transition-colors"
                             >
                               تفاصيل
                             </button>
@@ -473,7 +473,7 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
                     <button
                       key={i}
                       onClick={() => handleSendMessage(opt)}
-                      className="px-3 py-1.5 rounded-full bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-[#155EEF] text-xs font-bold transition-all shadow-xs"
+                      className="px-3 py-1.5 rounded-full bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-action text-xs font-medium transition-all shadow-xs"
                     >
                       {opt}
                     </button>
@@ -484,8 +484,8 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
           ))}
 
           {isProcessing && (
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 bg-white p-3 rounded-2xl border border-slate-200 w-fit shadow-xs animate-pulse">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#155EEF]" />
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-500 bg-white p-3 rounded-2xl border border-slate-200 w-fit shadow-xs animate-pulse">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-action" />
               <span>الوكيل الصوتي يقوم بتحليل طلبك وإعداد التوصية...</span>
             </div>
           )}
@@ -509,11 +509,11 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
               className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-xs shrink-0 cursor-pointer ${
                 isListening
                   ? 'bg-red-500 hover:bg-red-600 text-white ring-4 ring-red-200 animate-pulse'
-                  : 'bg-gradient-to-br from-[#0A1A33] to-[#155EEF] text-white hover:opacity-90'
+                  : 'bg-gradient-to-br from-navy to-action text-white hover:opacity-90'
               }`}
               title={isListening ? 'إيقاف التسجيل الصوتي' : 'تحدث صوتياً الآن'}
             >
-              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5 text-[#C0A16B]" />}
+              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5 text-sand" />}
             </button>
 
             {/* Text Input */}
@@ -527,7 +527,7 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
                     ? 'تحدث الآن، الوكيل الصوتي يستمع لك...'
                     : 'اكتب طلبك أو اضغط على الميكروفون للتحدث صوتياً...'
                 }
-                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-900 focus:bg-white focus:border-[#155EEF] focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-900 focus:bg-white focus:border-action focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -536,22 +536,22 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
               type="submit"
               disabled={!inputQuery.trim()}
               aria-label="إرسال الرسالة إلى الوكيل الصوتي"
-              className="w-12 h-12 rounded-2xl bg-[#0A1A33] hover:bg-[#101828] disabled:opacity-40 text-white flex items-center justify-center transition-all shadow-xs shrink-0 cursor-pointer"
+              className="w-12 h-12 rounded-2xl bg-navy hover:bg-ink disabled:opacity-40 text-white flex items-center justify-center transition-all shadow-xs shrink-0 cursor-pointer"
             >
-              <Send className="w-4 h-4 rotate-180 text-[#C0A16B]" />
+              <Send className="w-4 h-4 rotate-180 text-sand" />
             </button>
           </form>
 
           {/* Assistant Capabilities Badges */}
-          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+          <div className="flex items-center justify-between text-2xs text-slate-500 pt-0.5">
             <span className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#155EEF]" />
+              <Sparkles className="w-3.5 h-3.5 text-action" />
               <span>يدعم اللهجة السعودية والفصحى، وتجهيز الباقات المتكاملة</span>
             </span>
             <button
               type="button"
               onClick={onOpenCalculator}
-              className="text-[#155EEF] font-bold hover:underline flex items-center gap-1"
+              className="text-action font-bold hover:underline flex items-center gap-1"
             >
               <Calculator className="w-3 h-3" />
               <span>فتح حاسبة المناسبات السريعة</span>

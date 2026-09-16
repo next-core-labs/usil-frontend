@@ -1,5 +1,117 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   USIL DESIGN SYSTEM
+   ----------------------------------------------------------------------------
+   One system, three surfaces (marketplace, vendor hub, admin). Everything below
+   is the single source of truth for colour, type, spacing, radius and shadow.
+
+   Rules of the system:
+   - Colour carries STATUS and the one primary action per view. Nothing else.
+   - Hierarchy comes from WEIGHT and SPACE, not from bolding everything.
+   - Sand (--sand) is a brand accent, not a UI colour. Logo moments only.
+   - Radius: `rounded-control` inputs/buttons, `rounded-card` cards,
+     `rounded-panel` large surfaces, `rounded-full` pills/avatars. Nothing else.
+
+   Arabic-first: the type scale runs one step larger and one step looser than a
+   Latin equivalent would, because Arabic diacritics need vertical room and the
+   script has no uppercase to lean on for emphasis.
+   ========================================================================== */
+
+@theme {
+  /* ---- Brand ---- */
+  --color-navy: #0A1A33;
+  --color-navy-800: #142743;
+  --color-navy-700: #20304C;
+  --color-navy-500: #5A6A85;
+  --color-navy-300: #C6CDD9;
+  --color-navy-100: #F1F3F7;
+
+  --color-action: #155EEF;
+  --color-action-hover: #0F45B5;
+  --color-action-pressed: #0A2E78;
+  --color-action-50: #F5F8FF;
+  --color-action-100: #EAF0FE;
+  --color-action-200: #D3E2FD;
+
+  --color-sky: #5B8DEF;
+  --color-sand: #C0A16B;
+  --color-sand-100: #F6F0E4;
+
+  /* ---- Status ---- */
+  --color-success: #067647;
+  --color-success-bg: #ECFDF3;
+  --color-success-border: #ABEFC6;
+  --color-warning: #B54708;
+  --color-warning-bg: #FFFAEB;
+  --color-warning-border: #FEDF89;
+  --color-danger: #B42318;
+  --color-danger-bg: #FEF3F2;
+  --color-danger-border: #FECDCA;
+  --color-info: #175CD3;
+  --color-info-bg: #EFF8FF;
+  --color-info-border: #B2DDFF;
+
+  /* ---- Text ---- */
+  --color-ink: #101828;
+  --color-ink-1: #344054;
+  --color-ink-2: #475467;
+  --color-ink-3: #667085;
+  --color-muted: #98A2B3;
+
+  /* ---- Surfaces & lines ---- */
+  --color-line: #E4E7EC;
+  --color-line-soft: #F2F4F7;
+  --color-paper: #F7F8FA;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #FCFCFD;
+
+  /* ---- Type scale ----
+     Sizes match Tailwind's defaults on purpose: over a thousand existing
+     `text-xs`/`text-sm` usages depend on them, and silently shrinking those
+     would make the app worse, not better. What changes here is (a) a real
+     11px floor to migrate the old 9px/10px text onto, and (b) noticeably
+     looser leading at every step, because Arabic diacritics need the vertical
+     room and this app sets long Arabic sentences at small sizes. */
+  --text-2xs: 0.6875rem;      /* 11px — the floor: counters, timestamps, micro labels */
+  --text-2xs--line-height: 1.5;
+  --text-xs: 0.75rem;         /* 12px — helper text, dense table cells */
+  --text-xs--line-height: 1.6;
+  --text-sm: 0.875rem;        /* 14px — secondary body */
+  --text-sm--line-height: 1.65;
+  --text-base: 1rem;          /* 16px — body default */
+  --text-base--line-height: 1.7;
+  --text-lg: 1.125rem;        /* 18px — card titles */
+  --text-lg--line-height: 1.55;
+  --text-xl: 1.25rem;         /* 20px — section headings */
+  --text-xl--line-height: 1.45;
+  --text-2xl: 1.5rem;         /* 24px — page titles */
+  --text-2xl--line-height: 1.35;
+  --text-3xl: 1.875rem;       /* 30px — KPI figures */
+  --text-3xl--line-height: 1.25;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.2;
+
+  /* ---- Radius ---- */
+  --radius-control: 0.625rem; /* 10px — buttons, inputs, selects */
+  --radius-card: 0.875rem;    /* 14px — cards, list rows */
+  --radius-panel: 1.25rem;    /* 20px — page-level panels, modals */
+
+  /* ---- Elevation — one soft ramp, no coloured glows ---- */
+  --shadow-e1: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-e2: 0 1px 2px rgba(16, 24, 40, 0.05), 0 8px 24px -18px rgba(10, 26, 51, 0.22);
+  --shadow-e3: 0 1px 3px rgba(16, 24, 40, 0.06), 0 16px 36px -20px rgba(10, 26, 51, 0.26);
+  --shadow-e4: 0 2px 6px rgba(16, 24, 40, 0.06), 0 28px 60px -28px rgba(10, 26, 51, 0.3);
+
+  /* ---- Fonts ---- */
+  --font-sans: "IBM Plex Sans Arabic", "Almarai", sans-serif;
+  --font-display: "Almarai", "IBM Plex Sans Arabic", sans-serif;
+  --font-latin: "Archivo", "IBM Plex Sans Arabic", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* Legacy aliases — a large amount of existing CSS and inline `var(--x)` use
+   these names. Kept so the token rename is not a breaking change. */
 :root {
   --navy: #0A1A33;
   --navy-700: #20304C;
@@ -70,6 +182,13 @@ h3 {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
 }
 
+/* Tabular figures for any number that sits in a column or updates in place —
+   prices, counters, totals. Stops the layout jittering as values change. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
 .kicker {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 11px;
@@ -124,9 +243,22 @@ h3 {
   animation: usil-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Motion is fast and subtle, and never fights a user who has asked for less. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus is always visible and always the action colour, so keyboard users get
+   the same affordance everywhere. `:focus-visible` keeps it off mouse clicks. */
 :focus-visible {
   outline: 2px solid var(--action);
   outline-offset: 2px;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -221,4 +353,77 @@ html.usil-native .usil-safe-overlay {
   .grid-cols-1.sm\:grid-cols-2 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
+}
+
+/* Touch targets by INPUT TYPE, not by width.
+   Breakpoints assume a tablet is a small desktop, so `md:` controls sized for
+   a mouse (36px) were being served to iPads, where a finger needs ~44px. This
+   raises interactive controls on any coarse pointer at any width, and leaves
+   mouse users the tighter, denser desktop sizing they benefit from.
+   Scoped to real controls so it cannot stretch layout wrappers. */
+@media (pointer: coarse) {
+  button:not([data-dense]),
+  [role="button"]:not([data-dense]),
+  a[href]:not([data-dense]),
+  select,
+  summary {
+    min-height: 44px;
+  }
+
+  /* Inline links inside a paragraph must not become 44px blocks — they are
+     read, not tapped as standalone controls. */
+  p a[href],
+  li a[href],
+  span a[href] {
+    min-height: 0;
+  }
+}
+
+/* Line clamping used by card titles and list descriptions. */
+.line-clamp-1, .line-clamp-2, .line-clamp-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-1 { -webkit-line-clamp: 1; }
+.line-clamp-2 { -webkit-line-clamp: 2; }
+.line-clamp-3 { -webkit-line-clamp: 3; }
+
+/* ===== Shared motion primitives (fast, subtle, reusable) ===== */
+
+@keyframes usil-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes usil-pop-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes usil-shimmer {
+  100% { transform: translateX(-100%); }
+}
+
+.usil-fade-in { animation: usil-fade-in 0.15s ease-out both; }
+.usil-pop-in { animation: usil-pop-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Skeleton sheen. RTL-aware: the sweep travels with the reading direction. */
+.usil-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-line-soft, #F2F4F7);
+}
+.usil-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: usil-shimmer 1.4s infinite;
 }

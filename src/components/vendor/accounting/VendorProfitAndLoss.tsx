@@ -148,11 +148,11 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
       {/* Top Banner & Insight */}
       <div className="p-5 rounded-3xl bg-linear-to-l from-slate-900 via-slate-800 to-slate-900 text-white card-shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-bold border border-white/10">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-medium border border-white/10">
             <Sparkles className="w-3.5 h-3.5" />
             <span>قائمة الدخل والربحية الفورية • شهر أغسطس 2026</span>
           </div>
-          <h3 className="text-xl font-extrabold text-white">
+          <h3 className="text-xl font-bold text-white">
             بيان الأرباح والخسائر الشامل (P&L Income Statement)
           </h3>
           <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
@@ -165,8 +165,8 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
           <button
             onClick={handleExportExcel}
             disabled={isExporting}
-            className="px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition-all border border-emerald-400/30 cursor-pointer disabled:opacity-75"
-            title="تصدير تقرير قائمة الدخل والمصاريف والإيرادات كملف Excel (XLSX) معتمد"
+            className="px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs sm:text-sm font-medium flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition-all border border-emerald-400/30 cursor-pointer disabled:opacity-75"
+            title="تصدير تقرير قائمة الدخل والمصاريف والإيرادات كملف Excel (XLSX) معتمد" aria-label="تصدير تقرير قائمة الدخل والمصاريف والإيرادات كملف Excel (XLSX) معتمد"
           >
             {exportedSuccess ? (
               <>
@@ -183,11 +183,11 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
           </button>
 
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-left">
-            <span className="text-[11px] text-slate-400 block mb-1">هامش الربح الصافي</span>
-            <div className="text-2xl font-extrabold font-mono text-emerald-400">
+            <span className="text-2xs text-slate-400 block mb-1">هامش الربح الصافي</span>
+            <div className="text-2xl font-bold font-mono text-emerald-400">
               %{netMarginPercent.toFixed(1)}
             </div>
-            <span className="text-[10px] text-emerald-300/80 font-bold">معدل ممتاز</span>
+            <span className="text-2xs text-emerald-300/80 font-medium">معدل ممتاز</span>
           </div>
         </div>
       </div>
@@ -198,16 +198,16 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
         {/* Metric 1: Total Gross Revenue */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200 card-shadow space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-bold">إجمالي الإيرادات (المبيعات)</span>
+            <span className="text-xs text-slate-500 font-medium">إجمالي الإيرادات (المبيعات)</span>
             <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold font-mono text-slate-900">
+          <div className="text-2xl font-bold font-mono text-slate-900">
             {totalGrossRevenue.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-slate-500">ر.س</span>
           </div>
-          <div className="text-[11px] text-slate-500 flex items-center gap-1">
+          <div className="text-2xs text-slate-500 flex items-center gap-1">
             <span className="text-blue-600 font-bold">{bookings.length + posSales.length} عملية بيع</span>
             <span>(خارجي + كاشير + منصة)</span>
           </div>
@@ -216,16 +216,16 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
         {/* Metric 2: Direct Costs (COGS) */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200 card-shadow space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-bold">تكلفة تقديم الخدمات (COGS)</span>
+            <span className="text-xs text-slate-500 font-medium">تكلفة تقديم الخدمات (COGS)</span>
             <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
               <Receipt className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold font-mono text-amber-700">
+          <div className="text-2xl font-bold font-mono text-amber-700">
             {totalDirectCosts.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-slate-500">ر.س</span>
           </div>
-          <div className="text-[11px] text-slate-500">
+          <div className="text-2xs text-slate-500">
             خامات، عمالة مباشرة، وقود، ومستهلكات
           </div>
         </div>
@@ -233,16 +233,16 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
         {/* Metric 3: Gross Profit */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200 card-shadow space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-bold">إجمالي الربح التشغيلي</span>
+            <span className="text-xs text-slate-500 font-medium">إجمالي الربح التشغيلي</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <Scale className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold font-mono text-emerald-700">
+          <div className="text-2xl font-bold font-mono text-emerald-700">
             {grossProfit.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-slate-500">ر.س</span>
           </div>
-          <div className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+          <div className="text-2xs text-emerald-600 font-medium flex items-center gap-1">
             <span>هامش إجمالي: %{grossMarginPercent.toFixed(1)}</span>
           </div>
         </div>
@@ -250,16 +250,16 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
         {/* Metric 4: Net Profit (Final) */}
         <div className="p-5 rounded-2xl bg-emerald-950 text-white card-shadow space-y-2 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-emerald-300 font-bold">صافي الربح الحقيقي (Net Profit)</span>
+            <span className="text-xs text-emerald-300 font-medium">صافي الربح الحقيقي (Net Profit)</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-800 text-emerald-300 flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold font-mono text-white">
+          <div className="text-2xl font-bold font-mono text-white">
             {netIncome.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-emerald-300">ر.س</span>
           </div>
-          <div className="text-[11px] text-emerald-200 flex items-center justify-between">
+          <div className="text-2xs text-emerald-200 flex items-center justify-between">
             <span>بعد خصم كافة المصروفات</span>
             <span className="font-mono font-bold">%{netMarginPercent.toFixed(1)}</span>
           </div>
@@ -272,7 +272,7 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
         <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-blue-600" />
-            <h4 className="text-base font-extrabold text-slate-900">
+            <h4 className="text-base font-bold text-slate-900">
               جدول قائمة الدخل التفصيلية (Income Statement Breakdown)
             </h4>
           </div>
@@ -281,15 +281,15 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
             <button
               onClick={handleExportExcel}
               disabled={isExporting}
-              className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-              title="تصدير جدول الأرباح والخسائر إلى Excel"
+              className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="تصدير جدول الأرباح والخسائر إلى Excel" aria-label="تصدير جدول الأرباح والخسائر إلى Excel"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
               <span>تصدير التقرير (Excel)</span>
             </button>
             <button
               onClick={() => window.print()}
-              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors"
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors"
               title="طباعة تقرير قائمة الدخل"
             >
               <Printer className="w-3.5 h-3.5 text-slate-600" />
@@ -303,7 +303,7 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
           {/* SECTION 1: REVENUES */}
           <div className="bg-slate-50/80 px-6 py-2.5 font-bold text-slate-700 flex items-center justify-between">
             <span>1. الإيرادات التشغيلية والمبيعات (Revenues)</span>
-            <span className="font-mono text-slate-900 font-extrabold">
+            <span className="font-mono text-slate-900 font-bold">
               +{totalGrossRevenue.toLocaleString('ar-SA')} ر.س
             </span>
           </div>
@@ -332,7 +332,7 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
           {/* SECTION 2: COST OF GOODS & SERVICES (COGS) */}
           <div className="bg-amber-50/70 px-6 py-2.5 font-bold text-amber-900 flex items-center justify-between">
             <span>2. التكاليف المباشرة للمناسبات وتوريد الخدمات (Cost of Sales / COGS)</span>
-            <span className="font-mono text-amber-900 font-extrabold">
+            <span className="font-mono text-amber-900 font-bold">
               -{totalDirectCosts.toLocaleString('ar-SA')} ر.س
             </span>
           </div>
@@ -373,13 +373,13 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
           </div>
 
           {/* SUB-TOTAL: GROSS PROFIT */}
-          <div className="bg-emerald-50 px-6 py-3 font-extrabold text-emerald-950 flex items-center justify-between border-y border-emerald-200">
+          <div className="bg-emerald-50 px-6 py-3 font-bold text-emerald-950 flex items-center justify-between border-y border-emerald-200">
             <span>= إجمالي الربح التشغيلي (Gross Profit)</span>
             <div className="flex items-center gap-3">
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-bold">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-medium">
                 هامش %{grossMarginPercent.toFixed(1)}
               </span>
-              <span className="font-mono text-base text-emerald-800 font-extrabold">
+              <span className="font-mono text-base text-emerald-800 font-bold">
                 {grossProfit.toLocaleString('ar-SA')} ر.س
               </span>
             </div>
@@ -388,7 +388,7 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
           {/* SECTION 3: OPERATING EXPENSES (OPEX) */}
           <div className="bg-slate-50/80 px-6 py-2.5 font-bold text-slate-700 flex items-center justify-between">
             <span>3. المصروفات التشغيلية والإدارية (Operating Expenses / OPEX)</span>
-            <span className="font-mono text-slate-900 font-extrabold">
+            <span className="font-mono text-slate-900 font-bold">
               -{totalOperatingExpenses.toLocaleString('ar-SA')} ر.س
             </span>
           </div>
@@ -408,7 +408,7 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
           </div>
 
           {/* FINAL RESULT: NET PROFIT */}
-          <div className="bg-slate-900 text-white px-6 py-4 font-extrabold text-base flex items-center justify-between">
+          <div className="bg-slate-900 text-white px-6 py-4 font-bold text-base flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-emerald-400" />
               <span>صافي الدخل والربح الفعلي للمنشأة (Net Profit)</span>
@@ -417,7 +417,7 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
               <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 هامش الصافي %{netMarginPercent.toFixed(1)}
               </span>
-              <span className="font-mono text-xl text-emerald-400 font-black">
+              <span className="font-mono text-xl text-emerald-400 font-bold">
                 {netIncome.toLocaleString('ar-SA')} ر.س
               </span>
             </div>
@@ -433,12 +433,12 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <h5 className="text-xs sm:text-sm font-extrabold text-emerald-900">
+            <h5 className="text-xs sm:text-sm font-medium text-emerald-900">
               توفير مالي حقيقي بفضل أدوات يوصل المجانية (0% عمولة)
             </h5>
-            <p className="text-[11px] sm:text-xs text-emerald-800">
+            <p className="text-2xs sm:text-xs text-emerald-800">
               باستخدامك لكاشير المعرض، روابط البايو، وفواتير الهوية الخاصة، وفرت منشأتك{' '}
-              <strong className="font-mono underline font-extrabold">
+              <strong className="font-mono underline font-bold">
                 {commissionSavedOnZeroPercent.toLocaleString('ar-SA')} ر.س
               </strong>{' '}
               كانت ستستقطعها منصات وتطبيقات الوساطة التقليدية.

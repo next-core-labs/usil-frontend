@@ -56,10 +56,10 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
               className="w-14 h-14 rounded-2xl object-cover border border-white/20 bg-white"
             />
             <div className="space-y-0.5">
-              <span className="text-[10px] text-[#C0A16B] font-bold tracking-wide block">
+              <span className="text-2xs text-sand font-medium tracking-wide block">
                 تتبع المناسبة المباشر • {brandSettings.slogan}
               </span>
-              <h1 className="text-lg sm:text-xl font-extrabold text-white">
+              <h1 className="text-lg sm:text-xl font-bold text-white">
                 {brandSettings.brandName}
               </h1>
               <p className="text-xs text-white/80 font-mono">
@@ -71,7 +71,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
           <div className="flex items-center gap-2 relative z-10">
             <button
               onClick={handleCopyLink}
-              className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 border border-white/20 transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center gap-1.5 border border-white/20 transition-colors"
             >
               <Share2 className="w-3.5 h-3.5" />
               <span>{copiedLink ? 'تم النسخ!' : 'مشاركة التتبع'}</span>
@@ -80,7 +80,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
             {onClose && (
               <button
                 onClick={onClose}
-                className="px-3.5 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition-colors"
+                className="px-3.5 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-medium transition-colors"
               >
                 رجوع
               </button>
@@ -97,8 +97,8 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold text-slate-500">حالة المناسبة الحالية:</span>
-                <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span className="text-xs font-medium text-slate-500">حالة المناسبة الحالية:</span>
+                <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                   {tracking.status === 'preparing'
                     ? 'جاري تجهيز المعدات والطاقم'
                     : tracking.status === 'on_the_way'
@@ -114,8 +114,8 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
             </div>
 
             <div className="text-left font-mono">
-              <span className="text-[11px] text-slate-400 block">رمز التتبع المباشر:</span>
-              <span className="text-xs font-extrabold text-[#155EEF] bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 inline-block">
+              <span className="text-2xs text-slate-400 block">رمز التتبع المباشر:</span>
+              <span className="text-xs font-medium text-action bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 inline-block">
                 {tracking.trackingCode}
               </span>
             </div>
@@ -124,41 +124,41 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
           {/* Quick Event Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-0.5">
-              <span className="text-[10px] text-slate-500 font-bold flex items-center gap-1">
+              <span className="text-2xs text-slate-500 font-medium flex items-center gap-1">
                 <CalendarIcon className="w-3 h-3 text-slate-400" />
                 <span>تاريخ المناسبة</span>
               </span>
               <div className="font-bold text-slate-900">{tracking.eventDate}</div>
-              <span className="text-[10px] text-slate-500 font-mono">{tracking.eventTime}</span>
+              <span className="text-2xs text-slate-500 font-mono">{tracking.eventTime}</span>
             </div>
 
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-0.5">
-              <span className="text-[10px] text-slate-500 font-bold flex items-center gap-1">
+              <span className="text-2xs text-slate-500 font-medium flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-slate-400" />
                 <span>مقر الفعالية</span>
               </span>
               <div className="font-bold text-slate-900 truncate">{tracking.venueName}</div>
-              <span className="text-[10px] text-slate-500">{tracking.city}</span>
+              <span className="text-2xs text-slate-500">{tracking.city}</span>
             </div>
 
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-0.5">
-              <span className="text-[10px] text-slate-500 font-bold flex items-center gap-1">
+              <span className="text-2xs text-slate-500 font-medium flex items-center gap-1">
                 <Users className="w-3 h-3 text-slate-400" />
                 <span>الضيوف المعتمدين</span>
               </span>
               <div className="font-bold font-mono text-slate-900">{tracking.guestCount} شخص</div>
-              <span className="text-[10px] text-emerald-700 font-semibold">طاقم كافي</span>
+              <span className="text-2xs text-emerald-700 font-semibold">طاقم كافي</span>
             </div>
 
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-0.5">
-              <span className="text-[10px] text-slate-500 font-bold flex items-center gap-1">
+              <span className="text-2xs text-slate-500 font-medium flex items-center gap-1">
                 <ShieldCheck className="w-3 h-3 text-emerald-600" />
                 <span>حالة الدفع</span>
               </span>
-              <div className="font-bold font-mono text-[#155EEF]">
+              <div className="font-bold font-mono text-action">
                 {tracking.remainingBalance === 0 ? 'مدفوع بالكامل' : `متبقي ${tracking.remainingBalance} ر.س`}
               </div>
-              <span className="text-[10px] text-slate-500">تم دفع العربون</span>
+              <span className="text-2xs text-slate-500">تم دفع العربون</span>
             </div>
           </div>
         </div>
@@ -167,10 +167,10 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
         <div className="p-6 rounded-3xl bg-white border border-slate-200 card-shadow space-y-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#155EEF]" />
+              <Clock className="w-4 h-4 text-action" />
               <span>المخطط الزمني المباشر للمناسبة (Live Timeline)</span>
             </h3>
-            <span className="text-[11px] text-slate-500">تحديث فوري عبر النظام</span>
+            <span className="text-2xs text-slate-500">تحديث فوري عبر النظام</span>
           </div>
 
           <div className="relative pl-2 pr-4 space-y-6 before:absolute before:right-7 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">
@@ -183,25 +183,25 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
                     step.isCompleted
                       ? 'bg-emerald-600 text-white ring-4 ring-emerald-50'
                       : step.isCurrent
-                      ? 'bg-[#155EEF] text-white ring-4 ring-blue-100 animate-bounce'
+                      ? 'bg-action text-white ring-4 ring-blue-100 animate-bounce'
                       : 'bg-slate-200 text-slate-500'
                   }`}
                 >
                   {step.isCompleted ? (
                     <CheckCircle2 className="w-4 h-4" />
                   ) : (
-                    <span className="text-xs font-mono font-bold">{idx + 1}</span>
+                    <span className="text-xs font-mono font-medium">{idx + 1}</span>
                   )}
                 </div>
 
                 {/* Step Content */}
                 <div className="flex-1 min-w-0 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80 space-y-1">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <h4 className="text-xs font-bold text-slate-900">
+                    <h4 className="text-xs font-medium text-slate-900">
                       {step.title}
                     </h4>
                     {step.timestamp && (
-                      <span className="text-[10px] font-mono text-slate-500 font-semibold bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                      <span className="text-2xs font-mono text-slate-500 font-semibold bg-white px-2 py-0.5 rounded-md border border-slate-200">
                         {step.timestamp}
                       </span>
                     )}
@@ -210,7 +210,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
                     {step.description}
                   </p>
                   {step.badgeText && (
-                    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+                    <span className="inline-block text-2xs font-medium px-2 py-0.5 rounded bg-blue-100 text-blue-800">
                       {step.badgeText}
                     </span>
                   )}
@@ -225,7 +225,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
         {tracking.assignedSupervisor && (
           <div className="p-6 rounded-3xl bg-white border border-slate-200 card-shadow space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#155EEF]" />
+              <Users className="w-4 h-4 text-action" />
               <span>مشرف الضيافة الميداني المخصص لمناسبتكم</span>
             </h3>
 
@@ -237,13 +237,13 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
                   className="w-13 h-13 rounded-2xl object-cover border-2 border-white shadow-xs"
                 />
                 <div>
-                  <h4 className="text-sm font-extrabold text-slate-900">
+                  <h4 className="text-sm font-bold text-slate-900">
                     {tracking.assignedSupervisor.name}
                   </h4>
                   <p className="text-xs text-slate-500 font-medium">
                     {tracking.assignedSupervisor.role}
                   </p>
-                  <span className="text-[10px] text-emerald-700 font-bold">
+                  <span className="text-2xs text-emerald-700 font-medium">
                     جاهز للتواصل وتنسيق الدخول
                   </span>
                 </div>
@@ -252,7 +252,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
               <div className="flex items-center gap-2">
                 <a
                   href={`tel:${tracking.assignedSupervisor.phone}`}
-                  className="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-slate-800 transition-colors shadow-xs"
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-medium flex items-center gap-1.5 hover:bg-slate-800 transition-colors shadow-xs"
                 >
                   <Phone className="w-3.5 h-3.5 text-emerald-400" />
                   <span>اتصال مباشر</span>
@@ -264,7 +264,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-700 transition-colors shadow-xs"
+                  className="px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 hover:bg-emerald-700 transition-colors shadow-xs"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span>واتساب المشرف</span>
@@ -279,14 +279,14 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
           <div className="p-6 rounded-3xl bg-white border border-slate-200 card-shadow space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Navigation className="w-4 h-4 text-[#155EEF]" />
+                <Navigation className="w-4 h-4 text-action" />
                 <span>إحداثيات وموقع التوصيل المعتمد</span>
               </h3>
               <a
                 href={`https://maps.google.com/?q=${tracking.liveLocationCoordinates.lat},${tracking.liveLocationCoordinates.lng}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-[#155EEF] font-bold flex items-center gap-1 hover:underline"
+                className="text-xs text-action font-medium flex items-center gap-1 hover:underline"
               >
                 <span>فتح في خرائط Google</span>
                 <ExternalLink className="w-3 h-3" />
@@ -294,7 +294,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
             </div>
 
             <div className="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-200 text-xs text-blue-900 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#155EEF] shrink-0" />
+              <MapPin className="w-4 h-4 text-action shrink-0" />
               <span className="font-medium">{tracking.liveLocationCoordinates.addressText}</span>
             </div>
           </div>
@@ -304,7 +304,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
         {tracking.setupPhotos && tracking.setupPhotos.length > 0 && (
           <div className="p-6 rounded-3xl bg-white border border-slate-200 card-shadow space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Camera className="w-4 h-4 text-[#155EEF]" />
+              <Camera className="w-4 h-4 text-action" />
               <span>صور توثيق التجهيز الميداني المعتمد</span>
             </h3>
 
@@ -326,7 +326,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
           <p className="font-bold text-slate-700">
             {brandSettings.brandName} • خدمة عملاء وضيافة على مدار الساعة
           </p>
-          <p className="text-[11px]">
+          <p className="text-2xs">
             لأي استفسار أو تعديل في وقت التقديم، يرجى التواصل على {brandSettings.phone}
           </p>
         </div>

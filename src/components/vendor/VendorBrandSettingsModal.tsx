@@ -63,13 +63,13 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
       <div className="relative w-full max-w-4xl bg-white rounded-3xl border border-slate-200 card-shadow z-10 my-auto text-right overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-6 bg-[#0A1A33] text-white flex items-center justify-between shrink-0">
+        <div className="p-6 bg-navy text-white flex items-center justify-between shrink-0">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[#C0A16B] text-xs font-bold border border-white/10">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-sand text-xs font-medium border border-white/10">
               <Sparkles className="w-3.5 h-3.5" />
               <span>هوية المتجر الخاص (White-Label Branding)</span>
             </div>
-            <h3 className="text-xl font-black">
+            <h3 className="text-xl font-bold">
               تخصيص بيانات علامتك التجارية والفواتير
             </h3>
             <p className="text-xs text-slate-300 font-normal">
@@ -80,9 +80,7 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
           <button
             onClick={onClose}
             className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+           aria-label="إغلاق"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Tab Selection */}
@@ -91,7 +89,7 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
             onClick={() => setActiveTab('profile')}
             className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 ${
               activeTab === 'profile'
-                ? 'border-[#155EEF] text-[#155EEF]'
+                ? 'border-action text-action'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -103,7 +101,7 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
             onClick={() => setActiveTab('invoice')}
             className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 ${
               activeTab === 'invoice'
-                ? 'border-[#155EEF] text-[#155EEF]'
+                ? 'border-action text-action'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -115,7 +113,7 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
             onClick={() => setActiveTab('preview')}
             className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 ${
               activeTab === 'preview'
-                ? 'border-[#155EEF] text-[#155EEF]'
+                ? 'border-action text-action'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -131,7 +129,7 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
             <div className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                  <label className="block text-xs font-medium text-slate-800 mb-1">
                     اسم البراند / المنشأة (كما يظهر للعميل) *
                   </label>
                   <input
@@ -139,26 +137,26 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
                     required
                     value={formData.brandName}
                     onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-bold focus:bg-white focus:border-[#155EEF] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-medium focus:bg-white focus:border-action focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                  <label className="block text-xs font-medium text-slate-800 mb-1">
                     الشعار اللفظي (Slogan)
                   </label>
                   <input
                     type="text"
                     value={formData.slogan}
                     onChange={(e) => setFormData({ ...formData, slogan: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-medium focus:bg-white focus:border-[#155EEF] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-medium focus:bg-white focus:border-action focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                  <label className="block text-xs font-medium text-slate-800 mb-1">
                     رقم السجل التجاري / وثيقة العمل الحر *
                   </label>
                   <input
@@ -166,12 +164,12 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
                     required
                     value={formData.crNumber}
                     onChange={(e) => setFormData({ ...formData, crNumber: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#155EEF] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-medium text-slate-900 focus:bg-white focus:border-action focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                  <label className="block text-xs font-medium text-slate-800 mb-1">
                     الرقم الضريبي (VAT Number - 15 رقم) *
                   </label>
                   <input
@@ -179,84 +177,84 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
                     required
                     value={formData.vatNumber}
                     onChange={(e) => setFormData({ ...formData, vatNumber: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#155EEF] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-medium text-slate-900 focus:bg-white focus:border-action focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                  <label className="block text-xs font-medium text-slate-800 mb-1">
                     رابط صورة شعار المتجر (Logo URL)
                   </label>
                   <input
                     type="url"
                     value={formData.logoUrl}
                     onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-[#155EEF] focus:outline-none font-mono text-left"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-action focus:outline-none font-mono text-left"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                  <label className="block text-xs font-medium text-slate-800 mb-1">
                     رابط صورة الختم الرسمي / التوقيع (Stamp URL)
                   </label>
                   <input
                     type="url"
                     value={formData.stampUrl || ''}
                     onChange={(e) => setFormData({ ...formData, stampUrl: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-[#155EEF] focus:outline-none font-mono text-left"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-action focus:outline-none font-mono text-left"
                   />
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                  <label className="block text-xs font-medium text-slate-800 mb-1">
                     رقم الهاتف / الواتساب
                   </label>
                   <input
                     type="text"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-bold focus:bg-white focus:border-[#155EEF] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-medium focus:bg-white focus:border-action focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                  <label className="block text-xs font-medium text-slate-800 mb-1">
                     البريد الإلكتروني
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-[#155EEF] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-action focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                  <label className="block text-xs font-medium text-slate-800 mb-1">
                     المدينة والمقر الرئيسي
                   </label>
                   <input
                     type="text"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-bold focus:bg-white focus:border-[#155EEF] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-medium focus:bg-white focus:border-action focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">
+                <label className="block text-xs font-medium text-slate-800 mb-1">
                   العنوان الوطني الكامل للمنشأة
                 </label>
                 <input
                   type="text"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-[#155EEF] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-action focus:outline-none"
                 />
               </div>
 
@@ -269,12 +267,12 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Palette className="w-4 h-4 text-[#155EEF]" />
-                    <span className="text-xs font-bold text-slate-900">لون الهوية الرئيسي للفواتير والإيصالات</span>
+                    <Palette className="w-4 h-4 text-action" />
+                    <span className="text-xs font-medium text-slate-900">لون الهوية الرئيسي للفواتير والإيصالات</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-lg border border-slate-300" style={{ backgroundColor: formData.primaryColor }} />
-                    <span className="text-xs font-mono font-bold text-slate-700">{formData.primaryColor}</span>
+                    <span className="text-xs font-mono font-medium text-slate-700">{formData.primaryColor}</span>
                   </div>
                 </div>
 
@@ -305,73 +303,73 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
               {/* Bank Transfer Details for Invoices */}
               <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-3">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-[#155EEF]" />
-                  <h4 className="text-xs font-bold text-blue-900">
+                  <CreditCard className="w-4 h-4 text-action" />
+                  <h4 className="text-xs font-medium text-blue-900">
                     بيانات الحساب البنكي لاستقبال التحويلات المباشرة من العملاء
                   </h4>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    <label className="block text-2xs font-medium text-slate-700 mb-1">
                       اسم البنك
                     </label>
                     <input
                       type="text"
                       value={formData.bankName}
                       onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    <label className="block text-2xs font-medium text-slate-700 mb-1">
                       اسم المستفيد / الحساب
                     </label>
                     <input
                       type="text"
                       value={formData.accountHolder}
                       onChange={(e) => setFormData({ ...formData, accountHolder: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  <label className="block text-2xs font-medium text-slate-700 mb-1">
                     رقم الآيبان (IBAN)
                   </label>
                   <input
                     type="text"
                     value={formData.iban}
                     onChange={(e) => setFormData({ ...formData, iban: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-mono font-bold text-slate-900 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-mono font-medium text-slate-900 focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Custom Header & Terms */}
               <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">
+                <label className="block text-xs font-medium text-slate-800 mb-1">
                   رسالة الترحيب في رأس الفاتورة (Header Note)
                 </label>
                 <input
                   type="text"
                   value={formData.invoiceHeaderNote}
                   onChange={(e) => setFormData({ ...formData, invoiceHeaderNote: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-[#155EEF] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-action focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">
+                <label className="block text-xs font-medium text-slate-800 mb-1">
                   شروط وأحكام التوريد في أسفل الفاتورة (Terms & Conditions)
                 </label>
                 <textarea
                   rows={4}
                   value={formData.invoiceFooterNotes}
                   onChange={(e) => setFormData({ ...formData, invoiceFooterNotes: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-[#155EEF] focus:outline-none leading-relaxed"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-action focus:outline-none leading-relaxed"
                 />
               </div>
 
@@ -393,15 +391,15 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
                     className="w-12 h-12 rounded-xl object-cover border border-white/20 bg-white"
                   />
                   <div>
-                    <h4 className="font-extrabold text-sm">{formData.brandName}</h4>
-                    <p className="text-[11px] text-white/80">{formData.slogan}</p>
-                    <span className="text-[10px] text-white/70 block font-mono">س.ت: {formData.crNumber} | ضريبي: {formData.vatNumber}</span>
+                    <h4 className="font-bold text-sm">{formData.brandName}</h4>
+                    <p className="text-2xs text-white/80">{formData.slogan}</p>
+                    <span className="text-2xs text-white/70 block font-mono">س.ت: {formData.crNumber} | ضريبي: {formData.vatNumber}</span>
                   </div>
                 </div>
 
                 <div className="text-left font-mono text-xs">
                   <div className="font-bold text-white">فاتورة ضريبية مبسطة</div>
-                  <div className="text-white/70 text-[10px]">INV-2026-SAMPLE</div>
+                  <div className="text-white/70 text-2xs">INV-2026-SAMPLE</div>
                 </div>
               </div>
 
@@ -425,7 +423,7 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
                       alt="ختم المنشأة"
                       className="w-16 h-16 object-contain mix-blend-multiply opacity-85 mx-auto"
                     />
-                    <span className="text-[10px] text-slate-500 font-bold block">الختم والتوقيع الرسمي</span>
+                    <span className="text-2xs text-slate-500 font-medium block">الختم والتوقيع الرسمي</span>
                   </div>
                 )}
               </div>
@@ -435,7 +433,7 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
 
           {/* Action Bar */}
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-emerald-800 font-bold">
+            <div className="flex items-center gap-2 text-xs text-emerald-800 font-medium">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
               <span>يتم حفظ وتطبيق الهوية فورياً على جميع الفواتير والكاشير</span>
             </div>
@@ -444,14 +442,14 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-100"
               >
                 إلغاء
               </button>
 
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] text-white text-xs sm:text-sm font-bold shadow-xs transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white text-xs sm:text-sm font-medium shadow-xs transition-colors"
               >
                 حفظ بيانات الهوية والبراند
               </button>
@@ -459,7 +457,7 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
           </div>
 
           {showSavedToast && (
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold text-center">
+            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium text-center">
               ✓ تم حفظ وتحديث بيانات العلامة التجارية بنجاح
             </div>
           )}

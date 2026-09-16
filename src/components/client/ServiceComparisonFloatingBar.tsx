@@ -42,14 +42,14 @@ export const ServiceComparisonFloatingBar: React.FC<ServiceComparisonFloatingBar
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-xs sm:text-sm text-white">
+                <span className="font-medium text-xs sm:text-sm text-white">
                   مقارنة الخدمات
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-blue-500 text-white font-mono text-[11px] font-black">
+                <span className="px-2 py-0.5 rounded-full bg-blue-500 text-white font-mono text-2xs font-medium">
                   {comparedServices.length}/4
                 </span>
               </div>
-              <span className="text-[11px] text-slate-400 block -mt-0.5">
+              <span className="text-2xs text-slate-400 block -mt-0.5">
                 {comparedServices.length === 1
                   ? 'اختر خدمة أخرى للمقارنة جنباً إلى جنب'
                   : 'جاهز للمقارنة الفنية الفورية'}
@@ -71,7 +71,7 @@ export const ServiceComparisonFloatingBar: React.FC<ServiceComparisonFloatingBar
                       e.stopPropagation();
                       onRemoveService(srv.id);
                     }}
-                    className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center text-[10px] shadow-xs"
+                    className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center text-2xs shadow-xs"
                     title="إزالة"
                   >
                     <X className="w-2.5 h-2.5 stroke-[3]" />
@@ -87,7 +87,7 @@ export const ServiceComparisonFloatingBar: React.FC<ServiceComparisonFloatingBar
               type="button"
               onClick={onClearAll}
               className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
-              title="إفراغ قائمة المقارنة"
+              title="إفراغ قائمة المقارنة" aria-label="إفراغ قائمة المقارنة"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -95,7 +95,7 @@ export const ServiceComparisonFloatingBar: React.FC<ServiceComparisonFloatingBar
             <button
               type="button"
               onClick={onOpenCompareModal}
-              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-950/50 transition-all border border-blue-400/30 cursor-pointer"
+              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-950/50 transition-all border border-blue-400/30 cursor-pointer"
             >
               <span>عرض جدول المقارنة ({comparedServices.length})</span>
               <ArrowLeft className="w-4 h-4" />

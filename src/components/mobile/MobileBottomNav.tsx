@@ -40,7 +40,7 @@ type NavItem = {
 
 const TONE_CLASS: Record<NonNullable<NavItem['tone']>, string> = {
   default: 'text-slate-700 active:bg-slate-100',
-  accent: 'text-[#155EEF] active:bg-blue-50',
+  accent: 'text-action active:bg-blue-50',
   crew: 'text-emerald-700 active:bg-emerald-50',
 };
 
@@ -57,7 +57,7 @@ const NavSlot: React.FC<{ item: NavItem }> = ({ item }) => {
       }`}
     >
       <Icon className="w-5 h-5 shrink-0" />
-      <span className="text-[10px] font-bold leading-tight truncate max-w-full">{item.short}</span>
+      <span className="text-2xs font-medium leading-tight truncate max-w-full">{item.short}</span>
     </motion.button>
   );
 };
@@ -136,14 +136,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           whileTap={{ scale: 0.92 }}
           onClick={onOpenCart}
           aria-label={cartCount > 0 ? `سلة الحجز — ${cartCount} عناصر` : 'سلة الحجز'}
-          className="absolute left-1/2 -translate-x-1/2 -top-5 w-14 h-14 rounded-full bg-gradient-to-tr from-[#0A1A33] via-[#155EEF] to-[#2E90FA] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(21,94,239,0.4)] border-4 border-white active:shadow-inner cursor-pointer pointer-events-auto"
+          className="absolute left-1/2 -translate-x-1/2 -top-5 w-14 h-14 rounded-full bg-gradient-to-tr from-navy via-action to-[#2E90FA] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(21,94,239,0.4)] border-4 border-white active:shadow-inner cursor-pointer pointer-events-auto"
         >
           <ShoppingBag className="w-6 h-6" />
           {cartCount > 0 && (
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-[#D92D20] text-white text-[10px] font-black flex items-center justify-center border-2 border-white"
+              className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-danger text-white text-2xs font-medium flex items-center justify-center border-2 border-white"
             >
               {cartCount}
             </motion.span>

@@ -67,11 +67,11 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
       {/* Top Banner */}
       <div className="p-5 rounded-3xl bg-white border border-slate-200 card-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 text-xs font-bold border border-emerald-200">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 text-xs font-medium border border-emerald-200">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             <span>نظام إقرار ضريبة القيمة المضافة ZATCA التلقائي (15% VAT Ledger)</span>
           </div>
-          <h3 className="text-xl font-extrabold text-slate-900">
+          <h3 className="text-xl font-bold text-slate-900">
             ملخص الإقرار الضريبي لهيئة الزكاة والضريبة والجمارك
           </h3>
           <p className="text-xs sm:text-sm text-slate-600">
@@ -84,7 +84,7 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
           <select
             value={selectedQuarter}
             onChange={(e) => setSelectedQuarter(e.target.value as any)}
-            className="px-3 py-2 rounded-xl bg-slate-100 font-bold text-xs border border-slate-200 text-slate-800 focus:outline-none"
+            className="px-3 py-2 rounded-xl bg-slate-100 font-medium text-xs border border-slate-200 text-slate-800 focus:outline-none"
           >
             <option value="Q3">الربع الثالث 2026 (يوليو - سبتمبر)</option>
             <option value="Q2">الربع الثاني 2026 (أبريل - يونيو)</option>
@@ -94,7 +94,7 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
 
           <button
             onClick={() => window.print()}
-            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs flex items-center gap-1.5 shadow-xs transition-colors"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>طباعة الإقرار</span>
@@ -108,14 +108,14 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
         {/* Output VAT (المبيعات) */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200 card-shadow space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-bold">1. ضريبة المخرجات المحصلة (المبيعات)</span>
-            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold">15% VAT</span>
+            <span className="text-xs text-slate-500 font-medium">1. ضريبة المخرجات المحصلة (المبيعات)</span>
+            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-2xs font-medium">15% VAT</span>
           </div>
-          <div className="text-2xl font-extrabold font-mono text-slate-900">
+          <div className="text-2xl font-bold font-mono text-slate-900">
             {totalSalesOutputTax.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}{' '}
             <span className="text-xs font-sans text-slate-500">ر.س</span>
           </div>
-          <div className="text-[11px] text-slate-500">
+          <div className="text-2xs text-slate-500">
             من إجمالي مبيعات: {totalTaxableSales.toLocaleString('ar-SA')} ر.س
           </div>
         </div>
@@ -123,14 +123,14 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
         {/* Input VAT (المشتريات) */}
         <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 card-shadow space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-emerald-900 font-bold">2. ضريبة المدخلات القابلة للخصم (المشتريات)</span>
+            <span className="text-xs text-emerald-900 font-medium">2. ضريبة المدخلات القابلة للخصم (المشتريات)</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-extrabold font-mono text-emerald-950">
+          <div className="text-2xl font-bold font-mono text-emerald-950">
             {purchasesInputTax.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}{' '}
             <span className="text-xs font-sans text-emerald-800">ر.س</span>
           </div>
-          <div className="text-[11px] text-emerald-800">
+          <div className="text-2xs text-emerald-800">
             من مشتريات خاضعة: {taxablePurchases.toLocaleString('ar-SA')} ر.س
           </div>
         </div>
@@ -138,14 +138,14 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
         {/* Net VAT Payable */}
         <div className="p-5 rounded-2xl bg-slate-900 text-white card-shadow space-y-1.5 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-emerald-400 font-bold">3. صافي الضريبة المستحقة للهيئة (ZATCA)</span>
+            <span className="text-xs text-emerald-400 font-medium">3. صافي الضريبة المستحقة للهيئة (ZATCA)</span>
             <Building className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="text-2xl font-extrabold font-mono text-white">
+          <div className="text-2xl font-bold font-mono text-white">
             {netVatPayable.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}{' '}
             <span className="text-xs font-sans text-emerald-400">ر.س</span>
           </div>
-          <div className="text-[11px] text-slate-300">
+          <div className="text-2xs text-slate-300">
             المبلغ الواجب سداده عبر سداد قبل نهاية الفترة
           </div>
         </div>
@@ -160,7 +160,7 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <FileCheck2 className="w-5 h-5 text-emerald-600" />
-              <h4 className="text-base font-extrabold text-slate-900">
+              <h4 className="text-base font-bold text-slate-900">
                 نموذج إقرار ضريبة القيمة المضافة - هيئة الزكاة والضريبة والجمارك
               </h4>
             </div>
@@ -169,7 +169,7 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
             </p>
           </div>
 
-          <div className="text-xs text-slate-500 font-bold bg-white px-3 py-1.5 rounded-xl border border-slate-200">
+          <div className="text-xs text-slate-500 font-medium bg-white px-3 py-1.5 rounded-xl border border-slate-200">
             الفترة الضريبية: الربع الثالث 2026
           </div>
         </div>
@@ -200,7 +200,7 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
                 <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-500">1</td>
                 <td className="py-3.5 px-4">
                   <div className="font-bold text-slate-900">المبيعات الخاضعة للنسبة الأساسية (15%)</div>
-                  <div className="text-[10px] text-slate-500">مبيعات عقود الضيافة، الكاشير، والبوفيهات</div>
+                  <div className="text-2xs text-slate-500">مبيعات عقود الضيافة، الكاشير، والبوفيهات</div>
                 </td>
                 <td className="py-3.5 px-4 font-mono font-bold text-slate-800">
                   {totalTaxableSales.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
@@ -211,7 +211,7 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
                 <td className="py-3.5 px-4 text-center">
                   <button
                     onClick={() => handleCopyValue(totalSalesOutputTax.toFixed(2), 'sales_vat')}
-                    className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[10px] font-bold text-slate-700 inline-flex items-center gap-1"
+                    className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-2xs font-medium text-slate-700 inline-flex items-center gap-1"
                   >
                     <Copy className="w-3 h-3" />
                     <span>{copiedField === 'sales_vat' ? 'تم النسخ!' : 'نسخ'}</span>
@@ -230,11 +230,11 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
               {/* Total Sales Output VAT */}
               <tr className="bg-blue-50/60 font-bold">
                 <td className="py-3 px-4 text-center text-blue-900">3</td>
-                <td className="py-3 px-4 text-blue-950 font-extrabold">إجمالي ضريبة المخرجات المحصلة</td>
+                <td className="py-3 px-4 text-blue-950 font-bold">إجمالي ضريبة المخرجات المحصلة</td>
                 <td className="py-3 px-4 font-mono font-bold text-blue-950">
                   {totalTaxableSales.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                 </td>
-                <td className="py-3 px-4 font-mono font-extrabold text-blue-950 text-sm">
+                <td className="py-3 px-4 font-mono font-bold text-blue-950 text-sm">
                   {totalSalesOutputTax.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                 </td>
                 <td className="py-3 px-4 text-center text-blue-800 font-bold">✓ معتمد</td>
@@ -251,7 +251,7 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
                 <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-500">4</td>
                 <td className="py-3.5 px-4">
                   <div className="font-bold text-slate-900">المشتريات الخاضعة للنسبة الأساسية (15%)</div>
-                  <div className="text-[10px] text-slate-500">فواتير بن، وقود، صيانة، وتغليف ضريبية من الموردين</div>
+                  <div className="text-2xs text-slate-500">فواتير بن، وقود، صيانة، وتغليف ضريبية من الموردين</div>
                 </td>
                 <td className="py-3.5 px-4 font-mono font-bold text-slate-800">
                   {taxablePurchases.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
@@ -262,7 +262,7 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
                 <td className="py-3.5 px-4 text-center">
                   <button
                     onClick={() => handleCopyValue(purchasesInputTax.toFixed(2), 'purchases_vat')}
-                    className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[10px] font-bold text-slate-700 inline-flex items-center gap-1"
+                    className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-2xs font-medium text-slate-700 inline-flex items-center gap-1"
                   >
                     <Copy className="w-3 h-3" />
                     <span>{copiedField === 'purchases_vat' ? 'تم النسخ!' : 'نسخ'}</span>
@@ -281,30 +281,30 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
               {/* Total Input VAT */}
               <tr className="bg-emerald-50/60 font-bold">
                 <td className="py-3 px-4 text-center text-emerald-900">6</td>
-                <td className="py-3 px-4 text-emerald-950 font-extrabold">إجمالي ضريبة المدخلات القابلة للخصم</td>
+                <td className="py-3 px-4 text-emerald-950 font-bold">إجمالي ضريبة المدخلات القابلة للخصم</td>
                 <td className="py-3 px-4 font-mono font-bold text-emerald-950">
                   {(taxablePurchases + exemptPurchases).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                 </td>
-                <td className="py-3 px-4 font-mono font-extrabold text-emerald-950 text-sm">
+                <td className="py-3 px-4 font-mono font-bold text-emerald-950 text-sm">
                   {purchasesInputTax.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                 </td>
                 <td className="py-3 px-4 text-center text-emerald-800 font-bold">✓ خصم معتمد</td>
               </tr>
 
               {/* FINAL RESULT: NET VAT PAYABLE */}
-              <tr className="bg-slate-900 text-white font-extrabold">
+              <tr className="bg-slate-900 text-white font-bold">
                 <td className="py-4 px-4 text-center text-emerald-400 font-mono text-base">7</td>
                 <td className="py-4 px-4 text-base">
                   صافي ضريبة القيمة المضافة المستحقة للسداد (بند 3 - بند 6)
                 </td>
                 <td className="py-4 px-4 font-mono text-slate-400">-</td>
-                <td className="py-4 px-4 font-mono text-xl text-emerald-400 font-black">
+                <td className="py-4 px-4 font-mono text-xl text-emerald-400 font-bold">
                   {netVatPayable.toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ر.س
                 </td>
                 <td className="py-4 px-4 text-center">
                   <button
                     onClick={() => handleCopyValue(netVatPayable.toFixed(2), 'net_vat')}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1 shadow-xs"
+                    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium inline-flex items-center gap-1 shadow-xs"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>{copiedField === 'net_vat' ? 'تم النسخ!' : 'نسخ المبلغ للسداد'}</span>
@@ -322,7 +322,7 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
       <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-950 flex items-start gap-3 text-xs">
         <HelpCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <strong className="font-extrabold block text-blue-900">
+          <strong className="font-bold block text-blue-900">
             جاهزية كاملة للرفع على بوابة هيئة الزكاة والضريبة والجمارك (ZATCA Portal Ready)
           </strong>
           <p className="text-blue-800 leading-relaxed">

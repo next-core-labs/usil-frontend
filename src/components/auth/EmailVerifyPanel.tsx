@@ -129,7 +129,7 @@ export function EmailVerifyPanel({
     <form onSubmit={submit} className="space-y-4 text-right">
       <div className="rounded-2xl bg-slate-50 border border-slate-200 px-3 py-3 text-xs text-slate-600 font-medium leading-relaxed">
         <p className="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-          <ShieldCheck className="w-4 h-4 text-[#155EEF]" />
+          <ShieldCheck className="w-4 h-4 text-action" />
           أدخل رمز التأكيد
         </p>
         {emailSent ? (
@@ -144,8 +144,8 @@ export function EmailVerifyPanel({
 
       {onceCode ? (
         <div className="rounded-2xl bg-amber-50 border border-amber-200 px-3 py-3">
-          <p className="text-[11px] font-bold text-amber-900 mb-1">رمز التأكيد (مرة واحدة في هذه الجلسة)</p>
-          <p className="text-2xl font-mono font-black tracking-[0.35em] text-[#0A1A33] text-center" dir="ltr">
+          <p className="text-2xs font-medium text-amber-900 mb-1">رمز التأكيد (مرة واحدة في هذه الجلسة)</p>
+          <p className="text-2xl font-mono font-bold tracking-[0.35em] text-navy text-center" dir="ltr">
             {onceCode}
           </p>
         </div>
@@ -153,7 +153,7 @@ export function EmailVerifyPanel({
 
       {useBoxes ? (
         <div>
-          <label className="block text-center text-xs font-bold text-slate-700 mb-3">رمز التأكيد</label>
+          <label className="block text-center text-xs font-medium text-slate-700 mb-3">رمز التأكيد</label>
           <div className="flex items-center justify-center gap-1.5 sm:gap-2" dir="ltr">
             {digits.map((digit, idx) => (
               <input
@@ -173,14 +173,14 @@ export function EmailVerifyPanel({
                   }
                 }}
                 aria-label={`خانة ${idx + 1} من رمز التأكيد`}
-                className="w-10 h-12 sm:w-11 sm:h-14 text-center text-xl font-black font-mono rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-[#155EEF] focus:outline-none text-slate-900"
+                className="w-10 h-12 sm:w-11 sm:h-14 text-center text-xl font-bold font-mono rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-action focus:outline-none text-slate-900"
               />
             ))}
           </div>
           <button
             type="button"
             onClick={() => setUseBoxes(false)}
-            className="mt-2 w-full text-[11px] font-bold text-slate-500 hover:text-slate-800"
+            className="mt-2 w-full text-2xs font-medium text-slate-500 hover:text-slate-800"
           >
             أو اكتب الرمز في خانة واحدة
           </button>
@@ -196,7 +196,7 @@ export function EmailVerifyPanel({
             onChange={(e) => setSingle(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="••••••"
             dir="ltr"
-            className="w-full bg-[#F7F8FA] border border-[#E4E7EC] rounded-xl px-4 py-3 text-center text-lg font-mono font-black tracking-[0.4em] text-[#101828] focus:outline-none focus:bg-white focus:border-[#155EEF]"
+            className="w-full bg-paper border border-line rounded-xl px-4 py-3 text-center text-lg font-mono font-bold tracking-[0.4em] text-ink focus:outline-none focus:bg-white focus:border-action"
           />
         </label>
       )}
@@ -217,7 +217,7 @@ export function EmailVerifyPanel({
       <button
         type="submit"
         disabled={loading}
-        className="w-full min-h-11 bg-[#155EEF] hover:bg-[#0F45B5] disabled:opacity-60 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2"
+        className="w-full min-h-11 bg-action hover:bg-action-hover disabled:opacity-60 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2"
       >
         {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
         {loading ? 'جارٍ التأكيد…' : 'تأكيد'}
@@ -227,7 +227,7 @@ export function EmailVerifyPanel({
         type="button"
         onClick={resend}
         disabled={resending}
-        className="w-full min-h-11 text-[13px] font-bold text-[#155EEF] hover:underline disabled:opacity-60 flex items-center justify-center gap-1.5"
+        className="w-full min-h-11 text-sm font-bold text-action hover:underline disabled:opacity-60 flex items-center justify-center gap-1.5"
       >
         {resending ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
         إعادة إرسال

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { controlClass } from '../ui/Field';
 import { ArrowLeft, ArrowRight, CheckCircle2, Store, X, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { UsilLockup } from '../UsilLockup';
 import { emptyVendorRegisterForm, PROJECT_TYPES, SAUDI_BANKS, type VendorRegisterForm } from '../../data/vendorOnboarding';
@@ -11,8 +12,7 @@ import type { SocialNetwork } from '../../contracts/vendors/vendor-socials';
 import type { VendorOwnProfile } from '../../contracts/vendors/vendor-profile';
 import type { SessionUser } from '../../LoginScreen';
 
-const inputClass =
-  'w-full bg-[#F7F8FA] border border-[#E4E7EC] rounded-xl px-4 py-3 text-sm text-[#101828] placeholder:text-[#98A2B3] focus:outline-none focus:bg-white focus:border-[#155EEF]';
+const inputClass = controlClass;
 
 export function VendorRegisterWizard({
   onClose,
@@ -148,9 +148,9 @@ export function VendorRegisterWizard({
   };
 
   return (
-    <div dir="rtl" className="fixed inset-0 z-[90] bg-[#0A1A33]/80 backdrop-blur-sm overflow-y-auto usil-safe-overlay">
+    <div dir="rtl" className="fixed inset-0 z-[90] bg-navy/80 backdrop-blur-sm overflow-y-auto usil-safe-overlay">
       <div className="min-h-full flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl bg-white rounded-3xl border border-[#E4E7EC] shadow-2xl relative">
+        <div className="w-full max-w-2xl bg-white rounded-3xl border border-line shadow-2xl relative">
           <button
             type="button"
             onClick={onClose}
@@ -164,12 +164,12 @@ export function VendorRegisterWizard({
             <div className="flex items-center gap-3 mb-4">
               <UsilLockup compact />
               <div>
-                <p className="text-[11px] font-bold text-[#155EEF]">انضمام مورّد — مراجعة قبل التفعيل</p>
-                <h2 className="text-xl font-black text-[#0A1A33]">تسجيل مورد جديد</h2>
+                <p className="text-2xs font-medium text-action">انضمام مورّد — مراجعة قبل التفعيل</p>
+                <h2 className="text-xl font-bold text-navy">تسجيل مورد جديد</h2>
               </div>
             </div>
-            <div className="mb-5 rounded-xl border border-[#E4E7EC] bg-[#F7F8FA] p-3 text-[11px] text-[#344054] leading-relaxed">
-              <p className="font-extrabold text-[#0A1A33] mb-1">الحساب يبقى معلّقًا حتى موافقة الإدارة.</p>
+            <div className="mb-5 rounded-xl border border-line bg-paper p-3 text-2xs text-ink-1 leading-relaxed">
+              <p className="font-bold text-navy mb-1">الحساب يبقى معلّقًا حتى موافقة الإدارة.</p>
               <p>
                 جهّز للرفع عند المراجعة: السجل التجاري أو وثيقة العمل الحر، رخصة البلدية، وتصريح المطبخ من الغذاء والدواء إن كنت تقدّم بوفيه أو طعامًا. يوصل وسيط توريد — لا ننفّذ المناسبة نيابة عنك.
               </p>
@@ -181,20 +181,20 @@ export function VendorRegisterWizard({
                   <div className="w-14 h-14 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
                     <CheckCircle2 className="w-7 h-7" />
                   </div>
-                  <h3 className="text-lg font-black">هذا ملفك من اللي سجّلته</h3>
+                  <h3 className="text-lg font-bold">هذا ملفك من اللي سجّلته</h3>
                   <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
                     حفظنا منتجك بصورته وسعره. يظهر في السوق بعد موافقة الإدارة — بدون صور أو أسعار وهمية.
                   </p>
                 </div>
                 {ownProfile ? <VendorOwnFileCard profile={ownProfile} /> : null}
-                <button type="button" onClick={onClose} className="w-full mt-2 px-5 py-2.5 rounded-xl bg-[#155EEF] text-white text-sm font-bold">
+                <button type="button" onClick={onClose} className="w-full mt-2 px-5 py-2.5 rounded-xl bg-action text-white text-sm font-bold">
                   حسناً
                 </button>
                 {onOpenCourierRegister ? (
                   <button
                     type="button"
                     onClick={onOpenCourierRegister}
-                    className="block mx-auto text-[12px] font-bold text-[#155EEF]"
+                    className="block mx-auto text-xs font-medium text-action"
                   >
                     أو سجّل كمندوب توصيل
                   </button>
@@ -202,12 +202,12 @@ export function VendorRegisterWizard({
               </div>
             ) : (
               <form onSubmit={submit} className="space-y-4">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
-                  <span className={`px-3 py-1 rounded-full ${step === 1 ? 'bg-[#155EEF] text-white' : 'bg-slate-100 text-slate-500'}`}>1. بيانات المورّد</span>
+                <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+                  <span className={`px-3 py-1 rounded-full ${step === 1 ? 'bg-action text-white' : 'bg-slate-100 text-slate-500'}`}>1. بيانات المورّد</span>
                   <span className="text-slate-300">—</span>
-                  <span className={`px-3 py-1 rounded-full ${step === 2 ? 'bg-[#155EEF] text-white' : 'bg-slate-100 text-slate-500'}`}>2. المشروع والحساب</span>
+                  <span className={`px-3 py-1 rounded-full ${step === 2 ? 'bg-action text-white' : 'bg-slate-100 text-slate-500'}`}>2. المشروع والحساب</span>
                   <span className="text-slate-300">—</span>
-                  <span className={`px-3 py-1 rounded-full ${step === 3 ? 'bg-[#155EEF] text-white' : 'bg-slate-100 text-slate-500'}`}>3. المنتج والسعر</span>
+                  <span className={`px-3 py-1 rounded-full ${step === 3 ? 'bg-action text-white' : 'bg-slate-100 text-slate-500'}`}>3. المنتج والسعر</span>
                 </div>
 
                 {step === 1 ? (
@@ -264,7 +264,7 @@ export function VendorRegisterWizard({
                             reader.readAsDataURL(file);
                           }}
                         />
-                        <p className="text-[11px] text-slate-500 mt-1">اختياري. إن ما رفعت شعاراً ما نولّد صورة وهمية.</p>
+                        <p className="text-2xs text-slate-500 mt-1">اختياري. إن ما رفعت شعاراً ما نولّد صورة وهمية.</p>
                         {form.logoDataUrl ? (
                           <img src={form.logoDataUrl} alt="شعار المشروع" className="mt-2 w-16 h-16 rounded-xl object-cover border border-slate-200" />
                         ) : null}
@@ -334,8 +334,8 @@ export function VendorRegisterWizard({
                       onConfirmedOwnChange={(value) => set('confirmedOwn', value)}
                       requireOneHint
                     />
-                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] text-amber-950 leading-relaxed space-y-1">
-                      <p className="font-extrabold">الوثائق المطلوبة قبل التفعيل (تُرفع لفريق المراجعة أو تُرسل بعد الطلب):</p>
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-2xs text-amber-950 leading-relaxed space-y-1">
+                      <p className="font-bold">الوثائق المطلوبة قبل التفعيل (تُرفع لفريق المراجعة أو تُرسل بعد الطلب):</p>
                       <ul className="list-disc pr-4 space-y-0.5">
                         <li>السجل التجاري أو وثيقة العمل الحر</li>
                         <li>رخصة البلدية للمنشأة</li>
@@ -346,8 +346,8 @@ export function VendorRegisterWizard({
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <div className="rounded-xl border border-[#E4E7EC] bg-[#F7F8FA] p-3 text-[11px] text-[#344054] leading-relaxed">
-                      <p className="font-extrabold text-[#0A1A33] mb-1">منتجك الأول — صور حقيقية وسعر بالريال</p>
+                    <div className="rounded-xl border border-line bg-paper p-3 text-2xs text-ink-1 leading-relaxed">
+                      <p className="font-bold text-navy mb-1">منتجك الأول — صور حقيقية وسعر بالريال</p>
                       <p>ارفع صورتين من جهازك واكتب السعر. البطاقة ما تظهر في السوق إلا بعد موافقة الإدارة وعلى هذا المبلغ.</p>
                     </div>
                     <Field label="اسم المنتج" value={listingTitle} onChange={setListingTitle} placeholder="مثال: قهوة سعودية جاهزة" />
@@ -399,7 +399,7 @@ export function VendorRegisterWizard({
                   <button
                     type="button"
                     onClick={onOpenCourierRegister}
-                    className="w-full text-[12px] font-bold text-[#155EEF] hover:underline"
+                    className="w-full text-xs font-medium text-action hover:underline"
                   >
                     لست مورّداً؟ سجّل كمندوب توصيل (اسم، عائلة، هوية، لوحة، نوع سيارة)
                   </button>
@@ -419,12 +419,12 @@ export function VendorRegisterWizard({
                     <span />
                   )}
                   {step < 3 ? (
-                    <button type="button" onClick={goNext} className="px-5 py-2.5 rounded-xl bg-[#155EEF] text-white text-sm font-bold inline-flex items-center gap-2">
+                    <button type="button" onClick={goNext} className="px-5 py-2.5 rounded-xl bg-action text-white text-sm font-bold inline-flex items-center gap-2">
                       {step === 1 ? 'الصفحة الثانية' : 'المنتج والصور'}
                       <ArrowLeft className="w-4 h-4" />
                     </button>
                   ) : (
-                    <button type="submit" disabled={loading || listingUploading} className="px-5 py-2.5 rounded-xl bg-[#155EEF] text-white text-sm font-bold inline-flex items-center gap-2 disabled:opacity-60">
+                    <button type="submit" disabled={loading || listingUploading} className="px-5 py-2.5 rounded-xl bg-action text-white text-sm font-bold inline-flex items-center gap-2 disabled:opacity-60">
                       <Store className="w-4 h-4" />
                       {loading ? 'جارٍ الإرسال…' : 'إرسال لإدارة يوصل'}
                     </button>

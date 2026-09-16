@@ -17,15 +17,15 @@ export class AppErrorBoundary extends Component<Props, State> {
   render() {
     if (!this.state.err) return this.props.children;
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-[#F7F8FA] text-[#0A1A33]" dir="rtl">
-        <div className="max-w-md w-full rounded-2xl border border-[#E4E7EC] bg-white p-6 space-y-3 text-right">
-          <p className="text-lg font-extrabold">تعذّر عرض الصفحة</p>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-paper text-navy" dir="rtl">
+        <div className="max-w-md w-full rounded-2xl border border-line bg-white p-6 space-y-3 text-right">
+          <p className="text-lg font-bold">تعذّر عرض الصفحة</p>
           <p className="text-sm text-slate-600 leading-relaxed">
             الصفحة فتحت ثم توقفت. حدّث الشاشة. إن تكررت، امسح بيانات الموقع ليوصل ثم افتح من جديد.
           </p>
           <button
             type="button"
-            className="w-full h-11 rounded-xl bg-[#155EEF] text-white text-sm font-extrabold"
+            className="w-full h-11 rounded-xl bg-action text-white text-sm font-bold"
             onClick={() => window.location.reload()}
           >
             تحديث الصفحة
@@ -58,12 +58,12 @@ export class DashboardErrorBoundary extends Component<DashboardProps, State> {
     if (!this.state.err) return this.props.children;
     return (
       <main className="flex-1 container mx-auto px-3 py-10" dir="rtl">
-        <div className="max-w-md mx-auto rounded-2xl border border-[#E4E7EC] bg-white p-6 space-y-3 text-right">
-          <p className="text-lg font-extrabold text-[#0A1A33]">تعذّر فتح اللوحة</p>
+        <div className="max-w-md mx-auto rounded-2xl border border-line bg-white p-6 space-y-3 text-right">
+          <p className="text-lg font-bold text-navy">تعذّر فتح اللوحة</p>
           <p className="text-sm text-slate-600 leading-relaxed">حسابك ما زال داخل. نرجعك للسوق.</p>
           <button
             type="button"
-            className="w-full h-11 rounded-xl bg-[#155EEF] text-white text-sm font-extrabold"
+            className="w-full h-11 rounded-xl bg-action text-white text-sm font-bold"
             onClick={() => {
               this.setState({ err: null });
               this.props.onReset();

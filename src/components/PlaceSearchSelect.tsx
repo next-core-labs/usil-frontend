@@ -62,10 +62,10 @@ export function PlaceSearchSelect({
     <div ref={box} className={`relative ${className}`}>
       <div
         className={`flex items-center gap-1.5 min-w-0 ${
-          boxed ? 'h-11 px-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-[#155EEF]' : ''
+          boxed ? 'h-11 px-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-action' : ''
         }`}
       >
-        {hideIcon ? null : <MapPin className="w-3.5 h-3.5 text-[#155EEF] shrink-0" />}
+        {hideIcon ? null : <MapPin className="w-3.5 h-3.5 text-action shrink-0" />}
         <input
           value={open ? query : current}
           onChange={(event) => {
@@ -87,7 +87,7 @@ export function PlaceSearchSelect({
           placeholder={placeholder}
           aria-label={ariaLabel}
           autoComplete="off"
-          className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-900 focus:outline-none min-w-0"
+          className="w-full bg-transparent text-xs sm:text-sm font-medium text-slate-900 focus:outline-none min-w-0"
         />
         <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
       </div>
@@ -108,8 +108,8 @@ export function PlaceSearchSelect({
                   }`}
                   onClick={() => pick(place.name)}
                 >
-                  <span className="block text-sm font-bold text-[#0A1A33]">{place.name}</span>
-                  <span className="block text-[11px] text-slate-500">
+                  <span className="block text-sm font-bold text-navy">{place.name}</span>
+                  <span className="block text-2xs text-slate-500">
                     {place.name === ALL_CITIES_LABEL
                       ? 'كل مناطق ومحافظات وقرى المملكة'
                       : `${place.region} · ${placeKindLabel(place.kind)}`}

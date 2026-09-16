@@ -30,7 +30,7 @@ export function RegionGate({ open, required = false, selected, onSelect, onClose
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#0A1A33]/75 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-navy/75 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="usil-region-gate-title"
@@ -49,7 +49,7 @@ export function RegionGate({ open, required = false, selected, onSelect, onClose
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 start-4 w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center"
+            className="absolute top-4 start-4 w-11 h-11 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center"
             aria-label="إغلاق"
           >
             <X className="w-4 h-4" />
@@ -60,10 +60,10 @@ export function RegionGate({ open, required = false, selected, onSelect, onClose
           <UsilLockup compact />
         </div>
 
-        <h2 id="usil-region-gate-title" className="text-xl sm:text-2xl font-extrabold text-[#0A1A33] text-center">
+        <h2 id="usil-region-gate-title" className="text-xl sm:text-2xl font-bold text-navy text-center">
           وين المناسبة؟
         </h2>
-        <p className="mt-2 text-sm text-[#475467] text-center leading-relaxed">
+        <p className="mt-2 text-sm text-ink-2 text-center leading-relaxed">
           اختر المنطقة أول، وبعدين تظهر لك أزرار الأقسام والمورّدين المتاحين عندك.
         </p>
 
@@ -79,7 +79,7 @@ export function RegionGate({ open, required = false, selected, onSelect, onClose
           />
         </div>
 
-        <p className="mt-5 mb-2 text-[11px] font-bold text-[#667085]">أشهر المدن</p>
+        <p className="mt-5 mb-2 text-2xs font-medium text-ink-3">أشهر المدن</p>
         <div className="flex gap-3 overflow-x-auto scrollbar-none pb-1 justify-start">
           {FEATURED_MARKET_PLACES.map((place) => {
             const active = selected === place.name;
@@ -92,12 +92,12 @@ export function RegionGate({ open, required = false, selected, onSelect, onClose
               >
                 <span
                   className={`w-14 h-14 rounded-full flex items-center justify-center ${
-                    active ? 'bg-[#0A1A33] text-white ring-2 ring-[#155EEF] ring-offset-2' : 'bg-[#EAF0FE] text-[#155EEF]'
+                    active ? 'bg-navy text-white ring-2 ring-action ring-offset-2' : 'bg-action-100 text-action'
                   }`}
                 >
                   <MapPin className="w-5 h-5" />
                 </span>
-                <span className={`text-[11px] font-extrabold leading-tight text-center ${active ? 'text-[#0A1A33]' : 'text-[#475467]'}`}>
+                <span className={`text-2xs font-bold leading-tight text-center ${active ? 'text-navy' : 'text-ink-2'}`}>
                   {place.name}
                 </span>
               </button>
@@ -105,7 +105,7 @@ export function RegionGate({ open, required = false, selected, onSelect, onClose
           })}
         </div>
 
-        <p className="mt-5 mb-2 text-[11px] font-bold text-[#667085]">كل المناطق</p>
+        <p className="mt-5 mb-2 text-2xs font-medium text-ink-3">كل المناطق</p>
         <div className="flex flex-wrap gap-1.5">
           {SAUDI_REGIONS.map((region) => {
             const active = selected === region;
@@ -116,8 +116,8 @@ export function RegionGate({ open, required = false, selected, onSelect, onClose
                 onClick={() => onSelect(region)}
                 className={`px-3 py-2 min-h-[44px] rounded-full text-xs font-bold border ${
                   active
-                    ? 'bg-[#155EEF] border-[#155EEF] text-white'
-                    : 'bg-white border-[#E4E7EC] text-[#344054] hover:border-[#155EEF] hover:text-[#155EEF]'
+                    ? 'bg-action border-action text-white'
+                    : 'bg-white border-line text-ink-1 hover:border-action hover:text-action'
                 }`}
               >
                 {region}
@@ -129,7 +129,7 @@ export function RegionGate({ open, required = false, selected, onSelect, onClose
         <button
           type="button"
           onClick={() => onSelect(ALL_CITIES_LABEL)}
-          className="mt-4 w-full min-h-[44px] rounded-xl border border-[#E4E7EC] text-sm font-bold text-[#475467] hover:border-[#155EEF] hover:text-[#155EEF]"
+          className="mt-4 w-full min-h-[44px] rounded-xl border border-line text-sm font-bold text-ink-2 hover:border-action hover:text-action"
         >
           كل مناطق المملكة
         </button>

@@ -102,7 +102,7 @@ export function VendorWorkspace({
               {bk.notes ? <p className="text-xs text-slate-500">{bk.notes}</p> : null}
               {bk.status === BOOKING_PENDING_APPROVAL_STATUS ? (
                 <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 space-y-2">
-                  <p className="text-xs font-bold text-amber-300">
+                  <p className="text-xs font-medium text-amber-300">
                     طلب حجز بموافقة المورّد — {BOOKING_PENDING_APPROVAL_STATUS}
                   </p>
                   <div className="flex flex-wrap gap-2 text-xs">
@@ -158,7 +158,7 @@ function Stat({
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
       <Icon className="w-4 h-4 text-amber-400 mb-2" />
       <p className="text-xs text-slate-400">{label}</p>
-      <p className="text-2xl font-black">{value}</p>
+      <p className="text-2xl font-bold">{value}</p>
     </div>
   );
 }

@@ -124,11 +124,11 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
       {/* Header Banner */}
       <div className="p-5 rounded-3xl bg-white border border-slate-200 card-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-medium border border-amber-200">
             <Clock className="w-3.5 h-3.5 text-amber-600" />
             <span>نظام إدارة الذمم المدينة والتحصيل الذكي (Debt Aging & Receivables)</span>
           </div>
-          <h3 className="text-xl font-extrabold text-slate-900">
+          <h3 className="text-xl font-bold text-slate-900">
             متابعة مستحقات العملاء وتحصيل الديون العالقة
           </h3>
           <p className="text-xs sm:text-sm text-slate-600">
@@ -142,12 +142,12 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
         
         {/* Total Outstanding */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200 card-shadow space-y-1.5">
-          <span className="text-xs text-slate-500 font-bold">إجمالي المستحقات العالقة في السوق</span>
-          <div className="text-2xl font-extrabold font-mono text-slate-900">
+          <span className="text-xs text-slate-500 font-medium">إجمالي المستحقات العالقة في السوق</span>
+          <div className="text-2xl font-bold font-mono text-slate-900">
             {totalReceivablesAmount.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-slate-500">ر.س</span>
           </div>
-          <div className="text-[11px] text-slate-500">
+          <div className="text-2xs text-slate-500">
             موزعة على <span className="font-bold text-slate-800">{receivables.length} عميل</span>
           </div>
         </div>
@@ -155,14 +155,14 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
         {/* Overdue (>0 days) */}
         <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 card-shadow space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-amber-900 font-bold">مستحقات متأخرة تجاوزت تاريخ الاستحقاق</span>
+            <span className="text-xs text-amber-900 font-medium">مستحقات متأخرة تجاوزت تاريخ الاستحقاق</span>
             <AlertTriangle className="w-4 h-4 text-amber-600" />
           </div>
-          <div className="text-2xl font-extrabold font-mono text-amber-950">
+          <div className="text-2xl font-bold font-mono text-amber-950">
             {overdueAmount.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-amber-800">ر.س</span>
           </div>
-          <div className="text-[11px] text-amber-800 font-bold">
+          <div className="text-2xs text-amber-800 font-medium">
             تتطلب إرسال تذكيرات ومتابعة فورية
           </div>
         </div>
@@ -170,19 +170,19 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
         {/* Critical (>30 days) */}
         <div className="p-5 rounded-2xl bg-rose-50 border border-rose-200 card-shadow space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-rose-900 font-bold">ديون حرجة (+30 يوماً تأخير)</span>
-            <span className="px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 text-[10px] font-bold">
+            <span className="text-xs text-rose-900 font-medium">ديون حرجة (+30 يوماً تأخير)</span>
+            <span className="px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 text-2xs font-medium">
               {criticalOverdueCount} عملاء
             </span>
           </div>
-          <div className="text-2xl font-extrabold font-mono text-rose-950">
+          <div className="text-2xl font-bold font-mono text-rose-950">
             {receivables
               .filter((r) => r.status === 'overdue_30_plus')
               .reduce((sum, r) => sum + r.remainingAmount, 0)
               .toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-rose-800">ر.س</span>
           </div>
-          <div className="text-[11px] text-rose-800">
+          <div className="text-2xs text-rose-800">
             مخاطر تدفق نقدي عالية - يفضل الاتصال المباشر
           </div>
         </div>
@@ -288,8 +288,8 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
                       {/* Client Info */}
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-slate-900">{item.customerName}</div>
-                        <div className="text-[11px] text-slate-500 font-mono">{item.customerPhone}</div>
-                        <div className="text-[10px] text-blue-600">{item.serviceTitle}</div>
+                        <div className="text-2xs text-slate-500 font-mono">{item.customerPhone}</div>
+                        <div className="text-2xs text-blue-600">{item.serviceTitle}</div>
                       </td>
 
                       {/* Invoice Number */}
@@ -313,28 +313,28 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
                       </td>
 
                       {/* Remaining Amount */}
-                      <td className="py-3.5 px-4 font-mono font-extrabold text-rose-700 text-sm">
+                      <td className="py-3.5 px-4 font-mono font-bold text-rose-700 text-sm">
                         {item.remainingAmount.toLocaleString('ar-SA')} ر.س
                       </td>
 
                       {/* Aging Badge */}
                       <td className="py-3.5 px-4">
                         {isCritical ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-900 text-[10px] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-900 text-2xs font-medium">
                             <AlertTriangle className="w-3 h-3 text-rose-600" />
                             متأخر {item.agingDays} يوم
                           </span>
                         ) : isOverdue ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 text-2xs font-medium">
                             متأخر {item.agingDays} يوم
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 text-[10px] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 text-2xs font-medium">
                             مستحق في وقته
                           </span>
                         )}
                         {item.remindersCount > 0 && (
-                          <div className="text-[10px] text-slate-400 mt-1">
+                          <div className="text-2xs text-slate-400 mt-1">
                             أُرسل {item.remindersCount} تذكير
                           </div>
                         )}
@@ -347,7 +347,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
                           {/* WhatsApp Reminder Button */}
                           <button
                             onClick={() => handleOpenReminder(item)}
-                            className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[11px] flex items-center gap-1 transition-colors border border-emerald-200"
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-medium text-2xs flex items-center gap-1 transition-colors border border-emerald-200"
                             title="إرسال تذكير واتساب ذكي بالآيبان"
                           >
                             <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
@@ -357,7 +357,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
                           {/* Record Payment Button */}
                           <button
                             onClick={() => handleOpenPayment(item)}
-                            className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold text-[11px] flex items-center gap-1 transition-transform shadow-xs"
+                            className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-medium text-2xs flex items-center gap-1 transition-transform shadow-xs"
                             title="تسجيل سداد دفعة نقدية أو بنكية"
                           >
                             <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
@@ -383,7 +383,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h4 className="text-base font-extrabold text-slate-900">
+                <h4 className="text-base font-bold text-slate-900">
                   تسجيل سداد دفعة وسند قبض (Receipt Voucher)
                 </h4>
                 <p className="text-xs text-slate-500">
@@ -392,7 +392,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
               </div>
               <button
                 onClick={() => setSelectedDebtForPayment(null)}
-                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-medium"
               >
                 ✕
               </button>
@@ -402,13 +402,13 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
               
               <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
                 <span className="text-slate-600 font-bold">المبلغ المتبقي الأصلي:</span>
-                <span className="font-mono font-extrabold text-rose-700 text-sm">
+                <span className="font-mono font-bold text-rose-700 text-sm">
                   {selectedDebtForPayment.remainingAmount.toLocaleString('ar-SA')} ر.س
                 </span>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   المبلغ المسدد الآن (ر.س) *
                 </label>
                 <input
@@ -423,13 +423,13 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   طريقة الاستلام والتحصيل *
                 </label>
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold focus:border-blue-500 focus:outline-none bg-white text-right"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium focus:border-blue-500 focus:outline-none bg-white text-right"
                 >
                   <option value="bank_transfer">تحويل بنكي مباشر (مصرف الراجحي / الأهلي)</option>
                   <option value="mada">شبكة مدى / بطاقة بنكية (POS)</option>
@@ -439,7 +439,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   ملاحظات أو مرجع الحوالة (اختياري)
                 </label>
                 <input
@@ -454,14 +454,14 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
               <div className="flex items-center gap-3 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-xs transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs shadow-xs transition-colors"
                 >
                   تأكيد استلام المبلغ وتوليد سند القبض
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedDebtForPayment(null)}
-                  className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                  className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium"
                 >
                   إلغاء
                 </button>
@@ -483,20 +483,20 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
                 <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
                   <MessageCircle className="w-4 h-4" />
                 </div>
-                <h4 className="text-base font-extrabold text-slate-900">
+                <h4 className="text-base font-bold text-slate-900">
                   إرسال تذكير سداد رسمي عبر الواتساب
                 </h4>
               </div>
               <button
                 onClick={() => setReminderModalDebt(null)}
-                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-medium"
               >
                 ✕
               </button>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700">
+              <label className="block text-xs font-medium text-slate-700">
                 نص الرسالة المهذبة بهوية ({brandSettings.brandName}):
               </label>
               <textarea
@@ -510,14 +510,14 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
             <div className="flex items-center gap-3 pt-2">
               <button
                 onClick={handleSendWhatsAppSubmit}
-                className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors"
+                className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-xs transition-colors"
               >
                 <Send className="w-4 h-4" />
                 <span>إرسال فوري إلى واتساب العميل ({reminderModalDebt.customerPhone})</span>
               </button>
               <button
                 onClick={() => setReminderModalDebt(null)}
-                className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium"
               >
                 إلغاء
               </button>
@@ -536,7 +536,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
               <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-black text-slate-900">
+              <h4 className="text-lg font-bold text-slate-900">
                 تم تسجيل السداد بنجاح!
               </h4>
               <p className="text-xs text-slate-500">
@@ -556,7 +556,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">المبلغ المقبوض:</span>
-                <span className="font-mono font-extrabold text-emerald-700 text-sm">
+                <span className="font-mono font-bold text-emerald-700 text-sm">
                   {receiptSuccessModal.amount.toLocaleString('ar-SA')} ر.س
                 </span>
               </div>
@@ -589,7 +589,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
                     brandSettings
                   );
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center justify-center gap-1.5 shadow-xs transition-colors"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>تحميل سند القبض PDF</span>
@@ -598,7 +598,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
                 onClick={() => {
                   window.print();
                 }}
-                className="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-1"
+                className="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium flex items-center justify-center gap-1"
                 title="طباعة عبر المتصفح"
               >
                 <Printer className="w-3.5 h-3.5 text-slate-600" />
@@ -606,7 +606,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
               </button>
               <button
                 onClick={() => setReceiptSuccessModal(null)}
-                className="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                className="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium"
               >
                 إغلاق
               </button>

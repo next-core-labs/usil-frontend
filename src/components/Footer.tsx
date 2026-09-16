@@ -38,12 +38,12 @@ const FooterAccordion: React.FC<{
     <div className="border-b border-white/10 md:border-0 pb-3 md:pb-0">
       <button
         type="button"
-        className="w-full flex items-center justify-between md:pointer-events-none md:cursor-default py-2 md:py-0"
+        className="w-full flex items-center justify-between min-h-11 md:min-h-0 py-2 md:py-0 md:pointer-events-none md:cursor-default"
         onClick={() => onToggle(id)}
         aria-expanded={open}
       >
         <h4 className="kicker">{title}</h4>
-        <ChevronDown className={`w-4 h-4 text-[#C0A16B] md:hidden transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-sand md:hidden transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       <div className={`${open ? 'block' : 'hidden'} md:block mt-3`}>{children}</div>
     </div>
@@ -63,7 +63,7 @@ export const Footer: React.FC<FooterProps> = ({
   onAbout,
 }) => {
   const [openId, setOpenId] = useState<string | null>('brand');
-  const linkClass = 'hover:text-[#5B8DEF] transition-colors text-white/70 font-medium text-right';
+  const linkClass = 'hover:text-sky transition-colors text-white/70 font-medium text-right';
 
   const toggle = (id: string) => {
     setOpenId((prev) => (prev === id ? null : id));
@@ -74,20 +74,20 @@ export const Footer: React.FC<FooterProps> = ({
       <div className="container mx-auto px-4 lg:px-8 pb-10 mb-10 border-b border-white/10 space-y-8">
         <div className="grid lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7 space-y-3">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white text-[11px] font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#155EEF]" />
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white text-2xs font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-action" />
               سوق مدار لتوريد المناسبات · السعودية
             </span>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-white leading-snug">
+            <h2 className="text-xl sm:text-2xl font-bold text-white leading-snug">
               كل مورّد تحتاجه للمناسبة في مكان واحد
             </h2>
             <p className="text-xs sm:text-sm text-white/70 leading-relaxed max-w-2xl">
               يوصل يجمع حجوزات المورّدين ويضمن التنفيذ — السعر المعروض نهائي ويشمل الضريبة ١٥٪. وسيط خالص: لا ننظّم المناسبات، نمكّن من ينظّمها. أربعة مسارات توريد داخل المدينة، بدون وعد بساعي ١٥ دقيقة ولا تتبع وهمي.
             </p>
-            <ul className="grid sm:grid-cols-2 gap-1.5 text-[11px] text-white/75">
+            <ul className="grid sm:grid-cols-2 gap-1.5 text-2xs text-white/75">
               {WHY_USIL.map((line) => (
                 <li key={line} className="flex items-start gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#12B76A] mt-0.5 shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-success mt-0.5 shrink-0" />
                   <span>{line}</span>
                 </li>
               ))}
@@ -95,15 +95,15 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
           <div className="lg:col-span-5">
             <div className="overflow-hidden rounded-xl border border-white/15 bg-white/5">
-              <div className="aspect-[16/9] relative bg-[#0A1A33]">
+              <div className="aspect-[16/9] relative bg-navy">
                 <BrandedImage
                   alt="قاعة مجهزة قبل وصول الضيوف"
                   category="halls"
                   className="w-full h-full object-cover opacity-70"
                 />
                 <div className="absolute bottom-3 right-3 left-3 text-white">
-                  <p className="text-[11px] text-[#C0A16B] font-semibold">مورّد موثّق · الأكثر طلباً</p>
-                  <p className="text-sm font-extrabold">قاعة مجهزة — إضاءة ومسرح في مكانهما</p>
+                  <p className="text-2xs text-sand font-semibold">مورّد موثّق · الأكثر طلباً</p>
+                  <p className="text-sm font-bold">قاعة مجهزة — إضاءة ومسرح في مكانهما</p>
                 </div>
               </div>
               <div className="p-3 flex items-center justify-between text-xs">
@@ -114,14 +114,14 @@ export const Footer: React.FC<FooterProps> = ({
                     onSelectCategory('halls');
                     document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-[#155EEF] text-white font-bold"
+                  className="px-3 py-1.5 rounded-lg bg-action text-white font-bold"
                 >
                   معاينة الباقة
                 </button>
               </div>
             </div>
-            <p className="mt-2 text-[11px] text-white/55 flex items-start gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#5B8DEF] shrink-0 mt-0.5" />
+            <p className="mt-2 text-2xs text-white/55 flex items-start gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-sky shrink-0 mt-0.5" />
               حماية وساطة: جاهزية المورّد قبل الموعد — ليس تتبع GPS مختلق.
             </p>
           </div>
@@ -135,8 +135,8 @@ export const Footer: React.FC<FooterProps> = ({
             { value: 'وسيط', label: 'لا ننظّم المناسبة — نمكّن من ينظّمها' },
           ].map((stat) => (
             <div key={stat.label} className="p-3 rounded-xl bg-white/5 border border-white/10">
-              <div className="font-extrabold text-lg text-white font-mono">{stat.value}</div>
-              <div className="text-[11px] text-white/60">{stat.label}</div>
+              <div className="font-bold text-lg text-white font-mono">{stat.value}</div>
+              <div className="text-2xs text-white/60">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -150,10 +150,10 @@ export const Footer: React.FC<FooterProps> = ({
                 onPickPackage?.(pack.category, pack.audience, pack.title);
                 document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="text-right rounded-xl border border-white/10 bg-white/5 p-3 hover:border-[#5B8DEF]"
+              className="text-right rounded-xl border border-white/10 bg-white/5 p-3 hover:border-sky"
             >
-              <p className="text-sm font-extrabold text-white">{pack.title}</p>
-              <p className="text-[11px] text-white/60 mt-1 leading-snug">{pack.blurb}</p>
+              <p className="text-sm font-bold text-white">{pack.title}</p>
+              <p className="text-2xs text-white/60 mt-1 leading-snug">{pack.blurb}</p>
             </button>
           ))}
         </div>
@@ -167,10 +167,10 @@ export const Footer: React.FC<FooterProps> = ({
                 onSelectFulfillment?.(lane.id);
                 document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="text-right rounded-xl border border-white/10 bg-white/5 p-3 hover:border-[#5B8DEF]"
+              className="text-right rounded-xl border border-white/10 bg-white/5 p-3 hover:border-sky"
             >
-              <p className="text-sm font-extrabold text-[#5B8DEF]">{lane.chip}</p>
-              <p className="text-[11px] text-white/65 mt-1 leading-snug">{lane.meaning}</p>
+              <p className="text-sm font-bold text-sky">{lane.chip}</p>
+              <p className="text-2xs text-white/65 mt-1 leading-snug">{lane.meaning}</p>
             </button>
           ))}
         </div>
@@ -184,10 +184,10 @@ export const Footer: React.FC<FooterProps> = ({
           </p>
           <div className="flex flex-wrap items-center gap-3 text-xs pt-1">
             <span className="inline-flex items-center gap-1 font-medium text-white/60">
-              <MapPin className="w-3.5 h-3.5 text-[#5B8DEF]" />
+              <MapPin className="w-3.5 h-3.5 text-sky" />
               <span>المملكة العربية السعودية</span>
             </span>
-            <span className="inline-flex items-center gap-1 text-[#0A1A33] font-bold bg-white px-2 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-navy font-bold bg-white px-2 py-0.5 rounded-full">
               سعر نهائي · ضريبة 15%
             </span>
           </div>
@@ -244,7 +244,7 @@ export const Footer: React.FC<FooterProps> = ({
             <ul className="space-y-2 text-xs text-white/75">
               {WHY_USIL.map((line) => (
                 <li key={line} className="flex items-start gap-2">
-                  <span className="mt-1.5 w-1 h-1 rounded-full bg-[#C0A16B] shrink-0" />
+                  <span className="mt-1.5 w-1 h-1 rounded-full bg-sand shrink-0" />
                   <span>{line}</span>
                 </li>
               ))}
@@ -363,7 +363,7 @@ export const Footer: React.FC<FooterProps> = ({
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-[11px] text-white/50 leading-relaxed">
+            <p className="mt-2 text-2xs text-white/50 leading-relaxed">
               البحث يشمل كل المحافظات والقرى والمراكز داخل المناطق الثلاث عشرة.
             </p>
           </FooterAccordion>
@@ -391,7 +391,7 @@ export const Footer: React.FC<FooterProps> = ({
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 font-medium">
           <a
             href="/about"
-            className="hover:text-white transition-colors"
+            className="inline-flex items-center min-h-11 px-1 hover:text-white transition-colors"
             onClick={(e) => {
               if (onAbout) {
                 e.preventDefault();
@@ -403,7 +403,7 @@ export const Footer: React.FC<FooterProps> = ({
           </a>
           <a
             href="/support"
-            className="hover:text-white transition-colors"
+            className="inline-flex items-center min-h-11 px-1 hover:text-white transition-colors"
             onClick={(e) => {
               if (onSupport) {
                 e.preventDefault();
@@ -415,7 +415,7 @@ export const Footer: React.FC<FooterProps> = ({
           </a>
           <a
             href="/privacy"
-            className="hover:text-white transition-colors"
+            className="inline-flex items-center min-h-11 px-1 hover:text-white transition-colors"
             onClick={(e) => {
               if (onPrivacy) {
                 e.preventDefault();
@@ -427,7 +427,7 @@ export const Footer: React.FC<FooterProps> = ({
           </a>
           <a
             href="/terms"
-            className="hover:text-white transition-colors"
+            className="inline-flex items-center min-h-11 px-1 hover:text-white transition-colors"
             onClick={(e) => {
               if (onTerms) {
                 e.preventDefault();
@@ -439,7 +439,7 @@ export const Footer: React.FC<FooterProps> = ({
           </a>
           <a
             href="/refund"
-            className="hover:text-white transition-colors"
+            className="inline-flex items-center min-h-11 px-1 hover:text-white transition-colors"
             onClick={(e) => {
               if (onRefund) {
                 e.preventDefault();

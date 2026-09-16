@@ -111,11 +111,11 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
       {/* Header Banner */}
       <div className="p-5 rounded-3xl bg-white border border-slate-200 card-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-900 text-xs font-bold border border-purple-200">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-900 text-xs font-medium border border-purple-200">
             <Calculator className="w-3.5 h-3.5 text-purple-600" />
             <span>تحليل تكلفة المناسبات وهوامش الربحية (Unit Economics & Job Order Costing)</span>
           </div>
-          <h3 className="text-xl font-extrabold text-slate-900">
+          <h3 className="text-xl font-bold text-slate-900">
             محلل ربحية كل مناسبة وحاسبة التسعير الذكي
           </h3>
           <p className="text-xs sm:text-sm text-slate-600">
@@ -124,8 +124,8 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
         </div>
 
         <div className="p-3 rounded-2xl bg-purple-50 border border-purple-200 text-purple-950 text-left shrink-0">
-          <span className="text-[10px] text-purple-800 font-bold block">متوسط هامش ربح المناسبات</span>
-          <span className="text-xl font-extrabold font-mono text-purple-900">%{avgMargin.toFixed(1)}</span>
+          <span className="text-2xs text-purple-800 font-medium block">متوسط هامش ربح المناسبات</span>
+          <span className="text-xl font-bold font-mono text-purple-900">%{avgMargin.toFixed(1)}</span>
         </div>
       </div>
 
@@ -134,11 +134,11 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/10 pb-4">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-bold">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-medium">
               <Sparkles className="w-3.5 h-3.5" />
               <span>حاسبة التسعير الهندسي للمناسبات الجديدة</span>
             </div>
-            <h4 className="text-lg font-extrabold text-white">
+            <h4 className="text-lg font-bold text-white">
               احسب التكلفة وحدد سعر البيع المناسب للعميل لضمان ربحك
             </h4>
           </div>
@@ -254,7 +254,7 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
           <div className="lg:col-span-5 bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col justify-between space-y-4">
             
             <div className="space-y-3">
-              <span className="text-xs text-slate-400 font-bold block">
+              <span className="text-xs text-slate-400 font-medium block">
                 نتائج التسعير المقترحة للمناسبة
               </span>
 
@@ -277,7 +277,7 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
               {/* Estimated Net Profit */}
               <div className="flex items-center justify-between text-xs border-b border-white/10 pb-2">
                 <span className="text-slate-300">صافي الربح المتوقع:</span>
-                <span className="font-mono font-extrabold text-emerald-400">
+                <span className="font-mono font-bold text-emerald-400">
                   +{estimatedProfit.toLocaleString('ar-SA', { maximumFractionDigits: 0 })} ر.س
                 </span>
               </div>
@@ -285,14 +285,14 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
 
             {/* Highlighted Price */}
             <div className="p-4 rounded-xl bg-emerald-900/60 border border-emerald-500/40 text-center space-y-1">
-              <span className="text-[11px] text-emerald-200 font-bold block">
+              <span className="text-2xs text-emerald-200 font-medium block">
                 السعر المقترح للبيع للعميل (لتحقيق هامش %{calcTargetMargin})
               </span>
-              <div className="text-2xl sm:text-3xl font-extrabold font-mono text-white">
+              <div className="text-2xl sm:text-3xl font-bold font-mono text-white">
                 {suggestedSellingPrice.toLocaleString('ar-SA', { maximumFractionDigits: 0 })}{' '}
                 <span className="text-xs font-sans text-emerald-300">ر.س</span>
               </div>
-              <span className="text-[10px] text-slate-300 block">
+              <span className="text-2xs text-slate-300 block">
                 (ما يعادل {pricePerGuest.toFixed(1)} ر.س للضيف الواحد)
               </span>
             </div>
@@ -308,7 +308,7 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
         <div className="p-5 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-blue-600" />
-            <h4 className="text-base font-extrabold text-slate-900">
+            <h4 className="text-base font-bold text-slate-900">
               جدول ربحية الحجوزات والمناسبات الفعلية
             </h4>
           </div>
@@ -341,8 +341,8 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
                     {/* Booking Info */}
                     <td className="py-3.5 px-4">
                       <div className="font-bold text-slate-900">{item.clientName}</div>
-                      <div className="text-[11px] text-blue-600 font-bold">{item.serviceTitle}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">
+                      <div className="text-2xs text-blue-600 font-medium">{item.serviceTitle}</div>
+                      <div className="text-2xs text-slate-400 font-mono">
                         {item.bookingNumber} • {item.eventDate}
                       </div>
                     </td>
@@ -373,23 +373,23 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
                     </td>
 
                     {/* Gross Profit */}
-                    <td className="py-3.5 px-4 font-mono font-extrabold text-emerald-700 text-sm">
+                    <td className="py-3.5 px-4 font-mono font-bold text-emerald-700 text-sm">
                       +{item.grossProfit.toLocaleString('ar-SA')} ر.س
                     </td>
 
                     {/* Margin Badge */}
                     <td className="py-3.5 px-4">
                       {isHighProfit ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 font-mono font-extrabold text-[11px]">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 font-mono font-medium text-2xs">
                           %{item.profitMarginPercent.toFixed(1)} ⭐️
                         </span>
                       ) : isLowMargin ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-mono font-bold text-[11px]">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-mono font-medium text-2xs">
                           <AlertTriangle className="w-3 h-3 text-amber-600" />
                           %{item.profitMarginPercent.toFixed(1)}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-900 font-mono font-bold text-[11px]">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-900 font-mono font-medium text-2xs">
                           %{item.profitMarginPercent.toFixed(1)}
                         </span>
                       )}

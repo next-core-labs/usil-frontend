@@ -61,36 +61,36 @@ export function CityDemandForm({ city, onCityChange, defaultOccasion }: Props) {
   return (
     <form
       onSubmit={submit}
-      className="text-right rounded-2xl border border-[#E4E7EC] bg-[#F7F8FA] p-4 sm:p-5 space-y-3 max-w-lg mx-auto"
+      className="text-right rounded-2xl border border-line bg-paper p-4 sm:p-5 space-y-3 max-w-lg mx-auto"
     >
       <div className="flex items-start gap-2">
-        <MapPin className="w-4 h-4 text-[#155EEF] mt-0.5 shrink-0" />
+        <MapPin className="w-4 h-4 text-action mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-extrabold text-[#0A1A33]">طلب مورّد في مدينتك</p>
-          <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+          <p className="text-sm font-bold text-navy">طلب مورّد في مدينتك</p>
+          <p className="text-2xs text-slate-500 mt-0.5 leading-relaxed">
             ما فيه منتج ظاهر هنا. اترك اسمك وجوالك ونوع المناسبة ونطابقه مع مورّد يغطي هذا المكان.
           </p>
         </div>
       </div>
 
       <label className="block">
-        <span className="text-[11px] font-bold text-slate-600 mb-1 block">الاسم</span>
+        <span className="text-2xs font-medium text-slate-600 mb-1 block">الاسم</span>
         <input
           required
           value={name}
           onChange={(event) => setName(event.target.value)}
-          className="w-full h-10 px-3 rounded-xl bg-white border border-[#E4E7EC] text-sm font-bold"
+          className="w-full h-10 px-3 rounded-xl bg-white border border-line text-sm font-bold"
           placeholder="اسمك"
         />
       </label>
 
       <label className="block">
-        <span className="text-[11px] font-bold text-slate-600 mb-1 block">الجوال</span>
+        <span className="text-2xs font-medium text-slate-600 mb-1 block">الجوال</span>
         <input
           required
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
-          className="w-full h-10 px-3 rounded-xl bg-white border border-[#E4E7EC] text-sm font-mono font-bold"
+          className="w-full h-10 px-3 rounded-xl bg-white border border-line text-sm font-mono font-bold"
           placeholder="05xxxxxxxx"
           inputMode="numeric"
           dir="ltr"
@@ -98,7 +98,7 @@ export function CityDemandForm({ city, onCityChange, defaultOccasion }: Props) {
       </label>
 
       <div className="space-y-1">
-        <span className="text-[11px] font-bold text-slate-600 block">المدينة / المحافظة / القرية</span>
+        <span className="text-2xs font-medium text-slate-600 block">المدينة / المحافظة / القرية</span>
         <PlaceSearchSelect
           value={place}
           onChange={(next) => {
@@ -113,11 +113,11 @@ export function CityDemandForm({ city, onCityChange, defaultOccasion }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <label className="block">
-          <span className="text-[11px] font-bold text-slate-600 mb-1 block">نوع المناسبة</span>
+          <span className="text-2xs font-medium text-slate-600 mb-1 block">نوع المناسبة</span>
           <select
             value={occasion}
             onChange={(event) => setOccasion(event.target.value)}
-            className="w-full h-10 px-3 rounded-xl bg-white border border-[#E4E7EC] text-sm font-bold"
+            className="w-full h-10 px-3 rounded-xl bg-white border border-line text-sm font-bold"
           >
             {DEMAND_OCCASIONS.map((item) => (
               <option key={item} value={item}>
@@ -127,37 +127,37 @@ export function CityDemandForm({ city, onCityChange, defaultOccasion }: Props) {
           </select>
         </label>
         <label className="block">
-          <span className="text-[11px] font-bold text-slate-600 mb-1 block">التاريخ (اختياري)</span>
+          <span className="text-2xs font-medium text-slate-600 mb-1 block">التاريخ (اختياري)</span>
           <input
             type="date"
             value={eventDate}
             onChange={(event) => setEventDate(event.target.value)}
-            className="w-full h-10 px-3 rounded-xl bg-white border border-[#E4E7EC] text-sm font-bold"
+            className="w-full h-10 px-3 rounded-xl bg-white border border-line text-sm font-bold"
           />
         </label>
       </div>
 
       <label className="block">
-        <span className="text-[11px] font-bold text-slate-600 mb-1 block">ملاحظة (اختياري)</span>
+        <span className="text-2xs font-medium text-slate-600 mb-1 block">ملاحظة (اختياري)</span>
         <textarea
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           rows={2}
           maxLength={500}
           placeholder="عدد الضيوف أو أي تفصيل يفيد المطابقة"
-          className="w-full px-3 py-2 rounded-xl bg-white border border-[#E4E7EC] text-sm"
+          className="w-full px-3 py-2 rounded-xl bg-white border border-line text-sm"
         />
       </label>
 
-      {error ? <p className="text-xs text-rose-700 font-bold">{error}</p> : null}
+      {error ? <p className="text-xs text-rose-700 font-medium">{error}</p> : null}
       {status === 'ok' ? (
-        <p className="text-xs text-emerald-700 font-bold">وصل طلبك لإدارة يوصل وسنتواصل للمطابقة.</p>
+        <p className="text-xs text-emerald-700 font-medium">وصل طلبك لإدارة يوصل وسنتواصل للمطابقة.</p>
       ) : null}
 
       <button
         type="submit"
         disabled={status === 'saving'}
-        className="w-full sm:w-auto px-5 h-11 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white text-sm font-extrabold disabled:opacity-60"
+        className="w-full sm:w-auto px-5 h-11 rounded-xl bg-action hover:bg-action-hover text-white text-sm font-bold disabled:opacity-60"
       >
         {status === 'saving' ? 'جارٍ الإرسال…' : 'أرسل طلب المطابقة'}
       </button>

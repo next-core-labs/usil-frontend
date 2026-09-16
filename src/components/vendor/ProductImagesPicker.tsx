@@ -93,21 +93,21 @@ export function ProductImagesPicker({
   };
 
   return (
-    <fieldset className="rounded-xl border border-[#E4E7EC] bg-[#F7F8FA] p-3 space-y-2 text-right">
-      <legend className="px-1 text-sm font-extrabold text-[#0A1A33]">
+    <fieldset className="rounded-xl border border-line bg-paper p-3 space-y-2 text-right">
+      <legend className="px-1 text-sm font-bold text-navy">
         صور المنتج
         <span className="text-rose-600"> *</span>
       </legend>
-      <p className="text-[11px] text-[#475467] leading-relaxed">
+      <p className="text-2xs text-ink-2 leading-relaxed">
         ارفع صور المنتج من جوالك أو جهازك — صورتين على الأقل. أول صورة هي الصورة الرئيسية في السوق.
       </p>
 
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {value.map((url, index) => (
-          <div key={`${url}-${index}`} className="relative aspect-square rounded-xl overflow-hidden border border-[#E4E7EC] bg-white">
+          <div key={`${url}-${index}`} className="relative aspect-square rounded-xl overflow-hidden border border-line bg-white">
             <img src={url} alt={`صورة المنتج ${index + 1}`} className="w-full h-full object-cover" loading="lazy" />
             {index === 0 ? (
-              <span className="absolute bottom-0 inset-x-0 bg-[#0A1A33]/85 text-white text-[9px] font-extrabold text-center py-0.5">
+              <span className="absolute bottom-0 inset-x-0 bg-navy/85 text-white text-2xs font-medium text-center py-0.5">
                 الصورة الرئيسية
               </span>
             ) : null}
@@ -115,7 +115,7 @@ export function ProductImagesPicker({
               type="button"
               onClick={() => removeAt(index)}
               aria-label={`حذف صورة ${index + 1}`}
-              className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white/95 border border-[#E4E7EC] text-rose-600 inline-flex items-center justify-center shadow-sm"
+              className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white/95 border border-line text-rose-600 inline-flex items-center justify-center shadow-sm"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -126,9 +126,9 @@ export function ProductImagesPicker({
           ? Array.from({ length: uploading }).map((_, index) => (
               <div
                 key={`pending-${index}`}
-                className="aspect-square rounded-xl border border-dashed border-[#155EEF]/40 bg-white inline-flex items-center justify-center"
+                className="aspect-square rounded-xl border border-dashed border-action/40 bg-white inline-flex items-center justify-center"
               >
-                <Loader2 className="w-5 h-5 text-[#155EEF] animate-spin" />
+                <Loader2 className="w-5 h-5 text-action animate-spin" />
               </div>
             ))
           : null}
@@ -137,11 +137,11 @@ export function ProductImagesPicker({
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="aspect-square rounded-xl border-2 border-dashed border-[#155EEF]/50 bg-white text-[#155EEF] inline-flex flex-col items-center justify-center gap-1 hover:border-[#155EEF] hover:bg-[#155EEF]/5"
+            className="aspect-square rounded-xl border-2 border-dashed border-action/50 bg-white text-action inline-flex flex-col items-center justify-center gap-1 hover:border-action hover:bg-action/5"
             aria-label="أضف صور المنتج"
           >
             <ImagePlus className="w-6 h-6" />
-            <span className="text-[10px] font-extrabold">أضف صورة</span>
+            <span className="text-2xs font-medium">أضف صورة</span>
           </button>
         ) : null}
       </div>
@@ -158,10 +158,10 @@ export function ProductImagesPicker({
         }}
       />
 
-      {uploading > 0 ? <p className="text-[11px] font-bold text-[#155EEF]">جاري رفع الصور…</p> : null}
-      {error ? <p className="text-[11px] font-bold text-rose-600">{error}</p> : null}
+      {uploading > 0 ? <p className="text-2xs font-medium text-action">جاري رفع الصور…</p> : null}
+      {error ? <p className="text-2xs font-medium text-rose-600">{error}</p> : null}
       {value.length < LISTING_MIN_IMAGES ? (
-        <p className="text-[11px] font-bold text-rose-600">مطلوب: أضف صورتين على الأقل</p>
+        <p className="text-2xs font-medium text-rose-600">مطلوب: أضف صورتين على الأقل</p>
       ) : null}
     </fieldset>
   );

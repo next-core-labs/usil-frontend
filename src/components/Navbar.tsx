@@ -28,6 +28,9 @@ import {
 } from '../data/saudiMarket';
 import { UserProfile } from '../types';
 import { UsilLockup } from './UsilLockup';
+import { Button } from './ui/Button';
+import { CountBadge } from './ui/Badge';
+import { cn } from './ui/cn';
 
 interface NavbarProps {
   selectedCity: string;
@@ -105,9 +108,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   const legalRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
-  // The mobile app bar stacks a search row, a category rail and a lane rail
-  // under the brand row, so its height swings between ~64px and ~280px.
-  // Anchor scrolling (#services-section) needs the live value, not a guess.
+  // The app bar's height is still variable (the category rail wraps on some
+  // widths), so anchor-scrolling needs the live value rather than a guess.
+  // It is far smaller on mobile now that the lane rail moved into the filter
+  // panel, but the measurement stays — it is what keeps #services-section from
+  // scrolling underneath the bar.
   useEffect(() => {
     const el = headerRef.current;
     if (!el) return;
@@ -134,33 +139,38 @@ export const Navbar: React.FC<NavbarProps> = ({
     const close = (event: MouseEvent) => {
       if (!legalRef.current?.contains(event.target as Node)) setLegalOpen(false);
     };
+    const onEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setLegalOpen(false);
+    };
     document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('keydown', onEsc);
+    };
   }, []);
 
   const searchField = (id: string, compact?: boolean) => (
     <form
-      className={`relative flex-1 min-w-0 ${compact ? '' : 'max-w-3xl'}`}
+      className={cn('relative flex-1 min-w-0', !compact && 'max-w-3xl')}
+      role="search"
       onSubmit={(e) => {
         e.preventDefault();
         applySearch(searchQuery);
       }}
     >
-      <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+      <Search
+        className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none"
+        aria-hidden
+      />
       <input
         type="search"
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            applySearch((e.target as HTMLInputElement).value);
-          }
-        }}
         placeholder={SEARCH_PLACEHOLDER}
         list={id}
         aria-label="ابحث في المتجر"
-        className="w-full h-11 pr-10 pl-3 rounded-lg bg-[#F7F8FA] border border-[#E4E7EC] text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#155EEF] focus:bg-white"
+        className="w-full h-11 pr-10 pl-3 rounded-control bg-paper border border-line text-sm text-ink placeholder:text-muted transition-colors focus:outline-none focus:border-action focus:bg-surface focus:ring-4 focus:ring-action/10"
       />
       <datalist id={id}>
         {CATALOG_SEARCH_CHIPS.map((chip) => (
@@ -170,41 +180,54 @@ export const Navbar: React.FC<NavbarProps> = ({
     </form>
   );
 
-  const citySelect = () => (
+  const citySelect = (compact?: boolean) => (
     <button
       type="button"
       onClick={() => (onOpenRegionPicker ? onOpenRegionPicker() : onSelectCity(selectedCity))}
-      aria-label="اختر المنطقة"
-      className="shrink-0 h-11 max-w-[11.5rem] sm:max-w-[13.5rem] px-2.5 rounded-xl bg-white border border-[#E4E7EC] hover:border-[#155EEF] inline-flex items-center gap-1.5 text-right"
+      aria-label={`المنطقة الحالية: ${selectedCity === ALL_CITIES_LABEL ? 'كل المناطق' : selectedCity}. اضغط للتغيير`}
+      className={cn(
+        'shrink-0 h-11 px-2.5 rounded-control bg-surface border border-line',
+        'inline-flex items-center gap-1.5 text-right transition-colors',
+        'hover:border-action focus:outline-none focus:border-action focus:ring-4 focus:ring-action/10',
+        compact ? 'max-w-[8.5rem]' : 'max-w-[13.5rem]',
+      )}
     >
-      <MapPin className="w-4 h-4 text-[#155EEF] shrink-0" />
-      <span className="min-w-0 truncate text-xs sm:text-sm font-extrabold text-[#0A1A33]">
+      <MapPin className="w-4 h-4 text-action shrink-0" aria-hidden />
+      <span className="min-w-0 truncate text-sm font-semibold text-navy">
         {selectedCity === ALL_CITIES_LABEL ? 'كل المناطق' : selectedCity || 'اختر المنطقة'}
       </span>
-      <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+      <ChevronDown className="w-3.5 h-3.5 text-muted shrink-0" aria-hidden />
     </button>
   );
+
+  const legalLinks = [
+    onOpenAbout ? { label: 'عن يوصل', onClick: onOpenAbout } : null,
+    onOpenSupport ? { label: 'الدعم', onClick: onOpenSupport } : null,
+    onOpenPrivacy ? { label: 'سياسة الخصوصية', onClick: onOpenPrivacy } : null,
+    onOpenTerms ? { label: 'شروط الاستخدام', onClick: onOpenTerms } : null,
+  ].filter(Boolean) as { label: string; onClick: () => void }[];
 
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-50 w-full bg-white border-b border-[#E4E7EC] pointer-events-auto"
+      className="sticky top-0 z-50 w-full bg-surface border-b border-line pointer-events-auto"
     >
       {/* Keeps the light status-bar icons readable where the system bar draws
           over the web view (Android 15 edge-to-edge, iOS notch). 0px on web. */}
       <div aria-hidden className="usil-statusbar-scrim" />
+
       <div className="container mx-auto px-3 sm:px-4 lg:px-8 h-16 flex items-center gap-2 sm:gap-3">
-        <div
-          className="flex items-center gap-2 shrink-0 min-w-0 cursor-pointer"
+        <button
+          type="button"
+          className="flex items-center gap-2 shrink-0 min-w-0 rounded-control"
           onClick={() => {
             if (viewMode !== 'client') onToggleViewMode();
             else onGoHome?.();
           }}
-          role="link"
           aria-label="يوصل — الصفحة الرئيسية"
         >
           <UsilLockup compact />
-        </div>
+        </button>
 
         {viewMode === 'client' ? (
           <div className="hidden md:flex items-center flex-1 min-w-0 gap-2">
@@ -213,24 +236,25 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         ) : (
           <div className="hidden md:flex items-center gap-3 flex-1 justify-center">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 text-[#155EEF] text-xs font-bold border border-blue-200">
-              <LayoutDashboard className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-action-100 text-action text-xs font-semibold border border-action-200">
+              <LayoutDashboard className="w-3.5 h-3.5" aria-hidden />
               <span>{t('vendorOSBadge', 'نظام تشغيل المورّد')}</span>
             </span>
           </div>
         )}
 
-        <div className="relative z-[60] flex items-center gap-1 sm:gap-2 min-w-0 ms-auto pointer-events-auto">
-          <div className="relative w-9 h-9 shrink-0 hidden sm:block" title={currency}>
-            <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center pointer-events-none">
-              <Coins className="w-4 h-4 text-[#155EEF]" />
+        <div className="relative z-[60] flex items-center gap-1.5 min-w-0 ms-auto pointer-events-auto">
+          {/* Currency — a native select layered over the trigger so it uses the
+              platform picker on mobile instead of a custom dropdown. */}
+          <div className="relative w-9 h-9 shrink-0 hidden lg:block">
+            <div className="w-9 h-9 rounded-control bg-paper border border-line flex items-center justify-center pointer-events-none">
+              <Coins className="w-4 h-4 text-action" aria-hidden />
             </div>
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              title={t('selectCurrency', 'Currency')}
-              aria-label={t('selectCurrency', 'Currency')}
+              aria-label={t('selectCurrency', 'العملة')}
             >
               {availableCurrencies.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -242,222 +266,195 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={toggleLanguage}
-            className="hidden sm:inline-flex px-2 h-9 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold items-center gap-1"
-            title={t('switchLang', 'تغيير اللغة')}
+            className="hidden lg:inline-flex px-2.5 h-9 rounded-control bg-paper border border-line text-ink-2 text-xs font-semibold items-center gap-1.5 hover:border-navy-300 transition-colors"
             aria-label={t('switchLang', 'تغيير اللغة')}
           >
-            <Languages className="w-3.5 h-3.5 text-[#155EEF]" />
+            <Languages className="w-3.5 h-3.5 text-action" aria-hidden />
             <span>{isArabic ? 'EN' : 'عربي'}</span>
           </button>
 
-          {onOpenSupport || onOpenPrivacy || onOpenTerms || onOpenAbout ? (
-            <div className="relative hidden sm:block" ref={legalRef}>
+          {legalLinks.length ? (
+            <div className="relative hidden lg:block" ref={legalRef}>
               <button
                 type="button"
                 onClick={() => setLegalOpen((open) => !open)}
-                className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 flex items-center justify-center"
-                title="الدعم والقانوني"
-                aria-label="الدعم والقانوني"
+                className="w-9 h-9 rounded-control bg-paper border border-line text-ink-2 flex items-center justify-center hover:border-navy-300 transition-colors"
+                aria-label="الدعم والصفحات القانونية"
                 aria-expanded={legalOpen}
+                aria-haspopup="menu"
               >
-                <FileText className="w-4 h-4 text-[#155EEF]" />
+                <FileText className="w-4 h-4 text-action" aria-hidden />
               </button>
               {legalOpen ? (
-                <div role="menu" className="absolute top-full mt-1.5 end-0 z-50 w-44 rounded-xl bg-white border border-[#E4E7EC] shadow-lg p-1.5 text-right">
-                  {onOpenAbout ? (
+                <div
+                  role="menu"
+                  className="absolute top-full mt-1.5 end-0 z-50 w-48 rounded-card bg-surface border border-line shadow-e3 p-1.5 text-right usil-pop-in"
+                >
+                  {legalLinks.map((link) => (
                     <button
+                      key={link.label}
                       type="button"
                       role="menuitem"
                       onClick={() => {
-                        onOpenAbout();
+                        link.onClick();
                         setLegalOpen(false);
                       }}
-                      className="w-full px-3 py-2 rounded-lg text-xs font-bold text-[#101828] hover:bg-[#EAF0FE]"
+                      className="w-full px-3 py-2.5 rounded-control text-sm font-medium text-ink hover:bg-action-100 hover:text-action transition-colors"
                     >
-                      عن يوصل
+                      {link.label}
                     </button>
-                  ) : null}
-                  {onOpenSupport ? (
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        onOpenSupport();
-                        setLegalOpen(false);
-                      }}
-                      className="w-full px-3 py-2 rounded-lg text-xs font-bold text-[#101828] hover:bg-[#EAF0FE]"
-                    >
-                      الدعم
-                    </button>
-                  ) : null}
-                  {onOpenPrivacy ? (
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        onOpenPrivacy();
-                        setLegalOpen(false);
-                      }}
-                      className="w-full px-3 py-2 rounded-lg text-xs font-bold text-[#101828] hover:bg-[#EAF0FE]"
-                    >
-                      سياسة الخصوصية
-                    </button>
-                  ) : null}
-                  {onOpenTerms ? (
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        onOpenTerms();
-                        setLegalOpen(false);
-                      }}
-                      className="w-full px-3 py-2 rounded-lg text-xs font-bold text-[#101828] hover:bg-[#EAF0FE]"
-                    >
-                      شروط الاستخدام
-                    </button>
-                  ) : null}
+                  ))}
                 </div>
               ) : null}
             </div>
           ) : null}
 
           {onOpenTracker && (
-            <button
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={Clock}
               onClick={onOpenTracker}
-              className="hidden lg:inline-flex px-2.5 h-9 rounded-lg bg-blue-50 border border-blue-200 text-[#155EEF] text-xs font-bold items-center gap-1.5"
-              title={t('liveTrack', 'تتبع مناسبتك المباشرة')}
+              className="hidden xl:inline-flex"
             >
-              <Clock className="w-3.5 h-3.5" />
-              <span>{t('liveTrack', 'تتبع')}</span>
-            </button>
+              {t('liveTrack', 'تتبع')}
+            </Button>
           )}
 
           {onOpenCrewPortal && currentUser?.role === 'vendor' && (
-            <button
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={Users}
               onClick={onOpenCrewPortal}
-              className="hidden lg:inline-flex px-2.5 h-9 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold items-center gap-1.5"
+              className="hidden xl:inline-flex"
             >
-              <Users className="w-3.5 h-3.5 text-amber-700" />
-              <span>{t('crewPortal', 'الطاقم')}</span>
-            </button>
+              {t('crewPortal', 'الطاقم')}
+            </Button>
           )}
 
           {viewMode === 'client' && onOpenCompare && (
             <button
               onClick={onOpenCompare}
-              className={`relative w-9 h-9 rounded-lg border hidden md:flex items-center justify-center ${
+              className={cn(
+                'relative w-9 h-9 rounded-control border hidden md:flex items-center justify-center transition-colors',
                 compareCount > 0
-                  ? 'bg-blue-50 border-blue-300 text-[#155EEF]'
-                  : 'bg-slate-50 border-slate-200 text-slate-700'
-              }`}
-              title="Compare services"
-              aria-label="Compare services"
+                  ? 'bg-action-100 border-action-200 text-action'
+                  : 'bg-paper border-line text-ink-2 hover:border-navy-300',
+              )}
+              aria-label={
+                compareCount > 0
+                  ? `مقارنة المنتجات — ${compareCount} محدد`
+                  : 'مقارنة المنتجات'
+              }
             >
-              <Scale className="w-4 h-4 text-[#155EEF]" />
+              <Scale className="w-4 h-4" aria-hidden />
               {compareCount > 0 && (
-                <span className="absolute -top-1 -start-1 w-4 h-4 rounded-full bg-[#155EEF] text-white text-[10px] flex items-center justify-center font-mono">
-                  {compareCount}
+                <span className="absolute -top-1.5 -start-1.5">
+                  <CountBadge count={compareCount} label="منتج للمقارنة" tone="action" />
                 </span>
               )}
             </button>
           )}
 
           {currentUser ? (
-            <div className="flex items-center gap-1">
-              <div className="flex items-center gap-2 p-1 rounded-lg bg-slate-50 border border-slate-200 text-xs">
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2 p-1 rounded-control bg-paper border border-line">
                 {currentUser.avatarUrl || currentUser.avatar ? (
                   <img
                     src={currentUser.avatarUrl || currentUser.avatar}
-                    alt={currentUser.name}
-                    className="w-7 h-7 rounded-md object-cover bg-[#0A1A33]"
+                    alt=""
+                    className="w-7 h-7 rounded-md object-cover bg-navy"
                   />
                 ) : (
-                  <div className="w-7 h-7 rounded-md bg-[#0A1A33] text-[#C0A16B] flex items-center justify-center font-bold">
+                  <div
+                    className="w-7 h-7 rounded-md bg-navy text-sand flex items-center justify-center text-sm font-bold"
+                    aria-hidden
+                  >
                     {(currentUser.name || 'ي').trim()[0] || 'ي'}
                   </div>
                 )}
-                <div className="hidden sm:block text-right">
-                  <span className="font-bold text-slate-900 block leading-tight text-[11px]">{currentUser.name}</span>
-                  <span className="text-[9px] text-[#155EEF] font-bold">{currentUser.loyaltyTier}</span>
+                <div className="hidden sm:block text-right pe-1">
+                  <span className="font-semibold text-ink block leading-tight text-xs">
+                    {currentUser.name}
+                  </span>
+                  <span className="text-2xs text-action font-medium">
+                    {currentUser.loyaltyTier}
+                  </span>
                 </div>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={onLogout}
-                title={t('logout', 'تسجيل الخروج')}
-                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-500 flex items-center justify-center"
+                aria-label={t('logout', 'تسجيل الخروج')}
+                className="w-9 h-9 min-h-9 hover:text-danger hover:bg-danger-bg"
               >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
+                <LogOut className="w-4 h-4" aria-hidden />
+              </Button>
             </div>
           ) : (
             <>
-              <button
-                type="button"
+              <Button
+                size="sm"
+                variant="secondary"
+                icon={User}
                 onClick={() => onOpenAuth('login')}
-                className="relative z-[60] shrink-0 whitespace-nowrap min-h-[44px] h-11 px-2 sm:px-2.5 rounded-lg bg-slate-100 text-slate-800 text-xs font-bold inline-flex items-center gap-1 pointer-events-auto touch-manipulation"
+                aria-label="تسجيل الدخول"
+                className="min-h-11 h-11"
               >
-                <User className="w-3.5 h-3.5 shrink-0" />
-                <span>حساب</span>
-              </button>
-              <button
-                type="button"
+                <span className="hidden sm:inline">دخول</span>
+              </Button>
+              <Button
+                size="sm"
+                variant="primary"
+                icon={UserPlus}
                 onClick={() => onOpenAuth('register')}
-                className="relative z-[60] shrink-0 whitespace-nowrap min-h-[44px] h-11 px-2 sm:px-3 rounded-lg bg-[#155EEF] hover:bg-[#0F45B5] text-white text-xs font-bold inline-flex items-center gap-1 pointer-events-auto touch-manipulation"
+                aria-label="إنشاء حساب جديد"
+                className="min-h-11 h-11"
               >
-                <UserPlus className="w-3.5 h-3.5 shrink-0" />
-                <span>إنشاء حساب</span>
-              </button>
+                <span className="hidden sm:inline">إنشاء حساب</span>
+                <span className="sm:hidden">تسجيل</span>
+              </Button>
             </>
           )}
 
-          {onOpenVendorHub && currentUser && (currentUser.role === 'admin' || currentUser.role === 'accounts_manager') && viewMode !== 'vendor' ? (
-            <button
-              type="button"
-              onClick={onOpenVendorHub}
-              className="h-9 px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 border bg-[#0A1A33] text-white border-transparent"
-            >
-              <LayoutDashboard className="w-3.5 h-3.5 text-[#C0A16B]" />
+          {onOpenVendorHub &&
+          currentUser &&
+          (currentUser.role === 'admin' || currentUser.role === 'accounts_manager') &&
+          viewMode !== 'vendor' ? (
+            <Button size="sm" variant="navy" icon={LayoutDashboard} onClick={onOpenVendorHub}>
               <span className="hidden sm:inline">لوحة المورد</span>
-            </button>
+            </Button>
           ) : null}
 
           {currentUser && currentUser.role !== 'client' ? (
-            <button
+            <Button
+              size="sm"
+              variant={viewMode !== 'client' ? 'secondary' : 'navy'}
+              icon={viewMode !== 'client' ? Store : LayoutDashboard}
               onClick={onToggleViewMode}
-              className={`h-9 px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 border ${
-                viewMode !== 'client'
-                  ? 'bg-blue-50 text-blue-900 border-blue-200'
-                  : 'bg-[#0A1A33] text-white border-transparent'
-              }`}
             >
-              {viewMode !== 'client' ? (
-                <>
-                  <Store className="w-3.5 h-3.5 text-[#C0A16B]" />
-                  <span className="hidden sm:inline">{t('clientStore', 'المتجر')}</span>
-                </>
-              ) : currentUser.role === 'admin' || currentUser.role === 'accounts_manager' ? (
-                <>
-                  <LayoutDashboard className="w-3.5 h-3.5 text-[#C0A16B]" />
-                  <span className="hidden sm:inline">الإدارة</span>
-                </>
-              ) : (
-                <>
-                  <LayoutDashboard className="w-3.5 h-3.5 text-[#C0A16B]" />
-                  <span className="hidden sm:inline">{t('vendorPortal', 'المورّد')}</span>
-                </>
-              )}
-            </button>
+              <span className="hidden sm:inline">
+                {viewMode !== 'client'
+                  ? t('clientStore', 'المتجر')
+                  : currentUser.role === 'admin' || currentUser.role === 'accounts_manager'
+                    ? 'الإدارة'
+                    : t('vendorPortal', 'المورّد')}
+              </span>
+            </Button>
           ) : null}
 
           {viewMode === 'client' && (
             <button
               onClick={onOpenCart}
-              className="relative h-9 px-3 rounded-lg bg-[#0A1A33] hover:bg-[#20304C] text-white font-bold text-xs hidden sm:inline-flex items-center gap-1.5 shrink-0"
+              className="relative h-9 px-3 rounded-control bg-navy hover:bg-navy-700 text-white text-xs font-semibold hidden sm:inline-flex items-center gap-2 shrink-0 transition-colors"
+              aria-label={cartCount > 0 ? `سلة الحجز — ${cartCount} عنصر` : 'سلة الحجز'}
             >
-              <ShoppingBag className="w-4 h-4" />
-              <span className="hidden sm:inline">السلة</span>
+              <ShoppingBag className="w-4 h-4" aria-hidden />
+              <span>السلة</span>
               {cartCount > 0 && (
-                <span className="min-w-5 h-5 px-1 rounded-md bg-[#155EEF] text-white text-[11px] font-bold flex items-center justify-center font-mono">
+                <span className="min-w-5 h-5 px-1 rounded-md bg-action text-white text-2xs font-semibold flex items-center justify-center tnum">
                   {cartCount}
                 </span>
               )}
@@ -466,9 +463,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
+      {/* Mobile: city + search on one row. The lane rail that used to sit here
+          moved into the filter panel — four stacked rails put the app bar at
+          ~280px, roughly 40% of an iPhone SE viewport before any content. */}
       {viewMode === 'client' && (
-        <div className="md:hidden px-3 pb-2 flex items-center gap-2">
-          {citySelect()}
+        <div className="md:hidden px-3 pb-2.5 flex items-center gap-2">
+          {citySelect(true)}
           {searchField('usil-nav-suggest-mobile', true)}
         </div>
       )}
@@ -477,24 +477,34 @@ export const Navbar: React.FC<NavbarProps> = ({
         <CategoryIconRail selectedCategory={selectedCategory} onSelectCategory={onSelectCategory} />
       ) : null}
 
+      {/* Fulfillment lanes stay in the bar on desktop, where there is room and
+          they are a headline part of the proposition. */}
       {viewMode === 'client' && onSelectFulfillment ? (
-        <div className="border-t border-[#E4E7EC] bg-white" aria-label="مسارات التوريد">
-          <div className="container mx-auto px-3 sm:px-4 lg:px-8 flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1.5">
+        <div className="hidden md:block border-t border-line bg-surface">
+          <div
+            className="container mx-auto px-3 sm:px-4 lg:px-8 flex items-center gap-1.5 overflow-x-auto scrollbar-none py-2"
+            role="group"
+            aria-label="مسارات التوريد"
+          >
             {FULFILLMENT_FILTER_CHIPS.map((chip) => {
               const active = selectedFulfillment === chip.id;
               return (
                 <button
                   key={chip.id}
                   type="button"
+                  aria-pressed={active}
                   onClick={() => {
                     onSelectFulfillment(chip.id);
-                    document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
+                    document
+                      .getElementById('services-section')
+                      ?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className={`px-3 py-2 min-h-[44px] rounded-full text-[12px] font-bold whitespace-nowrap shrink-0 border flex items-center ${
+                  className={cn(
+                    'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 border transition-colors',
                     active
-                      ? 'bg-[#155EEF] border-[#155EEF] text-white'
-                      : 'bg-[#F7F8FA] border-[#E4E7EC] text-[#344054] hover:border-[#155EEF] hover:text-[#155EEF]'
-                  }`}
+                      ? 'bg-action border-action text-white'
+                      : 'bg-paper border-line text-ink-2 hover:border-action hover:text-action',
+                  )}
                 >
                   {chip.chip}
                 </button>
@@ -504,7 +514,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={onOpenVendorRegister}
-                className="ms-auto px-3 py-2 min-h-[44px] rounded-full text-[12px] font-bold text-[#667085] hover:text-[#155EEF] whitespace-nowrap shrink-0"
+                className="ms-auto px-3 py-1.5 rounded-full text-xs font-semibold text-ink-3 hover:text-action whitespace-nowrap shrink-0 transition-colors"
               >
                 تسجيل مورد
               </button>

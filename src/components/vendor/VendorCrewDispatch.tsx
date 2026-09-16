@@ -157,11 +157,11 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
       {/* Header Banner */}
       <div className="p-6 rounded-3xl bg-white border border-slate-200 card-shadow flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-bold border border-blue-200">
-            <Users className="w-3.5 h-3.5 text-[#155EEF]" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium border border-blue-200">
+            <Users className="w-3.5 h-3.5 text-action" />
             <span>إدارة الطاقم الميداني وساعات العمل (Crew & Work Hours Dispatch)</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
             جدولة طاقم العمل وتوثيق ساعات المناوبات
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-normal">
@@ -172,7 +172,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-xs transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white text-xs sm:text-sm font-medium flex items-center gap-2 shadow-xs transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>إضافة عضو فريق جديد</span>
@@ -215,8 +215,8 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                       className="w-12 h-12 rounded-2xl object-cover border border-slate-200"
                     />
                     <div>
-                      <h4 className="text-sm font-extrabold text-slate-900">{member.name}</h4>
-                      <span className="text-xs text-blue-700 font-bold block">{member.role}</span>
+                      <h4 className="text-sm font-bold text-slate-900">{member.name}</h4>
+                      <span className="text-xs text-blue-700 font-medium block">{member.role}</span>
                     </div>
                   </div>
 
@@ -237,7 +237,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
                   <div className="flex items-center justify-between text-slate-600">
                     <span>أجر الساعة الأساسي:</span>
-                    <span className="font-mono font-extrabold text-slate-900 bg-white px-2 py-0.5 rounded-lg border border-slate-200">
+                    <span className="font-mono font-bold text-slate-900 bg-white px-2 py-0.5 rounded-lg border border-slate-200">
                       {defaultRate} ر.س / ساعة
                     </span>
                   </div>
@@ -255,7 +255,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                   </div>
 
                   {member.bankIban && (
-                    <div className="pt-1.5 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                    <div className="pt-1.5 border-t border-slate-200 flex items-center justify-between text-2xs text-slate-500 font-mono">
                       <span>الآيبان البنكي:</span>
                       <span className="text-slate-800">{member.bankIban.slice(0, 8)}...</span>
                     </div>
@@ -265,12 +265,12 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                 {/* Action button to log hours */}
                 <button
                   onClick={() => handleOpenWorkLogModal(member)}
-                  className="w-full py-2 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-xs font-extrabold flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full py-2 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Clock className="w-3.5 h-3.5" />
                   <span>تسجيل مناوبة وساعات عمل</span>
                   {unprocLogs.length > 0 && (
-                    <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-[10px] font-mono font-bold">
+                    <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-2xs font-mono font-medium">
                       {unprocLogs.length}
                     </span>
                   )}
@@ -283,9 +283,9 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                 <button
                   type="button"
                   onClick={() => onUpdateCrewStatus(member.id, 'available')}
-                  className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold border transition-colors ${
+                  className={`flex-1 py-1.5 rounded-xl text-2xs font-bold border transition-colors ${
                     member.status === 'available'
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-extrabold'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-bold'
                       : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -294,9 +294,9 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                 <button
                   type="button"
                   onClick={() => onUpdateCrewStatus(member.id, 'on_mission')}
-                  className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold border transition-colors ${
+                  className={`flex-1 py-1.5 rounded-xl text-2xs font-bold border transition-colors ${
                     member.status === 'on_mission'
-                      ? 'bg-amber-50 border-amber-200 text-amber-800 font-extrabold'
+                      ? 'bg-amber-50 border-amber-200 text-amber-800 font-bold'
                       : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -305,9 +305,9 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                 <button
                   type="button"
                   onClick={() => onUpdateCrewStatus(member.id, 'off_duty')}
-                  className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold border transition-colors ${
+                  className={`flex-1 py-1.5 rounded-xl text-2xs font-bold border transition-colors ${
                     member.status === 'off_duty'
-                      ? 'bg-slate-200 border-slate-300 text-slate-800 font-extrabold'
+                      ? 'bg-slate-200 border-slate-300 text-slate-800 font-bold'
                       : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -325,10 +325,10 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs text-right usil-modal-scroll">
           <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 space-y-4 card-shadow">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-extrabold text-slate-900">إضافة عضو فريق جديد</h3>
+              <h3 className="text-base font-bold text-slate-900">إضافة عضو فريق جديد</h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-800 text-xs font-bold"
+                className="text-slate-400 hover:text-slate-800 text-xs font-medium"
               >
                 إلغاء
               </button>
@@ -343,7 +343,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="مثال: يوسف العتيبي"
                   required
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-semibold focus:outline-none focus:border-[#155EEF] text-right"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-semibold focus:outline-none focus:border-action text-right"
                 />
               </div>
 
@@ -353,7 +353,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                   <select
                     value={role}
                     onChange={(e) => handleRoleChange(e.target.value as any)}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold focus:outline-none focus:border-[#155EEF] text-right"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold focus:outline-none focus:border-action text-right"
                   >
                     <option value="مشرف ضيافة">مشرف ضيافة</option>
                     <option value="مباشر قهوة">مباشر قهوة سعودية</option>
@@ -372,7 +372,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                     value={hourlyRate}
                     onChange={(e) => setHourlyRate(Number(e.target.value))}
                     required
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-bold focus:outline-none focus:border-[#155EEF] text-right"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-bold focus:outline-none focus:border-action text-right"
                   />
                 </div>
               </div>
@@ -384,7 +384,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="05XXXXXXXX"
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#155EEF] text-right"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-action text-right"
                 />
               </div>
 
@@ -395,21 +395,21 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                   value={bankIban}
                   onChange={(e) => setBankIban(e.target.value)}
                   placeholder="SA00 0000 0000 0000 0000 0000"
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#155EEF] text-right"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-action text-right"
                 />
               </div>
 
               <div className="pt-2 flex items-center gap-3">
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white text-xs font-bold shadow-xs transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-action hover:bg-action-hover text-white text-xs font-medium shadow-xs transition-colors"
                 >
                   حفظ وإضافة إلى الطاقم
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                  className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium"
                 >
                   إلغاء
                 </button>
@@ -432,22 +432,22 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                   className="w-10 h-10 rounded-xl object-cover border border-slate-200"
                 />
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900">
+                  <h3 className="text-base font-bold text-slate-900">
                     تسجيل ساعات ومناوبة عمل: {selectedCrewForLog.name}
                   </h3>
-                  <span className="text-xs text-blue-700 font-bold">{selectedCrewForLog.role}</span>
+                  <span className="text-xs text-blue-700 font-medium">{selectedCrewForLog.role}</span>
                 </div>
               </div>
               <button
                 onClick={() => setShowWorkLogModal(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-medium"
               >
                 ✕
               </button>
             </div>
 
             {logSuccessNotice ? (
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-2">
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span>{logSuccessNotice}</span>
               </div>
@@ -459,7 +459,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                   <select
                     value={logBookingId}
                     onChange={(e) => setLogBookingId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold focus:outline-none focus:border-[#155EEF] text-right"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold focus:outline-none focus:border-action text-right"
                   >
                     {bookings.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -515,12 +515,12 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                     <span className="font-mono font-bold">{logRegularHours * logHourlyRate} ر.س</span>
                   </div>
                   {logOvertimeHours > 0 && (
-                    <div className="flex justify-between items-center text-xs text-amber-800 font-bold">
+                    <div className="flex justify-between items-center text-xs text-amber-800 font-medium">
                       <span>الأجر الإضافي ({logOvertimeHours} ساعات × {logHourlyRate * 1.5} ر.س):</span>
                       <span className="font-mono">+{logOvertimeHours * (logHourlyRate * 1.5)} ر.س</span>
                     </div>
                   )}
-                  <div className="pt-2 border-t border-blue-200 flex justify-between items-center text-sm font-extrabold text-blue-950">
+                  <div className="pt-2 border-t border-blue-200 flex justify-between items-center text-sm font-bold text-blue-950">
                     <span>إجمالي المستحق المحسوب:</span>
                     <span className="font-mono text-emerald-800 text-base">
                       {(
@@ -546,7 +546,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                 <div className="pt-2 flex items-center gap-3">
                   <button
                     type="submit"
-                    className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-xs transition-colors"
+                    className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs shadow-xs transition-colors"
                   >
                     حفظ وتوثيق ساعات العمل
                   </button>
@@ -565,7 +565,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
             {/* Previous Work Logs for this Member */}
             {selectedCrewForLog.workLogs && selectedCrewForLog.workLogs.length > 0 && (
               <div className="pt-3 border-t border-slate-100 space-y-2">
-                <h5 className="font-extrabold text-xs text-slate-800">
+                <h5 className="font-medium text-xs text-slate-800">
                   سجل المناوبات السابقة ({selectedCrewForLog.workLogs.length})
                 </h5>
                 <div className="space-y-1.5 max-h-36 overflow-y-auto">
@@ -576,14 +576,14 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                     >
                       <div>
                         <div className="font-bold text-slate-900">{log.eventTitle}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">
+                        <div className="text-2xs text-slate-400 font-mono">
                           {log.eventDate} • {log.regularHours} س أساسي {log.overtimeHours > 0 ? `+ ${log.overtimeHours} س إضافي` : ''}
                         </div>
                       </div>
                       <div className="text-left font-mono">
-                        <div className="font-extrabold text-emerald-800">{log.totalEarned} ر.س</div>
+                        <div className="font-bold text-emerald-800">{log.totalEarned} ر.س</div>
                         <span
-                          className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
+                          className={`text-2xs px-1.5 py-0.2 rounded-full font-bold ${
                             log.status === 'processed_in_payroll'
                               ? 'bg-emerald-100 text-emerald-800'
                               : 'bg-amber-100 text-amber-800'

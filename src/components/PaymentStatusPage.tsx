@@ -39,13 +39,13 @@ export function PaymentSuccessPage({ onBack }: { onBack: () => void }) {
     <article className="container mx-auto px-4 lg:px-8 py-16 max-w-lg text-right" dir="rtl">
       {state === 'loading' ? (
         <div className="flex flex-col items-center gap-3 text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-[#155EEF]" />
+          <Loader2 className="w-8 h-8 animate-spin text-action" />
           <p className="text-sm font-bold text-slate-700">نتحقق من الدفع مع ميسر…</p>
         </div>
       ) : state === 'paid' ? (
         <div className="space-y-4 text-center">
           <CheckCircle2 className="w-14 h-14 text-emerald-600 mx-auto" />
-          <h1 className="text-2xl font-black text-[#0A1A33]">تم الدفع</h1>
+          <h1 className="text-2xl font-bold text-navy">تم الدفع</h1>
           <p className="text-sm text-slate-600">
             ميسر أكّد الحالة paid
             {amount != null ? ` بمبلغ ${amount.toLocaleString('ar-SA')} ر.س` : ''}.
@@ -53,7 +53,7 @@ export function PaymentSuccessPage({ onBack }: { onBack: () => void }) {
           <button
             type="button"
             onClick={onBack}
-            className="w-full min-h-11 rounded-xl bg-[#0A1A33] text-white font-bold"
+            className="w-full min-h-11 rounded-xl bg-navy text-white font-bold"
           >
             العودة للمتجر
           </button>
@@ -61,12 +61,12 @@ export function PaymentSuccessPage({ onBack }: { onBack: () => void }) {
       ) : (
         <div className="space-y-4 text-center">
           <XCircle className="w-14 h-14 text-rose-600 mx-auto" />
-          <h1 className="text-2xl font-black text-[#0A1A33]">ما اكتمل الدفع</h1>
+          <h1 className="text-2xl font-bold text-navy">ما اكتمل الدفع</h1>
           <p className="text-sm text-slate-600">{error || 'أعد المحاولة من سلة الحجز.'}</p>
           <button
             type="button"
             onClick={onBack}
-            className="w-full min-h-11 rounded-xl bg-[#155EEF] text-white font-bold"
+            className="w-full min-h-11 rounded-xl bg-action text-white font-bold"
           >
             إعادة المحاولة من المتجر
           </button>
@@ -81,12 +81,12 @@ export function PaymentCancelledPage({ onBack }: { onBack: () => void }) {
     <article className="container mx-auto px-4 lg:px-8 py-16 max-w-lg text-right" dir="rtl">
       <div className="space-y-4 text-center">
         <XCircle className="w-14 h-14 text-slate-400 mx-auto" />
-        <h1 className="text-2xl font-black text-[#0A1A33]">أُلغيت العملية</h1>
+        <h1 className="text-2xl font-bold text-navy">أُلغيت العملية</h1>
         <p className="text-sm text-slate-600">ما خصمنا شيئاً. تقدر ترجع للحجز وتدفع إلكترونياً متى ما جاهز.</p>
         <button
           type="button"
           onClick={onBack}
-          className="w-full min-h-11 rounded-xl bg-[#0A1A33] text-white font-bold"
+          className="w-full min-h-11 rounded-xl bg-navy text-white font-bold"
         >
           الرجوع للمتجر
         </button>

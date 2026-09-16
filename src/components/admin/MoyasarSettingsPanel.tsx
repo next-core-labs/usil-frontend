@@ -92,8 +92,8 @@ export function MoyasarSettingsPanel() {
     <section className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-black inline-flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-[#155EEF]" />
+          <h2 className="text-lg font-bold inline-flex items-center gap-2">
+            <CreditCard className="w-5 h-5 text-action" />
             ميسر — الدفع الإلكتروني
           </h2>
           <p className="text-sm text-slate-600 mt-1 max-w-2xl">
@@ -119,7 +119,7 @@ export function MoyasarSettingsPanel() {
             {status.live ? 'مفعّل — وضع حي' : 'مفعّل — وضع تجربة'}
           </span>
         ) : (
-          <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-rose-50 text-rose-700">غير مفعّل</span>
+          <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-rose-50 text-rose-700">غير مفعّل</span>
         )}
       </div>
 
@@ -133,20 +133,20 @@ export function MoyasarSettingsPanel() {
       {status && !loading ? (
         <dl className="grid sm:grid-cols-2 gap-3 text-sm">
           <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-            <dt className="text-xs font-bold text-slate-500">المفتاح السري</dt>
+            <dt className="text-xs font-medium text-slate-500">المفتاح السري</dt>
             <dd className="font-mono text-slate-900 mt-1" dir="ltr">
               {status.secretMasked || 'غير محفوظ'}
             </dd>
           </div>
           <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-            <dt className="text-xs font-bold text-slate-500">المفتاح العام (اختياري)</dt>
+            <dt className="text-xs font-medium text-slate-500">المفتاح العام (اختياري)</dt>
             <dd className="font-mono text-slate-900 mt-1" dir="ltr">
               {status.publishableMasked || 'غير مطلوب لفاتورة ميسر المستضافة'}
             </dd>
           </div>
           <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:col-span-2">
-            <dt className="text-xs font-bold text-slate-500">ويبهوك ميسر</dt>
-            <dd className="font-mono text-[13px] text-slate-800 mt-1 break-all" dir="ltr">
+            <dt className="text-xs font-medium text-slate-500">ويبهوك ميسر</dt>
+            <dd className="font-mono text-sm text-slate-800 mt-1 break-all" dir="ltr">
               {status.webhookUrl}
             </dd>
             <dd className="text-xs text-slate-500 mt-2">
@@ -160,7 +160,7 @@ export function MoyasarSettingsPanel() {
 
       <div className="space-y-3">
         <label className="block">
-          <span className="text-xs font-bold text-slate-600">Secret Key</span>
+          <span className="text-xs font-medium text-slate-600">Secret Key</span>
           <input
             type="password"
             autoComplete="off"
@@ -173,7 +173,7 @@ export function MoyasarSettingsPanel() {
           />
         </label>
         <label className="block">
-          <span className="text-xs font-bold text-slate-600">Publishable Key — اختياري</span>
+          <span className="text-xs font-medium text-slate-600">Publishable Key — اختياري</span>
           <input
             type="text"
             autoComplete="off"
@@ -189,7 +189,7 @@ export function MoyasarSettingsPanel() {
           type="button"
           onClick={() => void save()}
           disabled={saving || (!secretKey.trim() && !status?.configured)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#155EEF] text-white text-sm font-bold hover:bg-[#1248c9] disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-action text-white text-sm font-bold hover:bg-[#1248c9] disabled:opacity-50"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           تفعيل ميسر

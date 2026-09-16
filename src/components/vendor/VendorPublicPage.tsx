@@ -54,7 +54,7 @@ export function VendorPublicPage({
     return (
       <div className="max-w-lg mx-auto p-8 text-center space-y-2" dir="rtl">
         <Store className="w-10 h-10 mx-auto text-slate-400" />
-        <h1 className="text-xl font-black text-[#0A1A33]">ما لقينا ملف هذا المورد</h1>
+        <h1 className="text-xl font-bold text-navy">ما لقينا ملف هذا المورد</h1>
         <p className="text-sm text-slate-500">إما الحساب غير معتمد بعد، أو الرابط غلط.</p>
       </div>
     );
@@ -68,18 +68,18 @@ export function VendorPublicPage({
         {file.logoUrl ? (
           <img src={file.logoUrl} alt={file.projectName} className="w-20 h-20 rounded-2xl object-cover border border-slate-200" />
         ) : (
-          <div className="w-20 h-20 rounded-2xl bg-[#0A1A33] text-white flex items-center justify-center">
+          <div className="w-20 h-20 rounded-2xl bg-navy text-white flex items-center justify-center">
             <Store className="w-8 h-8" />
           </div>
         )}
         <div>
-          <p className="text-[11px] font-bold text-[#155EEF]">ملف مورّد يوصل</p>
-          <h1 className="text-2xl font-black text-[#0A1A33]">{file.projectName}</h1>
+          <p className="text-2xs font-medium text-action">ملف مورّد يوصل</p>
+          <h1 className="text-2xl font-bold text-navy">{file.projectName}</h1>
           <p className="text-sm text-slate-600">{file.personName}</p>
           {file.projectType ? <p className="text-xs text-slate-500 mt-1">{file.projectType}</p> : null}
           <div className="mt-2 flex flex-wrap gap-1.5">
             {file.fulfillment.map((lane) => (
-              <span key={lane} className="px-2 py-0.5 rounded-full bg-[#155EEF] text-white text-[10px] font-extrabold">
+              <span key={lane} className="px-2 py-0.5 rounded-full bg-action text-white text-2xs font-medium">
                 {FULFILLMENT_AR_LABEL[lane as keyof typeof FULFILLMENT_AR_LABEL] || lane}
               </span>
             ))}
@@ -94,7 +94,7 @@ export function VendorPublicPage({
 
       {listings.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center">
-          <p className="font-extrabold text-slate-900">هذا المورد ما نشر منتجات بعد</p>
+          <p className="font-bold text-slate-900">هذا المورد ما نشر منتجات بعد</p>
           <p className="text-xs text-slate-500 mt-1">ما نعرض كتالوج وهمي مكان منتجاته.</p>
         </div>
       ) : (

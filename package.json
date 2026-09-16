@@ -23,10 +23,7 @@
     "@capacitor/splash-screen": "^7.0.1",
     "@capacitor/status-bar": "^7.0.1",
     "@tailwindcss/vite": "^4.1.14",
-    "@types/canvas-confetti": "^1.9.0",
-    "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^5.0.4",
-    "canvas-confetti": "^1.9.4",
     "html5-qrcode": "^2.3.8",
     "i18next": "^25.4.2",
     "jspdf": "^3.0.2",
@@ -37,7 +34,6 @@
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-i18next": "^15.7.3",
-    "three": "^0.185.1",
     "vite": "^6.2.3",
     "xlsx": "^0.18.5"
   },

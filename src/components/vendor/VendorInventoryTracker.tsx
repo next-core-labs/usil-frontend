@@ -38,6 +38,7 @@ import {
   Camera,
   QrCode,
 } from 'lucide-react';
+import { ConfirmDialog } from '../ui/Modal';
 import { BarcodeScannerModal } from './BarcodeScannerModal';
 
 interface VendorInventoryTrackerProps {
@@ -58,7 +59,7 @@ interface VendorInventoryTrackerProps {
 }
 
 const CATEGORY_LABELS: Record<InventoryCategory, { label: string; color: string }> = {
-  disposables: { label: 'أكواب ومستهلكات', color: 'bg-blue-50 text-[#155EEF] border-blue-200' },
+  disposables: { label: 'أكواب ومستهلكات', color: 'bg-blue-50 text-action border-blue-200' },
   raw_beverages: { label: 'بن ومشروبات خام', color: 'bg-amber-50 text-amber-800 border-amber-200' },
   ingredients: { label: 'مكونات وتمور وضيافة', color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
   equipment_assets: { label: 'معدات وأصول تشغيل', color: 'bg-purple-50 text-purple-800 border-purple-200' },
@@ -76,6 +77,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
   onDeleteItem,
   onRecordRestockExpense,
 }) => {
+  const [pendingDelete, setPendingDelete] = useState<InventoryItem | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'critical' | 'low' | 'safe'>('all');
@@ -251,19 +253,19 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
     <div className="space-y-6 animate-in fade-in duration-300">
       
       {/* Top Banner & Header */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-[#0A1A33] via-[#0F294D] to-[#155EEF] text-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-navy via-[#0F294D] to-action text-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-2">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-xs border border-white/15">
-              <Package className="w-5 h-5 text-[#C0A16B]" />
+              <Package className="w-5 h-5 text-sand" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-black tracking-tight text-white">
+                <h2 className="text-lg font-bold tracking-tight text-white">
                   إدارة المخزون والتنبؤ باستهلاك المناسبات
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-[#C0A16B]/20 text-[#DFC18D] border border-[#C0A16B]/30 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-[#C0A16B]" />
+                <span className="px-2 py-0.5 rounded-full text-2xs font-mono font-medium bg-sand/20 text-[#DFC18D] border border-sand/30 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-sand" />
                   نظام التنبؤ الذكي بالطلب
                 </span>
               </div>
@@ -279,7 +281,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
           <button
             id="btn-scan-barcode-camera"
             onClick={() => setIsScannerOpen(true)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer hover:scale-102"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer hover:scale-102"
           >
             <Camera className="w-4 h-4" />
             <span>مسح باركود بالكاميرا</span>
@@ -288,7 +290,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
           <button
             id="btn-add-inventory-item"
             onClick={handleOpenAdd}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#C0A16B] hover:bg-[#b0915b] text-slate-950 text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-sand hover:bg-[#b0915b] text-slate-950 text-xs font-medium flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>إضافة بند جديد</span>
@@ -300,25 +302,25 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 block">إجمالي أصناف المخزون</span>
-            <span className="text-xl font-black text-slate-900 font-mono">
+            <span className="text-2xs font-medium text-slate-400 block">إجمالي أصناف المخزون</span>
+            <span className="text-xl font-bold text-slate-900 font-mono">
               {stats.totalItemsCount} صنف
             </span>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-blue-50 text-[#155EEF] flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-blue-50 text-action flex items-center justify-center shrink-0">
             <Layers className="w-5 h-5" />
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 block">عجز حرج بالفعاليات</span>
+            <span className="text-2xs font-medium text-slate-400 block">عجز حرج بالفعاليات</span>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-black text-rose-600 font-mono">
+              <span className="text-xl font-bold text-rose-600 font-mono">
                 {stats.criticalCount}
               </span>
               {stats.criticalCount > 0 && (
-                <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 text-[10px] font-extrabold animate-pulse">
+                <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 text-2xs font-medium animate-pulse">
                   يتطلب توريد فوري
                 </span>
               )}
@@ -331,8 +333,8 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 block">دون حد الأمان المطلوب</span>
-            <span className="text-xl font-black text-amber-600 font-mono">
+            <span className="text-2xs font-medium text-slate-400 block">دون حد الأمان المطلوب</span>
+            <span className="text-xl font-bold text-amber-600 font-mono">
               {stats.lowStockCount} أصناف
             </span>
           </div>
@@ -343,8 +345,8 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 block">تكلفة إعادة التوريد المقترحة</span>
-            <span className="text-xl font-black text-emerald-700 font-mono">
+            <span className="text-2xs font-medium text-slate-400 block">تكلفة إعادة التوريد المقترحة</span>
+            <span className="text-xl font-bold text-emerald-700 font-mono">
               {stats.totalRestockEstimatedCost.toLocaleString()} ر.س
             </span>
           </div>
@@ -363,7 +365,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-rose-950">
+                <h3 className="text-sm font-bold text-rose-950">
                   تنبيه تشغيلي عاجل: تم رصد عجز متوقع في ({stats.criticalCount}) من مستلزمات الحفلات المجدولة!
                 </h3>
                 <p className="text-xs text-rose-700 mt-0.5 leading-relaxed">
@@ -374,7 +376,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
 
             <button
               onClick={() => setStatusFilter('critical')}
-              className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shrink-0 transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium shrink-0 transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
             >
               <Zap className="w-4 h-4" />
               <span>عرض البنود الحرجة فقط ({stats.criticalCount})</span>
@@ -394,7 +396,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="ابحث باسم البند، المورد، موقع المستودع، أو الباركود..."
-              className="w-full pl-20 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+              className="w-full pl-20 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
             />
             <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
               {searchTerm && (
@@ -408,10 +410,10 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
               <button
                 type="button"
                 onClick={() => setIsScannerOpen(true)}
-                className="px-2 py-1 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                className="px-2 py-1 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-2xs font-medium flex items-center gap-1 cursor-pointer transition-colors"
                 title="مسح باركود بالكاميرا"
               >
-                <Camera className="w-3.5 h-3.5 text-[#155EEF]" />
+                <Camera className="w-3.5 h-3.5 text-action" />
                 <span className="hidden sm:inline">مسح</span>
               </button>
             </div>
@@ -423,7 +425,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
               onClick={() => setStatusFilter('all')}
               className={`px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                 statusFilter === 'all'
-                  ? 'bg-[#0A1A33] text-white shadow-xs'
+                  ? 'bg-navy text-white shadow-xs'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
               }`}
             >
@@ -470,12 +472,12 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
 
         {/* Categories Filter Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-1">
-          <span className="text-[11px] font-bold text-slate-400 shrink-0">التصنيف:</span>
+          <span className="text-2xs font-medium text-slate-400 shrink-0">التصنيف:</span>
           <button
             onClick={() => setSelectedCategory('all')}
             className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
               selectedCategory === 'all'
-                ? 'bg-blue-50 text-[#155EEF] border border-blue-200'
+                ? 'bg-blue-50 text-action border border-blue-200'
                 : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
@@ -487,7 +489,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
               onClick={() => setSelectedCategory(catKey)}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                 selectedCategory === catKey
-                  ? 'bg-blue-50 text-[#155EEF] border border-blue-200'
+                  ? 'bg-blue-50 text-action border border-blue-200'
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -501,8 +503,8 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
       <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Package className="w-4 h-4 text-[#155EEF]" />
-            <h3 className="text-sm font-extrabold text-slate-900">
+            <Package className="w-4 h-4 text-action" />
+            <h3 className="text-sm font-bold text-slate-900">
               قائمة أصناف المخزون والتنبؤ بالاستهلاك ({filteredForecasts.length})
             </h3>
           </div>
@@ -516,7 +518,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
           <div className="p-8 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-200 space-y-3">
             <Package className="w-10 h-10 text-slate-300 mx-auto" />
             <div className="space-y-1">
-              <h4 className="text-sm font-black text-slate-700">لا توجد بنود مخزون تطابق الفلتر المحدد</h4>
+              <h4 className="text-sm font-bold text-slate-700">لا توجد بنود مخزون تطابق الفلتر المحدد</h4>
               <p className="text-xs text-slate-500">
                 جرّب تعديل مصطلح البحث أو اختيار تصنيف آخر.
               </p>
@@ -527,7 +529,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                 setSelectedCategory('all');
                 setStatusFilter('all');
               }}
-              className="px-3.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold cursor-pointer transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-medium cursor-pointer transition-colors"
             >
               إعادة ضبط الفلاتر
             </button>
@@ -556,43 +558,43 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold border ${catMeta.color}`}>
+                        <span className={`px-2.5 py-0.5 rounded-lg text-2xs font-bold border ${catMeta.color}`}>
                           {catMeta.label}
                         </span>
                         
                         {isShortage && (
-                          <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-black bg-rose-600 text-white flex items-center gap-1 shadow-xs animate-pulse">
+                          <span className="px-2.5 py-0.5 rounded-lg text-2xs font-medium bg-rose-600 text-white flex items-center gap-1 shadow-xs animate-pulse">
                             <AlertTriangle className="w-3 h-3" />
                             عجز متوقع بالفعاليات ({Math.abs(remainingProjectedStock)} {item.unit})
                           </span>
                         )}
 
                         {isLow && !isShortage && (
-                          <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-lg text-2xs font-medium bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1">
                             <TrendingDown className="w-3 h-3" />
                             دون حد الأمان
                           </span>
                         )}
 
                         {!isShortage && !isLow && (
-                          <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-lg text-2xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
                             <CheckCircle2 className="w-3 h-3" />
                             رصيد كافي وآمن
                           </span>
                         )}
 
                         {item.location && (
-                          <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                          <span className="text-2xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
                             📍 {item.location}
                           </span>
                         )}
                       </div>
 
-                      <h4 className="text-sm font-black text-slate-900 leading-snug">
+                      <h4 className="text-sm font-bold text-slate-900 leading-snug">
                         {item.nameAr}
                       </h4>
                       {item.nameEn && (
-                        <p className="text-[11px] font-mono text-slate-400">
+                        <p className="text-2xs font-mono text-slate-400">
                           {item.nameEn}
                         </p>
                       )}
@@ -605,7 +607,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer ${
                           isShortage
                             ? 'bg-rose-600 hover:bg-rose-700 text-white'
-                            : 'bg-blue-50 hover:bg-blue-100 text-[#155EEF] border border-blue-200'
+                            : 'bg-blue-50 hover:bg-blue-100 text-action border border-blue-200'
                         }`}
                       >
                         <ShoppingCart className="w-3.5 h-3.5" />
@@ -621,11 +623,8 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                       </button>
 
                       <button
-                        onClick={() => {
-                          if (confirm(`هل أنت متأكد من حذف بند المخزون "${item.nameAr}"؟`)) {
-                            onDeleteItem(item.id);
-                          }
-                        }}
+                        onClick={() => setPendingDelete(item)}
+                        aria-label={`حذف بند المخزون ${item.nameAr}`}
                         className="p-2 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                         title="حذف البند"
                       >
@@ -638,26 +637,26 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs pt-1">
                     {/* Current Stock */}
                     <div className="p-3 rounded-xl bg-white border border-slate-200/90 flex flex-col justify-between">
-                      <span className="text-[10px] text-slate-400 font-bold block">الرصيد الفعلي الحالي</span>
+                      <span className="text-2xs text-slate-400 font-medium block">الرصيد الفعلي الحالي</span>
                       <div className="flex items-baseline justify-between mt-1">
-                        <span className={`text-base font-black font-mono ${
+                        <span className={`text-base font-bold font-mono ${
                           item.currentStock <= item.minStockThreshold ? 'text-amber-600' : 'text-slate-900'
                         }`}>
-                          {item.currentStock} <span className="text-[11px] font-normal text-slate-500">{item.unit}</span>
+                          {item.currentStock} <span className="text-2xs font-normal text-slate-500">{item.unit}</span>
                         </span>
                         
                         {/* Inline Quick +/- */}
                         <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg">
                           <button
                             onClick={() => onUpdateItemStock(item.id, item.currentStock - 1)}
-                            className="w-5 h-5 flex items-center justify-center rounded-md bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
+                            className="w-5 h-5 flex items-center justify-center rounded-md bg-white hover:bg-slate-200 text-slate-700 font-medium text-xs cursor-pointer"
                             title="إنقاص 1"
                           >
                             -
                           </button>
                           <button
                             onClick={() => onUpdateItemStock(item.id, item.currentStock + 1)}
-                            className="w-5 h-5 flex items-center justify-center rounded-md bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
+                            className="w-5 h-5 flex items-center justify-center rounded-md bg-white hover:bg-slate-200 text-slate-700 font-medium text-xs cursor-pointer"
                             title="زيادة 1"
                           >
                             +
@@ -668,12 +667,12 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
 
                     {/* Scheduled Events Demand */}
                     <div className="p-3 rounded-xl bg-white border border-slate-200/90">
-                      <span className="text-[10px] text-slate-400 font-bold block">مطلوب للفعاليات القادمة</span>
+                      <span className="text-2xs text-slate-400 font-medium block">مطلوب للفعاليات القادمة</span>
                       <div className="mt-1 flex items-baseline gap-1">
-                        <span className="text-base font-black text-[#155EEF] font-mono">
+                        <span className="text-base font-bold text-action font-mono">
                           {forecastedUsageCount}
                         </span>
-                        <span className="text-[11px] text-slate-500 font-medium">
+                        <span className="text-2xs text-slate-500 font-medium">
                           {item.unit} ({upcomingGuestsCount} ضيف)
                         </span>
                       </div>
@@ -687,17 +686,17 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                         ? 'bg-amber-50 border-amber-200 text-amber-900'
                         : 'bg-white border-slate-200/90'
                     }`}>
-                      <span className="text-[10px] font-bold block opacity-75">المتبقي بعد الفعاليات</span>
-                      <span className="text-base font-black font-mono mt-1">
+                      <span className="text-2xs font-medium block opacity-75">المتبقي بعد الفعاليات</span>
+                      <span className="text-base font-bold font-mono mt-1">
                         {remainingProjectedStock}{' '}
-                        <span className="text-[11px] font-normal">{item.unit}</span>
+                        <span className="text-2xs font-normal">{item.unit}</span>
                       </span>
                     </div>
 
                     {/* Safety Minimum & Unit Cost */}
                     <div className="p-3 rounded-xl bg-white border border-slate-200/90">
-                      <span className="text-[10px] text-slate-400 font-bold block">حد الأمان وسعر الشراء</span>
-                      <div className="mt-1 flex items-baseline justify-between text-[11px] font-mono">
+                      <span className="text-2xs text-slate-400 font-medium block">حد الأمان وسعر الشراء</span>
+                      <div className="mt-1 flex items-baseline justify-between text-2xs font-mono">
                         <span className="text-slate-600 font-bold">الأمان: {item.minStockThreshold} {item.unit}</span>
                         <span className="text-emerald-700 font-bold">@{item.unitCost} ر.س</span>
                       </div>
@@ -705,7 +704,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                   </div>
 
                   {/* Supplier & Reorder recommendation footer */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100 gap-2">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-2xs text-slate-500 pt-1 border-t border-slate-100 gap-2">
                     <div className="flex items-center gap-3">
                       {item.supplierName && (
                         <span className="flex items-center gap-1">
@@ -722,7 +721,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
 
                     {suggestedReorderQuantity > 0 && (
                       <div className="flex items-center gap-1.5 text-slate-700 font-bold">
-                        <Sparkles className="w-3.5 h-3.5 text-[#C0A16B]" />
+                        <Sparkles className="w-3.5 h-3.5 text-sand" />
                         <span>الكمية المقترحة لإعادة الطلب:</span>
                         <span className="font-mono text-emerald-700">
                           {suggestedReorderQuantity} {item.unit} (~ {estimatedReorderCost} ر.س)
@@ -747,7 +746,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                   <ShoppingCart className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">
+                  <h3 className="text-base font-bold text-slate-900">
                     طلب وتوريد مخزون: {restockItem.nameAr}
                   </h3>
                   <p className="text-xs text-slate-500 font-medium">
@@ -766,14 +765,14 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
             <form onSubmit={handleSaveRestock} className="space-y-4 text-xs">
               <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-slate-400 font-bold block">الرصيد الحالي بالمستودع</span>
-                  <span className="text-sm font-black text-slate-900 font-mono">
+                  <span className="text-2xs text-slate-400 font-medium block">الرصيد الحالي بالمستودع</span>
+                  <span className="text-sm font-bold text-slate-900 font-mono">
                     {restockItem.currentStock} {restockItem.unit}
                   </span>
                 </div>
                 <div className="text-left">
-                  <span className="text-[10px] text-slate-400 font-bold block">الرصيد المتوقع بعد التوريد</span>
-                  <span className="text-sm font-black text-emerald-600 font-mono">
+                  <span className="text-2xs text-slate-400 font-medium block">الرصيد المتوقع بعد التوريد</span>
+                  <span className="text-sm font-bold text-emerald-600 font-mono">
                     {restockItem.currentStock + Number(restockQty || 0)} {restockItem.unit}
                   </span>
                 </div>
@@ -832,8 +831,8 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                 />
               </div>
 
-              <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-[11px] flex items-center gap-2">
-                <Info className="w-4 h-4 text-[#155EEF] shrink-0" />
+              <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-2xs flex items-center gap-2">
+                <Info className="w-4 h-4 text-action shrink-0" />
                 <span>
                   سيتم تحديث كمية المخزون فوراً، وإنشاء سند صرف تلقائي بتصنيف <strong>توريدات ومستلزمات المخزون</strong> في لوحة المحاسبة.
                 </span>
@@ -849,7 +848,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-sm cursor-pointer transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm cursor-pointer transition-colors flex items-center gap-1.5"
                 >
                   <Check className="w-4 h-4" />
                   <span>تأكيد التوريد وقيد المصروف</span>
@@ -866,11 +865,11 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-150 space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#155EEF] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-action flex items-center justify-center">
                   <Package className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">
+                  <h3 className="text-base font-bold text-slate-900">
                     {editingItem ? 'تعديل بيانات بند المخزون' : 'إضافة بند مخزون جديد'}
                   </h3>
                   <p className="text-xs text-slate-500 font-medium">
@@ -896,7 +895,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                     value={formData.nameAr}
                     onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
                     placeholder="e.g. أكواب ورقية دبل 8oz بطباعة الشعار"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
                   />
                 </div>
 
@@ -907,7 +906,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                     value={formData.nameEn || ''}
                     onChange={(e) => setFormData({ ...formData, nameEn: e.target.value })}
                     placeholder="e.g. Custom Double Wall Paper Cups 8oz"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
                   />
                 </div>
 
@@ -916,7 +915,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value as InventoryCategory })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
                   >
                     {Object.entries(CATEGORY_LABELS).map(([catKey, catMeta]) => (
                       <option key={catKey} value={catKey}>
@@ -934,7 +933,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                     value={formData.unit}
                     onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                     placeholder="e.g. كرتون، كوب، كجم، حبة، لتر"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
                   />
                 </div>
 
@@ -946,7 +945,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                     required
                     value={formData.currentStock}
                     onChange={(e) => setFormData({ ...formData, currentStock: Number(e.target.value) })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
                   />
                 </div>
 
@@ -958,7 +957,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                     required
                     value={formData.minStockThreshold}
                     onChange={(e) => setFormData({ ...formData, minStockThreshold: Number(e.target.value) })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
                   />
                 </div>
 
@@ -971,7 +970,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                     required
                     value={formData.unitCost}
                     onChange={(e) => setFormData({ ...formData, unitCost: Number(e.target.value) })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
                   />
                 </div>
 
@@ -984,7 +983,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                     required
                     value={formData.estimatedUsagePerGuest}
                     onChange={(e) => setFormData({ ...formData, estimatedUsagePerGuest: Number(e.target.value) })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
                   />
                 </div>
 
@@ -995,7 +994,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                     value={formData.supplierName || ''}
                     onChange={(e) => setFormData({ ...formData, supplierName: e.target.value })}
                     placeholder="e.g. مصنع التغليف الراقي"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
                   />
                 </div>
 
@@ -1006,7 +1005,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                     value={formData.location || ''}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     placeholder="e.g. ممر A - رف 2"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#155EEF]/20 focus:border-[#155EEF]"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-action/20 focus:border-action"
                   />
                 </div>
               </div>
@@ -1021,7 +1020,7 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#0A1A33] hover:bg-[#155EEF] text-white font-black shadow-sm cursor-pointer transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2.5 rounded-xl bg-navy hover:bg-action text-white font-bold shadow-sm cursor-pointer transition-colors flex items-center gap-1.5"
                 >
                   <Check className="w-4 h-4" />
                   <span>{editingItem ? 'حفظ التعديلات' : 'إضافة البند للمستودع'}</span>
@@ -1044,6 +1043,25 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
           setIsScannerOpen(false);
           handleOpenRestock(item, suggestedQty);
         }}
+      />
+
+      {/* Deleting a stock line loses its consumption history, so it gets a
+          real confirmation rather than the browser's blocking confirm(). */}
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (pendingDelete) onDeleteItem(pendingDelete.id);
+          setPendingDelete(null);
+        }}
+        title="حذف بند المخزون"
+        message={
+          <>
+            سيُحذف <strong className="font-semibold text-ink">{pendingDelete?.nameAr}</strong> نهائياً
+            مع سجل استهلاكه في المناسبات. لا يمكن التراجع عن هذا الإجراء.
+          </>
+        }
+        confirmLabel="نعم، احذف البند"
       />
     </div>
   );

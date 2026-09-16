@@ -12,7 +12,17 @@ import { readSource } from '../test-support/repo-paths.ts';
 describe('auth UI contracts', () => {
   it('imports AdminDashboard so admin login does not render an undefined panel', () => {
     const app = readSource('src/App.tsx');
-    assert.match(app, /import \{ AdminDashboard \} from '\.\/components\/admin\/AdminDashboard'/);
+    // Either a static import or a lazy() chunk satisfies the contract this test
+    // exists for — that AdminDashboard is actually bound, so an admin login
+    // cannot render `undefined`. It is loaded lazily now to keep the admin
+    // bundle out of the marketplace entry chunk.
+    assert.match(
+      app,
+      /import \{ AdminDashboard \} from '\.\/components\/admin\/AdminDashboard'|const AdminDashboard = lazy\(\(\) =>\s*\n?\s*import\('\.\/components\/admin\/AdminDashboard'\)/,
+    );
+    // A lazily-bound component must be reachable from a Suspense boundary,
+    // otherwise React throws instead of rendering the panel.
+    assert.match(app, /<Suspense/);
     assert.equal(app.includes("if (currentUser?.role === 'vendor') setViewMode('vendor')"), false);
   });
 

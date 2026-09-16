@@ -551,21 +551,21 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
       <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[94vh] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="p-4 sm:p-6 bg-gradient-to-l from-[#0A1A33] via-[#0F284D] to-[#155EEF] text-white relative overflow-hidden flex items-center justify-between gap-4 shrink-0">
+        <div className="p-4 sm:p-6 bg-gradient-to-l from-navy via-[#0F284D] to-action text-white relative overflow-hidden flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-[#C0A16B]/20 border border-[#C0A16B]/40 flex items-center justify-center text-[#C0A16B] shadow-inner">
+            <div className="w-12 h-12 rounded-2xl bg-sand/20 border border-sand/40 flex items-center justify-center text-sand shadow-inner">
               <Navigation className="w-6 h-6 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-white/20 text-[#C0A16B] font-mono tracking-wider">
+                <span className="text-2xs font-medium px-2 py-0.5 rounded-md bg-white/20 text-sand font-mono tracking-wider">
                   GPS GEOFENCE OS
                 </span>
                 <span className="text-xs text-white/80 font-medium hidden sm:inline">
                   بوابة الطاقم الميداني والحضور الذكي
                 </span>
               </div>
-              <h2 className="text-base sm:text-xl font-black text-white mt-0.5 flex items-center gap-2">
+              <h2 className="text-base sm:text-xl font-bold text-white mt-0.5 flex items-center gap-2">
                 <span>تتبع موقع المندوبين والحضور التلقائي بالـ GPS</span>
               </h2>
             </div>
@@ -575,15 +575,13 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
             id="close-crew-portal-btn"
             onClick={onClose}
             className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+           aria-label="إغلاق"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Member Selector Strip */}
         <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center gap-2 overflow-x-auto shrink-0 scrollbar-none">
-          <span className="text-xs text-slate-500 font-bold shrink-0 flex items-center gap-1">
-            <Users className="w-3.5 h-3.5 text-[#155EEF]" />
+          <span className="text-xs text-slate-500 font-medium shrink-0 flex items-center gap-1">
+            <Users className="w-3.5 h-3.5 text-action" />
             <span>اختر المباشر/المشرف:</span>
           </span>
           {crewMembers.map((member) => {
@@ -594,12 +592,12 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                 onClick={() => setSelectedCrewId(member.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
                   currentMember?.id === member.id
-                    ? 'bg-[#155EEF] text-white shadow-xs scale-102'
+                    ? 'bg-action text-white shadow-xs scale-102'
                     : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                 }`}
               >
                 <span>{member.name}</span>
-                <span className="text-[10px] opacity-80">({member.role})</span>
+                <span className="text-2xs opacity-80">({member.role})</span>
                 {isClocked && (
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
                 )}
@@ -613,15 +611,15 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
           <button
             id="tab-gps-attendance"
             onClick={() => setActiveTab('gps_attendance')}
-            className={`py-3 px-2 sm:px-3 text-xs sm:text-sm font-black border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+            className={`py-3 px-2 sm:px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'gps_attendance'
-                ? 'border-[#155EEF] text-[#155EEF]'
+                ? 'border-action text-action'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             <Radio className="w-4 h-4" />
             <span>تتبع الـ GPS والسياج الجغرافي</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-2xs font-medium">
               تلقائي
             </span>
           </button>
@@ -629,9 +627,9 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
           <button
             id="tab-checklist"
             onClick={() => setActiveTab('checklist')}
-            className={`py-3 px-2 sm:px-3 text-xs sm:text-sm font-black border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+            className={`py-3 px-2 sm:px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'checklist'
-                ? 'border-[#155EEF] text-[#155EEF]'
+                ? 'border-action text-action'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -642,9 +640,9 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
           <button
             id="tab-work-logs"
             onClick={() => setActiveTab('work_logs')}
-            className={`py-3 px-2 sm:px-3 text-xs sm:text-sm font-black border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+            className={`py-3 px-2 sm:px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'work_logs'
-                ? 'border-[#155EEF] text-[#155EEF]'
+                ? 'border-action text-action'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -655,9 +653,9 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
           <button
             id="tab-audit-records"
             onClick={() => setActiveTab('audit_records')}
-            className={`py-3 px-2 sm:px-3 text-xs sm:text-sm font-black border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+            className={`py-3 px-2 sm:px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'audit_records'
-                ? 'border-[#155EEF] text-[#155EEF]'
+                ? 'border-action text-action'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -671,7 +669,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
           
           {/* Toast Banner */}
           {showSuccessToast.show && (
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm">
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-medium flex items-center gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm">
               <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
                 <Check className="w-4 h-4" />
               </div>
@@ -687,21 +685,21 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
               <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                   <div>
-                    <span className="text-[10px] font-extrabold text-[#155EEF] bg-blue-50 px-2 py-0.5 rounded-md">
+                    <span className="text-2xs font-medium text-action bg-blue-50 px-2 py-0.5 rounded-md">
                       المناسبة الميدانية المخصصة
                     </span>
-                    <h3 className="text-sm sm:text-base font-black text-slate-900 mt-1">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-1">
                       {targetBooking.serviceTitle} ({targetBooking.bookingNumber})
                     </h3>
                   </div>
 
                   {bookings.length > 1 && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500 font-bold">تغيير المناسبة:</span>
+                      <span className="text-xs text-slate-500 font-medium">تغيير المناسبة:</span>
                       <select
                         value={selectedBookingId}
                         onChange={(e) => setSelectedBookingId(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none"
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none"
                       >
                         {bookings.map((b) => (
                           <option key={b.id} value={b.id}>
@@ -717,15 +715,15 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                   <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                     <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-bold">موقع الفعالية:</span>
+                      <span className="text-2xs text-slate-400 block font-medium">موقع الفعالية:</span>
                       <span className="font-bold text-slate-900">{targetBooking.venueName}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                    <Calendar className="w-4 h-4 text-[#155EEF] shrink-0" />
+                    <Calendar className="w-4 h-4 text-action shrink-0" />
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-bold">الموعد والتوقيت:</span>
+                      <span className="text-2xs text-slate-400 block font-medium">الموعد والتوقيت:</span>
                       <span className="font-bold text-slate-900">
                         {targetBooking.date} ({targetBooking.startTime || '17:00'} - {targetBooking.endTime || '22:00'})
                       </span>
@@ -735,7 +733,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                   <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                     <Target className="w-4 h-4 text-emerald-600 shrink-0" />
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-bold">نطاق السياج الجغرافي:</span>
+                      <span className="text-2xs text-slate-400 block font-medium">نطاق السياج الجغرافي:</span>
                       <span className="font-bold text-emerald-700 font-mono">
                         دائرة نصف قطرها {geofenceRadius} متر
                       </span>
@@ -745,7 +743,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
               </div>
 
               {/* Geofence Radar & Proximity Status Card */}
-              <div className="p-5 rounded-3xl bg-gradient-to-br from-slate-900 via-[#0A1A33] to-[#0d2242] text-white border border-slate-800 shadow-xl overflow-hidden relative">
+              <div className="p-5 rounded-3xl bg-gradient-to-br from-slate-900 via-navy to-[#0d2242] text-white border border-slate-800 shadow-xl overflow-hidden relative">
                 
                 {/* Radar Grid Graphic background */}
                 <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#155EEF_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
@@ -774,7 +772,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                         <div className="w-8 h-8 rounded-full bg-rose-600 border-2 border-white shadow-lg flex items-center justify-center text-white">
                           <MapPin className="w-4 h-4" />
                         </div>
-                        <span className="text-[9px] font-black text-rose-200 mt-1 bg-black/60 px-1.5 py-0.2 rounded font-sans">
+                        <span className="text-2xs font-medium text-rose-200 mt-1 bg-black/60 px-1.5 py-0.2 rounded font-sans">
                           موقع المناسبة
                         </span>
                       </div>
@@ -800,7 +798,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                         >
                           <Navigation className="w-3.5 h-3.5" />
                         </div>
-                        <span className="text-[8px] font-bold text-white bg-slate-900/80 px-1.5 py-0.2 rounded mt-0.5 whitespace-nowrap">
+                        <span className="text-2xs font-medium text-white bg-slate-900/80 px-1.5 py-0.2 rounded mt-0.5 whitespace-nowrap">
                           {currentMember.name.split(' ')[0]}
                         </span>
                       </div>
@@ -820,8 +818,8 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     </div>
 
                     <div className="mt-2 text-center">
-                      <span className="text-[11px] font-bold text-white/70">المسافة الحالية عن الفعالية:</span>
-                      <div className="text-base font-black text-white font-mono flex items-center justify-center gap-1.5">
+                      <span className="text-2xs font-medium text-white/70">المسافة الحالية عن الفعالية:</span>
+                      <div className="text-base font-bold text-white font-mono flex items-center justify-center gap-1.5">
                         <span className={isInsideGeofence ? 'text-emerald-400' : isApproaching ? 'text-amber-400' : 'text-rose-400'}>
                           {distanceToVenue < 1000 ? `${distanceToVenue} متر` : `${(distanceToVenue / 1000).toFixed(1)} كم`}
                         </span>
@@ -857,14 +855,14 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                       </div>
 
                       <div className="space-y-0.5">
-                        <div className="text-xs font-black">
+                        <div className="text-xs font-medium">
                           {isInsideGeofence
                             ? '🟢 أنت الآن داخل موقع المناسبة (السياج الجغرافي نشط)'
                             : isApproaching
                             ? '🟡 أنت تقترب من موقع المناسبة (أقل من 800 متر)'
                             : '🔴 أنت خارج النطاق الجغرافي المخصص للمناسبة'}
                         </div>
-                        <p className="text-[11px] opacity-80 leading-relaxed">
+                        <p className="text-2xs opacity-80 leading-relaxed">
                           {isInsideGeofence
                             ? 'تم التحقق من إحداثيات تواجدك بنجاح. يمكنك تسجيل الحضور الفوري أو الاعتماد على الحضور التلقائي.'
                             : isApproaching
@@ -877,20 +875,20 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     {/* Telemetry Numbers Strip */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-mono">
                       <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
-                        <span className="text-[10px] text-white/50 block font-sans">خط العرض (Lat)</span>
-                        <span className="font-bold text-white text-[11px]">{currentCoords.lat.toFixed(5)}</span>
+                        <span className="text-2xs text-white/50 block font-sans">خط العرض (Lat)</span>
+                        <span className="font-medium text-white text-2xs">{currentCoords.lat.toFixed(5)}</span>
                       </div>
                       <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
-                        <span className="text-[10px] text-white/50 block font-sans">خط الطول (Lng)</span>
-                        <span className="font-bold text-white text-[11px]">{currentCoords.lng.toFixed(5)}</span>
+                        <span className="text-2xs text-white/50 block font-sans">خط الطول (Lng)</span>
+                        <span className="font-medium text-white text-2xs">{currentCoords.lng.toFixed(5)}</span>
                       </div>
                       <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
-                        <span className="text-[10px] text-white/50 block font-sans">دقة الإشارة</span>
-                        <span className="font-bold text-emerald-400 text-[11px]">±{currentCoords.accuracy}م</span>
+                        <span className="text-2xs text-white/50 block font-sans">دقة الإشارة</span>
+                        <span className="font-medium text-emerald-400 text-2xs">±{currentCoords.accuracy}م</span>
                       </div>
                       <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
-                        <span className="text-[10px] text-white/50 block font-sans">مصدر الإشارة</span>
-                        <span className="font-bold text-[#C0A16B] text-[11px]">
+                        <span className="text-2xs text-white/50 block font-sans">مصدر الإشارة</span>
+                        <span className="font-medium text-sand text-2xs">
                           {currentCoords.isSimulated ? 'محاكاة GPS' : 'موقع المتصفح الحي'}
                         </span>
                       </div>
@@ -903,13 +901,13 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                           type="checkbox"
                           checked={autoCheckInEnabled}
                           onChange={(e) => setAutoCheckInEnabled(e.target.checked)}
-                          className="w-4 h-4 text-[#155EEF] rounded focus:ring-0"
+                          className="w-4 h-4 text-action rounded focus:ring-0"
                         />
                         <div>
-                          <span className="text-xs font-black text-white block">
+                          <span className="text-xs font-medium text-white block">
                             تفعيل الحضور التلقائي عند دخول السياج الجغرافي (Auto Check-In)
                           </span>
-                          <span className="text-[10px] text-white/60">
+                          <span className="text-2xs text-white/60">
                             تسجيل الحضور أوتوماتيكياً فور وصول المباشر لمحيط 200م
                           </span>
                         </div>
@@ -921,7 +919,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                           <button
                             id="btn-clock-in-gps"
                             onClick={() => handleClockIn(currentMember.id, false)}
-                            className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer ${
+                            className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer ${
                               isInsideGeofence
                                 ? 'bg-emerald-500 hover:bg-emerald-600 text-white scale-102'
                                 : 'bg-slate-700 hover:bg-slate-600 text-white/90'
@@ -934,7 +932,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                           <button
                             id="btn-clock-out-gps"
                             onClick={() => handleClockOut(currentMember.id)}
-                            className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
+                            className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
                           >
                             <Clock className="w-4 h-4" />
                             <span>تسجيل انصراف وترحيل الساعات (Clock Out)</span>
@@ -952,14 +950,14 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     <button
                       onClick={acquireRealGPS}
                       className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-                      title="قراءة إحداثيات GPS الحقيقية من متصفحك الحالي"
+                      title="قراءة إحداثيات GPS الحقيقية من متصفحك الحالي" aria-label="قراءة إحداثيات GPS الحقيقية من متصفحك الحالي"
                     >
-                      <RefreshCw className="w-3.5 h-3.5 text-[#C0A16B]" />
+                      <RefreshCw className="w-3.5 h-3.5 text-sand" />
                       <span>تحديث GPS المتصفح الفعلي</span>
                     </button>
 
                     {gpsErrorMsg && (
-                      <span className="text-[10px] text-amber-300 font-medium">
+                      <span className="text-2xs text-amber-300 font-medium">
                         {gpsErrorMsg}
                       </span>
                     )}
@@ -967,22 +965,22 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
 
                   {/* Simulator buttons for testing all 3 states */}
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] text-white/60 font-bold">محاكاة التجربة:</span>
+                    <span className="text-2xs text-white/60 font-medium">محاكاة التجربة:</span>
                     <button
                       onClick={() => setSimulatedLocation('inside')}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-[10px] border border-emerald-500/30 transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-medium text-2xs border border-emerald-500/30 transition-colors cursor-pointer"
                     >
                       📍 وصول للموقع (داخل 45م)
                     </button>
                     <button
                       onClick={() => setSimulatedLocation('approaching')}
-                      className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[10px] border border-amber-500/30 transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-medium text-2xs border border-amber-500/30 transition-colors cursor-pointer"
                     >
                       🚕 في الطريق (480م)
                     </button>
                     <button
                       onClick={() => setSimulatedLocation('outside')}
-                      className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold text-[10px] border border-rose-500/30 transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-medium text-2xs border border-rose-500/30 transition-colors cursor-pointer"
                     >
                       🏢 خارج النطاق (4.2 كم)
                     </button>
@@ -998,17 +996,17 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-base font-black text-slate-900">{currentMember.name}</h3>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">
+                      <h3 className="text-base font-bold text-slate-900">{currentMember.name}</h3>
+                      <span className="text-2xs font-medium px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">
                         {currentMember.role}
                       </span>
                       {isMemberClockedIn ? (
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                        <span className="text-2xs font-medium px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           <span>في مناوبة نشطة (حاضر بالـ GPS)</span>
                         </span>
                       ) : (
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                        <span className="text-2xs font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
                           جاهز للتكليف
                         </span>
                       )}
@@ -1025,7 +1023,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                       <ShieldCheck className="w-4 h-4 text-emerald-600" />
                       <span>حضور موثق في: {currentMemberClock.venueName}</span>
                     </div>
-                    <div className="text-[11px] text-emerald-700 font-mono">
+                    <div className="text-2xs text-emerald-700 font-mono">
                       وقت تسجيل الحضور: {currentMemberClock.checkInTime} • السياج الجغرافي: معتمد
                     </div>
                   </div>
@@ -1040,15 +1038,15 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
             <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
-                  <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                    <FileCheck className="w-4 h-4 text-[#155EEF]" />
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <FileCheck className="w-4 h-4 text-action" />
                     <span>قائمة الفحص الميداني والمظهر المعتمد (Uniform & Quality Checklist)</span>
                   </h4>
                   <p className="text-xs text-slate-500 mt-0.5">
                     التحقق الإلزامي من الجاهزية قبل بدء مراسم الضيافة السعودية الرسمية
                   </p>
                 </div>
-                <span className="text-xs text-emerald-700 font-bold px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200">
+                <span className="text-xs text-emerald-700 font-medium px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200">
                   معايير الضيافة السعودية اليوصلة
                 </span>
               </div>
@@ -1059,11 +1057,11 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     type="checkbox"
                     checked={checklists.uniform}
                     onChange={(e) => setChecklists({ ...checklists, uniform: e.target.checked })}
-                    className="w-4 h-4 text-[#155EEF] rounded-md focus:ring-0 cursor-pointer"
+                    className="w-4 h-4 text-action rounded-md focus:ring-0 cursor-pointer"
                   />
                   <div>
                     <span className="font-bold text-slate-900 block">الزي الموحد (ثوب سعودي مكوي + سديري مطرز أنيق)</span>
-                    <span className="text-[11px] text-slate-500">مظهر راقٍ يتوافق مع هوية الفخامة السعودية</span>
+                    <span className="text-2xs text-slate-500">مظهر راقٍ يتوافق مع هوية الفخامة السعودية</span>
                   </div>
                 </label>
 
@@ -1072,11 +1070,11 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     type="checkbox"
                     checked={checklists.equipment}
                     onChange={(e) => setChecklists({ ...checklists, equipment: e.target.checked })}
-                    className="w-4 h-4 text-[#155EEF] rounded-md focus:ring-0 cursor-pointer"
+                    className="w-4 h-4 text-action rounded-md focus:ring-0 cursor-pointer"
                   />
                   <div>
                     <span className="font-bold text-slate-900 block">جاهزية عتاد الدلال وفناجيل السيراميك والمباخر</span>
-                    <span className="text-[11px] text-slate-500">نظافة وتعقيم الدلال النحاسية والمباخر الملكية</span>
+                    <span className="text-2xs text-slate-500">نظافة وتعقيم الدلال النحاسية والمباخر الملكية</span>
                   </div>
                 </label>
 
@@ -1085,11 +1083,11 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     type="checkbox"
                     checked={checklists.hygiene}
                     onChange={(e) => setChecklists({ ...checklists, hygiene: e.target.checked })}
-                    className="w-4 h-4 text-[#155EEF] rounded-md focus:ring-0 cursor-pointer"
+                    className="w-4 h-4 text-action rounded-md focus:ring-0 cursor-pointer"
                   />
                   <div>
                     <span className="font-bold text-slate-900 block">القفازات والكمامات والنظافة الشخصية التامة</span>
-                    <span className="text-[11px] text-slate-500">الالتزام بأعلى معايير السلامة والصحة الغذائية</span>
+                    <span className="text-2xs text-slate-500">الالتزام بأعلى معايير السلامة والصحة الغذائية</span>
                   </div>
                 </label>
 
@@ -1098,11 +1096,11 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     type="checkbox"
                     checked={checklists.timing}
                     onChange={(e) => setChecklists({ ...checklists, timing: e.target.checked })}
-                    className="w-4 h-4 text-[#155EEF] rounded-md focus:ring-0 cursor-pointer"
+                    className="w-4 h-4 text-action rounded-md focus:ring-0 cursor-pointer"
                   />
                   <div>
                     <span className="font-bold text-slate-900 block">الوصول قبل موعد المناسبة بـ 60 دقيقة للترتيب</span>
-                    <span className="text-[11px] text-slate-500">إعداد القهوة وبخور العود قبل استقبال أول الضيوف</span>
+                    <span className="text-2xs text-slate-500">إعداد القهوة وبخور العود قبل استقبال أول الضيوف</span>
                   </div>
                 </label>
               </div>
@@ -1114,7 +1112,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-black text-slate-900">
+                  <h4 className="text-sm font-bold text-slate-900">
                     سجل المناوبات وساعات العمل: {currentMember.name}
                   </h4>
                   <p className="text-xs text-slate-500">
@@ -1124,7 +1122,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
 
                 <button
                   onClick={() => setLogHoursModal(true)}
-                  className="px-3.5 py-2 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl bg-action hover:bg-action-hover text-white text-xs font-medium flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>توثيق مناوبة يدوياً</span>
@@ -1135,12 +1133,12 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
               {logHoursModal && (
                 <div className="p-5 rounded-2xl bg-blue-50/80 border border-blue-200 space-y-4 animate-in fade-in">
                   <div className="flex items-center justify-between border-b border-blue-200 pb-2">
-                    <h4 className="text-xs font-black text-slate-900">
+                    <h4 className="text-xs font-medium text-slate-900">
                       توثيق ساعات عمل المناوبة: {currentMember.name}
                     </h4>
                     <button
                       onClick={() => setLogHoursModal(false)}
-                      className="text-xs text-slate-500 font-bold hover:text-slate-900"
+                      className="text-xs text-slate-500 font-medium hover:text-slate-900"
                     >
                       إلغاء
                     </button>
@@ -1149,7 +1147,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                   <form onSubmit={handleSaveHours} className="space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        <label className="block text-2xs font-medium text-slate-700 mb-1">
                           عنوان المناسبة / الفعالية
                         </label>
                         <input
@@ -1157,12 +1155,12 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                           value={eventTitle}
                           onChange={(e) => setEventTitle(e.target.value)}
                           required
-                          className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none"
+                          className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        <label className="block text-2xs font-medium text-slate-700 mb-1">
                           تاريخ المناسبة
                         </label>
                         <input
@@ -1170,14 +1168,14 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                           value={eventDate}
                           onChange={(e) => setEventDate(e.target.value)}
                           required
-                          className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none"
+                          className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        <label className="block text-2xs font-medium text-slate-700 mb-1">
                           الساعات الأساسية
                         </label>
                         <input
@@ -1186,12 +1184,12 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                           max="24"
                           value={regHours}
                           onChange={(e) => setRegHours(Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none"
+                          className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        <label className="block text-2xs font-medium text-slate-700 mb-1">
                           الساعات الإضافية (1.5×)
                         </label>
                         <input
@@ -1200,13 +1198,13 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                           max="12"
                           value={otHours}
                           onChange={(e) => setOtHours(Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none"
+                          className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      <label className="block text-2xs font-medium text-slate-700 mb-1">
                         ملاحظات المشرف
                       </label>
                       <input
@@ -1219,7 +1217,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     </div>
 
                     <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs font-bold text-blue-900">
+                      <span className="text-xs font-medium text-blue-900">
                         الإجمالي المستحق:{' '}
                         {(
                           regHours * (currentMember.hourlyRate || 65) +
@@ -1230,7 +1228,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
 
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white text-xs font-bold shadow-xs cursor-pointer"
+                        className="px-4 py-2 rounded-xl bg-action hover:bg-action-hover text-white text-xs font-medium shadow-xs cursor-pointer"
                       >
                         حفظ وترحيل لمسير الرواتب
                       </button>
@@ -1248,8 +1246,8 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                       className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between text-xs gap-4"
                     >
                       <div className="space-y-1">
-                        <div className="font-black text-slate-900 text-sm">{log.eventTitle}</div>
-                        <div className="text-[11px] text-slate-500 font-mono flex items-center gap-2">
+                        <div className="font-bold text-slate-900 text-sm">{log.eventTitle}</div>
+                        <div className="text-2xs text-slate-500 font-mono flex items-center gap-2">
                           <span>{log.eventDate}</span>
                           <span>•</span>
                           <span>{log.regularHours} س أساسية</span>
@@ -1260,14 +1258,14 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                             </>
                           )}
                         </div>
-                        {log.notes && <p className="text-[10px] text-slate-400">{log.notes}</p>}
+                        {log.notes && <p className="text-2xs text-slate-400">{log.notes}</p>}
                       </div>
 
                       <div className="text-left shrink-0">
-                        <div className="font-black text-emerald-700 font-mono text-sm">
+                        <div className="font-bold text-emerald-700 font-mono text-sm">
                           {log.totalEarned.toLocaleString('ar-SA')} ر.س
                         </div>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold inline-block mt-1">
+                        <span className="text-2xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-medium inline-block mt-1">
                           معتمد في المسير
                         </span>
                       </div>
@@ -1287,14 +1285,14 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-black text-slate-900">
+                  <h4 className="text-sm font-bold text-slate-900">
                     سجل الحضور والانصراف المعتمد جغرافياً (GPS Verified Log)
                   </h4>
                   <p className="text-xs text-slate-500">
                     كشوف الحضور الموثقة بدقة الأقمار الصناعية والسياج الجغرافي
                   </p>
                 </div>
-                <span className="text-xs text-slate-600 font-bold font-mono">
+                <span className="text-xs text-slate-600 font-medium font-mono">
                   {attendanceHistory.length} سجلات موثقة
                 </span>
               </div>
@@ -1308,52 +1306,52 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-black text-slate-900">{att.eventTitle}</span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                          <span className="text-xs font-medium text-slate-900">{att.eventTitle}</span>
+                          <span className="text-2xs font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
                             <ShieldCheck className="w-3 h-3 text-emerald-600" />
                             <span>معتمد بالسياج الجغرافي ({att.distanceToVenueMeters}م)</span>
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5">
+                        <p className="text-2xs text-slate-500 mt-0.5">
                           المباشر: <strong className="text-slate-800">{att.crewName}</strong> • {att.venueName}
                         </p>
                       </div>
 
-                      <span className="text-[10px] text-slate-400 font-mono">{att.bookingNumber}</span>
+                      <span className="text-2xs text-slate-400 font-mono">{att.bookingNumber}</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
                       <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <span className="text-[10px] text-slate-400 block font-bold">تسجيل الحضور (Check-In)</span>
+                        <span className="text-2xs text-slate-400 block font-medium">تسجيل الحضور (Check-In)</span>
                         <span className="font-bold text-slate-900 font-mono">{att.checkInTime}</span>
-                        <span className="text-[9px] text-slate-400 block font-mono">
+                        <span className="text-2xs text-slate-400 block font-mono">
                           {att.checkInCoordinates.lat.toFixed(4)}, {att.checkInCoordinates.lng.toFixed(4)}
                         </span>
                       </div>
 
                       <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <span className="text-[10px] text-slate-400 block font-bold">تسجيل الانصراف (Check-Out)</span>
+                        <span className="text-2xs text-slate-400 block font-medium">تسجيل الانصراف (Check-Out)</span>
                         <span className="font-bold text-slate-900 font-mono">{att.checkOutTime || 'مناوبة جارية'}</span>
                         {att.checkOutCoordinates && (
-                          <span className="text-[9px] text-slate-400 block font-mono">
+                          <span className="text-2xs text-slate-400 block font-mono">
                             {att.checkOutCoordinates.lat.toFixed(4)}, {att.checkOutCoordinates.lng.toFixed(4)}
                           </span>
                         )}
                       </div>
 
                       <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <span className="text-[10px] text-slate-400 block font-bold">مدة التواجد الميداني</span>
+                        <span className="text-2xs text-slate-400 block font-medium">مدة التواجد الميداني</span>
                         <span className="font-bold text-emerald-700 font-mono">
                           {att.durationMinutes ? `${att.durationMinutes / 60} ساعات` : 'قيد الاحتساب'}
                         </span>
-                        <span className="text-[9px] text-emerald-600 block">
+                        <span className="text-2xs text-emerald-600 block">
                           {att.autoTriggered ? '⚡ تسجيل تلقائي ذكي' : 'تسجيل يدوي موثق'}
                         </span>
                       </div>
                     </div>
 
                     {att.notes && (
-                      <p className="text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                      <p className="text-2xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
                         ملاحظة: {att.notes}
                       </p>
                     )}
