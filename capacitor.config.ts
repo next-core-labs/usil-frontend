@@ -17,7 +17,6 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'always',
     preferredContentMode: 'mobile',
-    scheme: 'usil',
     backgroundColor: '#0A1A33',
     // dist/ is local, and API traffic goes through CapacitorHttp rather than
     // the WebView, so App-Bound Domains would only block outbound links.
