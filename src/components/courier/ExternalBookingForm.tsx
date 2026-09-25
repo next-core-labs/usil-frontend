@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { controlClass } from '../ui/Field';
 import { AlertCircle, CheckCircle2, ClipboardList, Loader2 } from 'lucide-react';
 import { CATEGORIES } from '../../data/services';
 import { PlaceSearchSelect } from '../PlaceSearchSelect';
@@ -34,8 +35,7 @@ export type ExternalBookingRow = {
 
 type CourierOption = { id: string; name: string; source: 'account' | 'application' };
 
-const inputClass =
-  'w-full bg-[#F7F8FA] border border-[#E4E7EC] rounded-xl px-3 py-2.5 text-sm text-[#101828] placeholder:text-[#98A2B3] focus:outline-none focus:bg-white focus:border-[#155EEF]';
+const inputClass = controlClass;
 
 const emptyForm = () => ({
   courierId: '',
@@ -189,11 +189,11 @@ export function ExternalBookingForm({
     <section className={wrapperClass} dir="rtl">
       {variant === 'panel' ? (
         <div className="flex items-center gap-2 mb-1">
-          <ClipboardList className="w-4 h-4 text-[#155EEF]" />
-          <h2 className="text-base sm:text-lg font-black text-[#0A1A33]">تسجيل حجز خارجي</h2>
+          <ClipboardList className="w-4 h-4 text-action" />
+          <h2 className="text-base sm:text-lg font-bold text-navy">تسجيل حجز خارجي</h2>
         </div>
       ) : null}
-      <p className="text-[11px] sm:text-xs text-slate-500 mb-4 leading-relaxed">
+      <p className="text-2xs sm:text-xs text-slate-500 mb-4 leading-relaxed">
         الحجز اللي جاك خارج المنصة: سجّل بيانات الشخص اللي حجز معك عشان يوصل توثّقه وتتابعه.
       </p>
 
@@ -329,10 +329,10 @@ export function ExternalBookingForm({
                   dir="ltr"
                 />
               </label>
-              <label className="mt-2 flex items-center gap-2 text-xs font-bold text-slate-600">
+              <label className="mt-2 flex items-center gap-2 text-xs font-medium text-slate-600">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 accent-[#155EEF]"
+                  className="w-4 h-4 accent-action"
                   checked={form.taxIncluded}
                   onChange={(e) => set('taxIncluded', e.target.checked)}
                 />
@@ -430,7 +430,7 @@ export function ExternalBookingForm({
           <button
             type="submit"
             disabled={saving}
-            className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full sm:w-auto px-5 py-3 rounded-xl bg-action hover:bg-action-hover text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ClipboardList className="w-4 h-4" />}
             {saving ? 'جارٍ الحفظ…' : 'تسجيل الحجز الخارجي'}

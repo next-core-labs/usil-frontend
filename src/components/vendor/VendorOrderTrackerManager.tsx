@@ -60,13 +60,13 @@ async function getOrderLiveStatus(trackingCode) {
     <div className="space-y-6 text-right">
       
       {/* Top Banner */}
-      <div className="p-6 rounded-3xl bg-[#0A1A33] text-white card-shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="p-6 rounded-3xl bg-navy text-white card-shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-bold border border-white/10">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-medium border border-white/10">
             <Zap className="w-3.5 h-3.5" />
             <span>بوابة تتبع الطلبات المباشرة وAPI المجاني (Free Real-time Tracking Portal)</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold">
+          <h2 className="text-xl sm:text-2xl font-bold">
             تتبع المناسبات المباشر للعميل (مجاناً 100%)
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 font-normal">
@@ -77,15 +77,15 @@ async function getOrderLiveStatus(trackingCode) {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setIsPreviewOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold flex items-center gap-2 transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium flex items-center gap-2 transition-colors"
           >
-            <Eye className="w-4 h-4 text-[#C0A16B]" />
+            <Eye className="w-4 h-4 text-sand" />
             <span>معاينة شاشة العميل</span>
           </button>
 
           <button
             onClick={handleCopyLink}
-            className="px-4 py-2.5 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white text-xs font-medium flex items-center gap-2 shadow-xs transition-colors"
           >
             <Share2 className="w-4 h-4" />
             <span>{copiedCode ? 'تم نسخ الرابط!' : 'نسخ رابط التتبع للعميل'}</span>
@@ -102,7 +102,7 @@ async function getOrderLiveStatus(trackingCode) {
             <h3 className="text-sm font-bold text-slate-900">
               روابط التتبع النشطة ({trackings.length})
             </h3>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
               تحديث فوري
             </span>
           </div>
@@ -116,26 +116,26 @@ async function getOrderLiveStatus(trackingCode) {
                   onClick={() => setSelectedTracking(trk)}
                   className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-blue-50/80 border-[#155EEF] shadow-xs'
+                      ? 'bg-blue-50/80 border-action shadow-xs'
                       : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold text-slate-900 truncate">
+                    <span className="text-xs font-medium text-slate-900 truncate">
                       {trk.clientName}
                     </span>
-                    <span className="text-[10px] font-mono text-[#155EEF] font-bold bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                    <span className="text-2xs font-mono text-action font-medium bg-white px-1.5 py-0.5 rounded border border-slate-200">
                       {trk.trackingCode}
                     </span>
                   </div>
 
-                  <div className="text-[11px] text-slate-600 truncate mb-2">
+                  <div className="text-2xs text-slate-600 truncate mb-2">
                     {trk.serviceTitle}
                   </div>
 
                   <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200/60">
                     <span className="font-bold text-slate-700">{trk.eventDate}</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                    <span className="px-2 py-0.5 rounded text-2xs font-medium bg-emerald-100 text-emerald-800">
                       {trk.status === 'preparing' ? 'جاري التجهيز' : 'مؤكد'}
                     </span>
                   </div>
@@ -153,11 +153,11 @@ async function getOrderLiveStatus(trackingCode) {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div>
-                <div className="inline-flex items-center gap-1.5 text-xs text-[#155EEF] font-bold mb-1">
+                <div className="inline-flex items-center gap-1.5 text-xs text-action font-medium mb-1">
                   <span>المناسبة النشطة:</span>
                   <span className="font-mono">{selectedTracking.trackingCode}</span>
                 </div>
-                <h3 className="text-base font-extrabold text-slate-900">
+                <h3 className="text-base font-bold text-slate-900">
                   {selectedTracking.clientName} - {selectedTracking.serviceTitle}
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -172,7 +172,7 @@ async function getOrderLiveStatus(trackingCode) {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-700"
+                  className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 hover:bg-emerald-700"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span>إرسال الرابط للعميل</span>
@@ -182,8 +182,8 @@ async function getOrderLiveStatus(trackingCode) {
 
             {/* Step Checkers for Vendor */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-[#155EEF]" />
+              <h4 className="text-xs font-medium text-slate-800 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-action" />
                 <span>تحديث مراحل التجهيز الميداني (اضغط لتحديث حالة العميل فورياً)</span>
               </h4>
 
@@ -205,19 +205,19 @@ async function getOrderLiveStatus(trackingCode) {
                         className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
                       />
                       <div>
-                        <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                        <div className="text-xs font-medium text-slate-900 flex items-center gap-2">
                           <span>{step.title}</span>
                           {step.badgeText && (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">
+                            <span className="text-2xs px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-medium">
                               {step.badgeText}
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-500 font-normal">{step.description}</p>
+                        <p className="text-2xs text-slate-500 font-normal">{step.description}</p>
                       </div>
                     </div>
 
-                    <span className="text-[10px] font-mono text-slate-500 font-semibold bg-white px-2 py-1 rounded-md border border-slate-200 shrink-0">
+                    <span className="text-2xs font-mono text-slate-500 font-semibold bg-white px-2 py-1 rounded-md border border-slate-200 shrink-0">
                       {step.timestamp || 'معلق'}
                     </span>
                   </div>
@@ -226,25 +226,25 @@ async function getOrderLiveStatus(trackingCode) {
             </div>
 
             {/* Free API & Embed Snippet Box */}
-            <div className="p-4 rounded-2xl bg-[#0A1A33] text-white space-y-3">
+            <div className="p-4 rounded-2xl bg-navy text-white space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Terminal className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs font-bold">كود API وتضمين التتبع المجاني لموقعك</span>
+                  <span className="text-xs font-medium">كود API وتضمين التتبع المجاني لموقعك</span>
                 </div>
                 <button
                   onClick={handleCopyApiSnippet}
-                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-bold text-white flex items-center gap-1"
+                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-2xs font-medium text-white flex items-center gap-1"
                 >
                   <Copy className="w-3 h-3" />
                   <span>{copiedApi ? 'تم النسخ!' : 'نسخ كود API'}</span>
                 </button>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950/80 font-mono text-[11px] text-emerald-300 overflow-x-auto text-left leading-relaxed">
+              <div className="p-3 rounded-xl bg-slate-950/80 font-mono text-2xs text-emerald-300 overflow-x-auto text-left leading-relaxed">
                 GET https://usil.app/api/v1/track/{selectedTracking.trackingCode}
               </div>
-              <p className="text-[11px] text-slate-300 leading-normal">
+              <p className="text-2xs text-slate-300 leading-normal">
                 💡 يمكنك تضمين صفحة التتبع داخل موقعك الخاص مجاناً بدون أي اشتراكات شهرية، ليبقى عميلك مرتبطاً بك طوال الوقت.
               </p>
             </div>
@@ -257,17 +257,17 @@ async function getOrderLiveStatus(trackingCode) {
 
       {/* Full Client Screen Preview Modal */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs p-2 sm:p-4 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs p-2 sm:p-4 flex items-center justify-center usil-modal-scroll">
           <div className="relative w-full max-w-3xl bg-white rounded-3xl overflow-hidden shadow-2xl my-auto max-h-[92vh] flex flex-col">
             
             <div className="p-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+              <div className="flex items-center gap-2 text-xs font-medium text-emerald-400">
                 <Eye className="w-4 h-4" />
                 <span>معاينة حية كما يراها العميل على جواله</span>
               </div>
               <button
                 onClick={() => setIsPreviewOpen(false)}
-                className="text-xs font-bold bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20 text-white"
+                className="text-xs font-medium bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20 text-white"
               >
                 إغلاق المعاينة
               </button>

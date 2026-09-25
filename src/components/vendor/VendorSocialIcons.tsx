@@ -57,14 +57,14 @@ export function VendorSocialIcons({
             title={LABELS[link.network] || link.network}
             className={`inline-flex items-center gap-1 rounded-full border transition-colors ${
               compact
-                ? 'w-7 h-7 justify-center border-slate-200 bg-white text-slate-700 hover:border-[#155EEF] hover:text-[#155EEF]'
-                : 'px-2.5 py-1 border-slate-200 bg-white text-slate-800 hover:border-[#155EEF]'
+                ? 'w-7 h-7 justify-center border-slate-200 bg-white text-slate-700 hover:border-action hover:text-action'
+                : 'px-2.5 py-1 border-slate-200 bg-white text-slate-800 hover:border-action'
             }`}
           >
             <Icon className={compact ? 'w-3.5 h-3.5' : 'w-3.5 h-3.5'} />
-            {!compact ? <span className="text-[11px] font-bold">{LABELS[link.network]}</span> : null}
+            {!compact ? <span className="text-2xs font-medium">{LABELS[link.network]}</span> : null}
             {link.status === 'verified' ? (
-              <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-emerald-700">
+              <span className="inline-flex items-center gap-0.5 text-2xs font-medium text-emerald-700">
                 <BadgeCheck className="w-3 h-3" />
                 {!compact ? 'موثّق' : null}
               </span>

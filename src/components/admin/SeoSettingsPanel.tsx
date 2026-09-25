@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { controlClass } from '../ui/Field';
 import { AlertCircle, CheckCircle2, Loader2, Search, Save, RefreshCw } from 'lucide-react';
 
 type PageKey =
@@ -103,14 +104,13 @@ function Field({
   dir?: 'rtl' | 'ltr';
   max?: number;
 }) {
-  const inputClass =
-    'w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#155EEF]';
+  const inputClass = controlClass;
   return (
     <label className="block space-y-1.5">
       <span className="flex items-center justify-between gap-3 text-sm font-bold text-slate-800">
         {label}
         {max ? (
-          <span className={`text-[11px] font-medium ${value.length > max ? 'text-rose-600' : 'text-slate-400'}`}>
+          <span className={`text-2xs font-medium ${value.length > max ? 'text-rose-600' : 'text-slate-400'}`}>
             {value.length}/{max}
           </span>
         ) : null}
@@ -120,7 +120,7 @@ function Field({
       ) : (
         <input className={inputClass} value={value} dir={dir} onChange={(e) => onChange(e.target.value)} />
       )}
-      {hint ? <span className="block text-[11px] text-slate-500 leading-relaxed">{hint}</span> : null}
+      {hint ? <span className="block text-2xs text-slate-500 leading-relaxed">{hint}</span> : null}
     </label>
   );
 }
@@ -198,14 +198,13 @@ export function SeoSettingsPanel() {
     }
   };
 
-  const inputClass =
-    'w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#155EEF]';
+  const inputClass = controlClass;
 
   if (loading) {
     return (
       <section className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm" dir="rtl">
         <div className="flex items-center gap-3 text-slate-500">
-          <Loader2 className="w-5 h-5 animate-spin text-[#155EEF]" />
+          <Loader2 className="w-5 h-5 animate-spin text-action" />
           جارٍ تحميل إعدادات تحسين الظهور…
         </div>
       </section>
@@ -222,7 +221,7 @@ export function SeoSettingsPanel() {
         <button
           type="button"
           onClick={load}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#155EEF] text-white text-sm font-bold"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-action text-white text-sm font-bold"
         >
           <RefreshCw className="w-4 h-4" />
           إعادة المحاولة
@@ -247,7 +246,7 @@ export function SeoSettingsPanel() {
       <section className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-black text-[#0A1A33]">تحسين الظهور / SEO</h2>
+            <h2 className="text-xl font-bold text-navy">تحسين الظهور / SEO</h2>
             <p className="text-sm text-slate-500 mt-1 max-w-2xl leading-relaxed">
               من هنا تضبط عنوان الموقع ووصفه وبطاقات المشاركة وخريطة الموقع. هذا لا يرفع الترتيب بين ليلة وضحاها —
               بعد الحفظ أرسل <span dir="ltr">sitemap.xml</span> من حساب Search Console.
@@ -256,7 +255,7 @@ export function SeoSettingsPanel() {
           <button
             type="button"
             onClick={load}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             إعادة التحميل
@@ -270,13 +269,15 @@ export function SeoSettingsPanel() {
         ) : null}
       </section>
 
-      <section className="bg-[#F7F8FA] border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
-        <div className="flex items-center gap-2 text-sm font-black text-slate-800">
-          <Search className="w-4 h-4 text-[#155EEF]" />
+      <section className="bg-paper border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
+        <div className="flex items-center gap-2 text-sm font-bold text-slate-800">
+          <Search className="w-4 h-4 text-action" />
           معاينة نتيجة بحث جوجل
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 p-4 max-w-xl">
-          <div className="text-[13px] text-[#202124]" dir="ltr">
+          {/* Google SERP colours on purpose — this block previews how the
+              listing looks on Google, so it must match their palette, not ours. */}
+          <div className="text-sm text-[#202124]" dir="ltr">
             https://usil.app{preview.path === '/' ? '' : preview.path}
           </div>
           <div className="text-xl text-[#1a0dab] font-medium leading-snug mt-1 line-clamp-2">{preview.title || '—'}</div>
@@ -285,7 +286,7 @@ export function SeoSettingsPanel() {
       </section>
 
       <section className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
-        <h3 className="text-lg font-black">العنوان والوصف الافتراضي</h3>
+        <h3 className="text-lg font-bold">العنوان والوصف الافتراضي</h3>
         <Field label="عنوان الموقع (عربي)" value={form.title} max={60} onChange={(title) => setForm({ ...form, title })} />
         <Field
           label="وصف الموقع (عربي)"
@@ -322,7 +323,7 @@ export function SeoSettingsPanel() {
       </section>
 
       <section className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
-        <h3 className="text-lg font-black">Open Graph — مشاركة واتساب / تويتر / لينكدإن</h3>
+        <h3 className="text-lg font-bold">Open Graph — مشاركة واتساب / تويتر / لينكدإن</h3>
         <Field label="عنوان OG" value={form.ogTitle} onChange={(ogTitle) => setForm({ ...form, ogTitle })} />
         <Field label="وصف OG" textarea value={form.ogDescription} onChange={(ogDescription) => setForm({ ...form, ogDescription })} />
         <Field
@@ -336,7 +337,7 @@ export function SeoSettingsPanel() {
       </section>
 
       <section className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
-        <h3 className="text-lg font-black">بطاقة تويتر / X</h3>
+        <h3 className="text-lg font-bold">بطاقة تويتر / X</h3>
         <label className="block space-y-1.5">
           <span className="text-sm font-bold">نوع البطاقة</span>
           <select
@@ -364,7 +365,7 @@ export function SeoSettingsPanel() {
       </section>
 
       <section className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
-        <h3 className="text-lg font-black">الرابط الأساسي وrobots.txt</h3>
+        <h3 className="text-lg font-bold">الرابط الأساسي وrobots.txt</h3>
         <Field
           label="Canonical base URL"
           dir="ltr"
@@ -380,16 +381,16 @@ export function SeoSettingsPanel() {
           onChange={(robotsTxt) => setForm({ ...form, robotsTxt })}
           hint="يُنشر على https://usil.app/robots.txt — اترك السماح للجميع مع رابط الخريطة ما لم تحتاج حجب مسار."
         />
-        <p className="text-[11px] text-slate-500">
+        <p className="text-2xs text-slate-500">
           خريطة الموقع تُولَّد تلقائياً:{' '}
-          <a className="text-[#155EEF] font-bold" href="/sitemap.xml" target="_blank" rel="noreferrer">
+          <a className="text-action font-bold" href="/sitemap.xml" target="_blank" rel="noreferrer">
             /sitemap.xml
           </a>
         </p>
       </section>
 
       <section className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
-        <h3 className="text-lg font-black">تحقق Search Console وتحليلات جوجل</h3>
+        <h3 className="text-lg font-bold">تحقق Search Console وتحليلات جوجل</h3>
         <Field
           label="رمز تحقق Google (meta)"
           dir="ltr"
@@ -414,7 +415,7 @@ export function SeoSettingsPanel() {
       </section>
 
       <section className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
-        <h3 className="text-lg font-black">تخصيص الصفحات</h3>
+        <h3 className="text-lg font-bold">تخصيص الصفحات</h3>
         <div className="flex flex-wrap gap-2">
           {PAGE_META.map((page) => (
             <button
@@ -423,7 +424,7 @@ export function SeoSettingsPanel() {
               onClick={() => setPageKey(page.key)}
               className={`px-3 py-1.5 rounded-full text-xs font-bold border ${
                 pageKey === page.key
-                  ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
+                  ? 'bg-navy text-white border-navy'
                   : 'bg-slate-50 text-slate-700 border-slate-200'
               }`}
             >
@@ -431,7 +432,7 @@ export function SeoSettingsPanel() {
             </button>
           ))}
         </div>
-        <p className="text-[11px] text-slate-500" dir="ltr">
+        <p className="text-2xs text-slate-500" dir="ltr">
           {PAGE_META.find((item) => item.key === pageKey)?.path}
         </p>
         <Field
@@ -477,7 +478,7 @@ export function SeoSettingsPanel() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#155EEF] hover:bg-[#1249c7] text-white font-black disabled:opacity-60 shadow-lg"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-action hover:bg-[#1249c7] text-white font-bold disabled:opacity-60 shadow-lg"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {saving ? 'جارٍ الحفظ…' : 'حفظ إعدادات الظهور'}

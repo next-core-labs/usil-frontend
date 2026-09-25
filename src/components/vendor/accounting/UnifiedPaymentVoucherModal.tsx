@@ -181,7 +181,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 text-right">
+    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 text-right usil-modal-scroll">
       <div className="w-full max-w-4xl bg-white rounded-3xl border border-slate-200 card-shadow overflow-hidden flex flex-col my-auto max-h-[92vh]">
         
         {/* Top Modal Controls Header (Screen Only) */}
@@ -192,10 +192,10 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-extrabold text-white">
+                <h3 className="text-base sm:text-lg font-bold text-white">
                   {isViewOnly ? 'معاينة سند الصرف الموحد الرسمي' : 'إصدار سند صرف مالي موحد لطاقم العمل'}
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-500/30">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs font-medium border border-emerald-500/30">
                   {voucherNumber}
                 </span>
               </div>
@@ -208,21 +208,21 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
           <div className="flex items-center gap-2">
             <button
               onClick={handleDownloadPdf}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1.5 shadow-xs transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
               <span>تحميل سند صرف PDF</span>
             </button>
             <button
               onClick={handlePrint}
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors"
             >
               <Printer className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">طباعة</span>
             </button>
             <button
               onClick={handleShareWhatsApp}
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors"
             >
               <Share2 className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">واتساب</span>
@@ -230,9 +230,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
             <button
               onClick={onClose}
               className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+             aria-label="إغلاق"><X className="w-5 h-5" /></button>
           </div>
         </div>
 
@@ -251,11 +249,11 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
                   className="w-16 h-16 rounded-2xl object-cover border border-slate-300 bg-white"
                 />
                 <div>
-                  <h1 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                  <h1 className="text-lg sm:text-xl font-bold text-slate-900">
                     {brandSettings.brandName}
                   </h1>
                   <p className="text-xs text-slate-500 font-medium">{brandSettings.slogan}</p>
-                  <div className="flex items-center gap-3 text-[11px] text-slate-600 pt-1 font-mono">
+                  <div className="flex items-center gap-3 text-2xs text-slate-600 pt-1 font-mono">
                     <span>س.ت: {brandSettings.crNumber}</span>
                     <span>•</span>
                     <span>الرقم الضريبي: {brandSettings.vatNumber}</span>
@@ -265,13 +263,13 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
 
               {/* Voucher Metadata Box */}
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 min-w-[220px] space-y-1.5 text-xs text-right">
-                <div className="text-center font-extrabold text-sm text-slate-900 border-b border-slate-200 pb-1.5">
+                <div className="text-center font-bold text-sm text-slate-900 border-b border-slate-200 pb-1.5">
                   سند صرف مالي موحد
-                  <span className="block text-[10px] font-mono text-emerald-800 font-normal">CONSOLIDATED PAYMENT VOUCHER</span>
+                  <span className="block text-2xs font-mono text-emerald-800 font-normal">CONSOLIDATED PAYMENT VOUCHER</span>
                 </div>
                 <div className="flex justify-between items-center text-slate-600">
                   <span>رقم السند:</span>
-                  <span className="font-mono font-extrabold text-slate-900">{voucherNumber}</span>
+                  <span className="font-mono font-bold text-slate-900">{voucherNumber}</span>
                 </div>
                 <div className="flex justify-between items-center text-slate-600">
                   <span>تاريخ التحرير:</span>
@@ -292,19 +290,19 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs">
             <div className="space-y-0.5">
               <span className="text-slate-500 block">عدد المستفيدين:</span>
-              <span className="font-extrabold text-sm text-slate-900 font-mono">
+              <span className="font-bold text-sm text-slate-900 font-mono">
                 {entriesToProcess.length} أفراد طاقم
               </span>
             </div>
             <div className="space-y-0.5">
               <span className="text-slate-500 block">إجمالي الساعات المسجلة:</span>
-              <span className="font-extrabold text-sm text-blue-800 font-mono">
-                {totalHours} ساعة <span className="text-[10px] text-slate-500">({totalRegularHours} أساسي + {totalOvertimeHours} إضافي)</span>
+              <span className="font-bold text-sm text-blue-800 font-mono">
+                {totalHours} ساعة <span className="text-2xs text-slate-500">({totalRegularHours} أساسي + {totalOvertimeHours} إضافي)</span>
               </span>
             </div>
             <div className="space-y-0.5">
               <span className="text-slate-500 block">طريقة السداد:</span>
-              <span className="font-extrabold text-sm text-slate-900">
+              <span className="font-bold text-sm text-slate-900">
                 {paymentMethod === 'bank_transfer'
                   ? 'حوالة بنكية سريعة'
                   : paymentMethod === 'mada'
@@ -314,7 +312,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
             </div>
             <div className="space-y-0.5">
               <span className="text-slate-500 block">إجمالي صافي المبلغ:</span>
-              <span className="font-extrabold text-sm text-emerald-800 font-mono">
+              <span className="font-bold text-sm text-emerald-800 font-mono">
                 {totalConsolidatedAmount.toLocaleString('ar-SA')} ر.س
               </span>
             </div>
@@ -333,7 +331,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
                   <th className="py-2.5 px-3 text-center">أجر الساعة</th>
                   <th className="py-2.5 px-3">الإجمالي</th>
                   <th className="py-2.5 px-3">مكافأة / حسم</th>
-                  <th className="py-2.5 px-3 font-extrabold text-slate-900 text-left">الصافي للصرف</th>
+                  <th className="py-2.5 px-3 font-bold text-slate-900 text-left">الصافي للصرف</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -348,9 +346,9 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
                       <td className="py-2.5 px-3 font-mono text-slate-400">{index + 1}</td>
                       <td className="py-2.5 px-3">
                         <div className="font-bold text-slate-900">{entry.crewName}</div>
-                        <div className="text-[10px] text-blue-700 font-semibold">{entry.role}</div>
+                        <div className="text-2xs text-blue-700 font-semibold">{entry.role}</div>
                         {(entry.bankIban || crew?.bankIban) && (
-                          <div className="text-[9px] font-mono text-slate-400 tracking-tight">
+                          <div className="text-2xs font-mono text-slate-400 tracking-tight">
                             {entry.bankIban || crew?.bankIban}
                           </div>
                         )}
@@ -359,7 +357,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
                         <div className="font-medium text-slate-800 max-w-[180px] truncate">
                           {entry.eventTitle}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono">{entry.eventDate}</div>
+                        <div className="text-2xs text-slate-400 font-mono">{entry.eventDate}</div>
                       </td>
                       <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700">
                         {regHours} س
@@ -373,7 +371,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
                       <td className="py-2.5 px-3 font-mono text-slate-800">
                         {entry.earnedAmount.toLocaleString('ar-SA')}
                       </td>
-                      <td className="py-2.5 px-3 font-mono text-[11px]">
+                      <td className="py-2.5 px-3 font-mono text-2xs">
                         {entry.bonusAmount ? (
                           <span className="text-emerald-700 font-bold">+{entry.bonusAmount}</span>
                         ) : entry.deductionAmount ? (
@@ -382,7 +380,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
                           <span className="text-slate-300">-</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 font-mono font-extrabold text-slate-950 text-sm text-left">
+                      <td className="py-2.5 px-3 font-mono font-bold text-slate-950 text-sm text-left">
                         {entry.netPayout.toLocaleString('ar-SA')} ر.س
                       </td>
                     </tr>
@@ -401,7 +399,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
                   <td className="py-3 px-3 font-mono text-emerald-800">
                     +{totalBonusAmount - totalDeductionAmount}
                   </td>
-                  <td className="py-3 px-3 font-mono font-extrabold text-base text-emerald-900 text-left">
+                  <td className="py-3 px-3 font-mono font-bold text-base text-emerald-900 text-left">
                     {totalConsolidatedAmount.toLocaleString('ar-SA')} ر.س
                   </td>
                 </tr>
@@ -413,7 +411,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
           <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-emerald-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
             <div className="space-y-0.5">
               <span className="text-emerald-800 font-bold block">المبلغ الإجمالي كتابةً وفقط:</span>
-              <span className="font-extrabold text-sm sm:text-base text-emerald-950">
+              <span className="font-bold text-sm sm:text-base text-emerald-950">
                 {tafqeetText}
               </span>
             </div>
@@ -426,7 +424,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
           {!isViewOnly && !isSuccessIssued && (
             <form onSubmit={handleConfirmSubmit} className="space-y-4 pt-2 border-t border-slate-200">
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-4">
-                <div className="flex items-center gap-2 text-slate-900 font-extrabold text-xs">
+                <div className="flex items-center gap-2 text-slate-900 font-medium text-xs">
                   <CreditCard className="w-4 h-4 text-blue-600" />
                   <span>بيانات الدفع والاعتماد المحاسبي</span>
                 </div>
@@ -488,7 +486,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
                     onChange={(e) => setAutoCreateExpense(e.target.checked)}
                     className="w-4 h-4 text-emerald-600 rounded-md border-slate-300 focus:ring-emerald-500"
                   />
-                  <span className="text-xs font-bold text-slate-800">
+                  <span className="text-xs font-medium text-slate-800">
                     ترحيل تلقائي إلى سجل المصروفات وقائمة الدخل (P&L) كبند أجور عمالة ومباشرين مباشرة 📊
                   </span>
                 </label>
@@ -498,13 +496,13 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-extrabold flex items-center gap-2 shadow-xs transition-colors"
+                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-medium flex items-center gap-2 shadow-xs transition-colors"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>اعتماد وإصدار سند الصرف الموحد ({totalConsolidatedAmount.toLocaleString('ar-SA')} ر.س)</span>
@@ -515,7 +513,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
 
           {/* Success Banner if Issued */}
           {isSuccessIssued && (
-            <div className="p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-medium flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span>
@@ -525,7 +523,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
               </div>
               <button
                 onClick={onClose}
-                className="px-4 py-1.5 rounded-xl bg-emerald-800 text-white font-bold text-xs"
+                className="px-4 py-1.5 rounded-xl bg-emerald-800 text-white font-medium text-xs"
               >
                 إغلاق
               </button>
@@ -537,13 +535,13 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
             
             <div className="space-y-6">
               <span className="text-slate-500 font-bold block">إعداد المحاسب المالي</span>
-              <div className="font-extrabold text-slate-900">{preparedBy}</div>
+              <div className="font-bold text-slate-900">{preparedBy}</div>
               <div className="w-28 mx-auto border-b border-dashed border-slate-400"></div>
             </div>
 
             <div className="space-y-6">
               <span className="text-slate-500 font-bold block">اعتماد المدير المالي التنفيذي</span>
-              <div className="font-extrabold text-slate-900">{approvedBy}</div>
+              <div className="font-bold text-slate-900">{approvedBy}</div>
               <div className="w-28 mx-auto border-b border-dashed border-slate-400"></div>
             </div>
 
@@ -556,7 +554,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
                   className="w-16 h-16 object-contain mix-blend-multiply opacity-90"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center text-[10px] text-slate-400 font-bold">
+                <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center text-2xs text-slate-400 font-medium">
                   ختم معتمد
                 </div>
               )}
@@ -565,7 +563,7 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
           </div>
 
           {/* Legal Notice */}
-          <div className="text-[10px] text-slate-400 text-center pt-2 border-t border-slate-100">
+          <div className="text-2xs text-slate-400 text-center pt-2 border-t border-slate-100">
             تم إصدار هذا السند المالي الموحد عبر نظام التشغيل الذكي للمناسبات • يخضع لسياسات العمل وأجور الطواقم الميدانية
           </div>
 

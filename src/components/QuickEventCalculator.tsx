@@ -92,12 +92,12 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
       <div className="flex items-start justify-between pb-6 border-b border-slate-100">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 text-xs font-bold">
-              <Calculator className="w-3.5 h-3.5 text-[#155EEF]" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 text-xs font-medium">
+              <Calculator className="w-3.5 h-3.5 text-action" />
               <span>حاسبة الباقات المعتمدة</span>
             </div>
             {currency !== 'SAR' && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 text-amber-900 border border-amber-200 text-[11px] font-bold">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 text-amber-900 border border-amber-200 text-2xs font-medium">
                 <Coins className="w-3 h-3 text-amber-600" />
                 <span>العملة: {currency} ({t('currencyRateNotice', 'الأسعار محولة وفق سعر الصرف التقريبي')})</span>
               </span>
@@ -115,9 +115,7 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
           <button
             onClick={onClose}
             className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+           aria-label="إغلاق"><X className="w-4 h-4" /></button>
         )}
       </div>
 
@@ -129,7 +127,7 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
           
           {/* 1. Event Type Selector */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-2">
+            <label className="block text-xs font-medium text-slate-800 mb-2">
               1. نوع المناسبة
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -140,7 +138,7 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
                   onClick={() => setEventType(t.label)}
                   className={`p-3 rounded-xl border text-xs font-bold text-center transition-all ${
                     eventType === t.label
-                      ? 'bg-[#0A1A33] border-[#0A1A33] text-white'
+                      ? 'bg-navy border-navy text-white'
                       : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                   }`}
                 >
@@ -153,8 +151,8 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
           {/* 2. Guest Count Slider */}
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-[#155EEF]" />
+              <label className="text-xs font-medium text-slate-800 flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-action" />
                 <span>2. عدد الضيوف المتوقع</span>
               </label>
               <span className="px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-900 font-bold text-sm font-mono">
@@ -170,10 +168,10 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
               value={guestCount}
               onChange={(e) => setGuestCount(Number(e.target.value))}
               aria-label="عدد الضيوف"
-              className="w-full accent-[#155EEF] h-2 bg-slate-200 rounded-lg cursor-pointer"
+              className="w-full accent-action h-2 bg-slate-200 rounded-lg cursor-pointer"
             />
 
-            <div className="flex justify-between text-[11px] text-slate-400 font-mono font-medium">
+            <div className="flex justify-between text-2xs text-slate-400 font-mono font-medium">
               <span>20 ضيف</span>
               <span>150 ضيف</span>
               <span>300 ضيف</span>
@@ -184,7 +182,7 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
           {/* 3. Location and Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
+              <label className="block text-xs font-medium text-slate-700 mb-1.5 flex items-center gap-1">
                 <MapPin className="w-3.5 h-3.5 text-slate-400" />
                 <span>المدينة</span>
               </label>
@@ -198,7 +196,7 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
+              <label className="block text-xs font-medium text-slate-700 mb-1.5 flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
                 <span>تاريخ المناسبة التقريبي</span>
               </label>
@@ -207,16 +205,16 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
                 value={eventDate}
                 onChange={(e) => setEventDate(e.target.value)}
                 aria-label="تاريخ المناسبة التقريبي"
-                className="w-full p-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-semibold focus:border-[#155EEF] focus:outline-none"
+                className="w-full p-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-semibold focus:border-action focus:outline-none"
               />
             </div>
           </div>
 
           {/* 4. Services Checklist */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-2 flex items-center justify-between">
+            <label className="block text-xs font-medium text-slate-800 mb-2 flex items-center justify-between">
               <span>4. اختر الخدمات المشمولة في الباقة:</span>
-              <span className="text-[11px] text-slate-500 font-normal">
+              <span className="text-2xs text-slate-500 font-normal">
                 (اختر 3 خدمات فأكثر للحصول على الخصم الفوري)
               </span>
             </label>
@@ -237,7 +235,7 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
                     onClick={() => toggleService(s.id)}
                     className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-slate-50 border-[#0A1A33] text-slate-900'
+                        ? 'bg-slate-50 border-navy text-slate-900'
                         : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
                     }`}
                   >
@@ -245,23 +243,23 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
                       <div
                         className={`w-5 h-5 rounded-md flex items-center justify-center border ${
                           isSelected
-                            ? 'bg-[#155EEF] border-[#155EEF] text-white'
+                            ? 'bg-action border-action text-white'
                             : 'border-slate-300 bg-white'
                         }`}
                       >
                         {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                       </div>
                       <div>
-                        <span className="font-bold text-xs sm:text-sm block text-slate-900">
+                        <span className="font-medium text-xs sm:text-sm block text-slate-900">
                           {s.title}
                         </span>
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-2xs text-slate-500">
                           {s.categoryName} • {formatPrice(s.price)} / {s.priceUnit}
                         </span>
                       </div>
                     </div>
 
-                    <div className="text-left font-bold text-slate-900 text-xs sm:text-sm font-mono">
+                    <div className="text-left font-medium text-slate-900 text-xs sm:text-sm font-mono">
                       {formatPrice(sPrice)}
                     </div>
                   </div>
@@ -278,8 +276,8 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
           <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
             
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <span className="text-xs font-bold text-slate-800">ملخص تسعير الباقة</span>
-              <span className="text-xs text-slate-900 font-bold bg-white border border-slate-200 px-2 py-0.5 rounded font-mono">
+              <span className="text-xs font-medium text-slate-800">ملخص تسعير الباقة</span>
+              <span className="text-xs text-slate-900 font-medium bg-white border border-slate-200 px-2 py-0.5 rounded font-mono">
                 {selectedServiceIds.length} خدمات
               </span>
             </div>
@@ -300,12 +298,12 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
                   <span className="font-mono">- {formatPrice(discountAmount)}</span>
                 </div>
               ) : (
-                <div className="text-[11px] text-slate-500 bg-white p-2 rounded border border-slate-200">
+                <div className="text-2xs text-slate-500 bg-white p-2 rounded border border-slate-200">
                   💡 اختر 3 خدمات أو أكثر للحصول على خصم الباقات الفوري
                 </div>
               )}
 
-              <div className="flex justify-between text-slate-500 text-[11px] pt-1">
+              <div className="flex justify-between text-slate-500 text-2xs pt-1">
                 <span>الضريبة والتجهيز:</span>
                 <span className="text-slate-700 font-bold">مشمول بالكامل</span>
               </div>
@@ -315,11 +313,11 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
             <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
               <div>
                 <span className="text-xs text-slate-500 block">الإجمالي التقديري الصافي</span>
-                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">
+                <div className="text-2xl sm:text-3xl font-bold text-slate-900 font-mono">
                   {formatPrice(finalTotal)}
                 </div>
               </div>
-              <div className="text-left text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200">
+              <div className="text-left text-xs font-medium text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200">
                 تسعير شفاف معتمد
               </div>
             </div>
@@ -327,7 +325,7 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
             {/* Contact Details */}
             <div className="pt-3 space-y-2.5 border-t border-slate-200">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-2xs font-medium text-slate-700 mb-1">
                   الاسم الكريم
                 </label>
                 <input
@@ -335,12 +333,12 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   placeholder="اسم صاحب الطلب"
-                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs placeholder:text-slate-400 focus:border-[#155EEF] focus:outline-none font-semibold"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs placeholder:text-slate-400 focus:border-action focus:outline-none font-semibold"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-2xs font-medium text-slate-700 mb-1">
                   رقم الجوال
                 </label>
                 <input
@@ -348,7 +346,7 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
                   placeholder="05XXXXXXXX"
-                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs placeholder:text-slate-400 focus:border-[#155EEF] focus:outline-none font-mono"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs placeholder:text-slate-400 focus:border-action focus:outline-none font-mono"
                 />
               </div>
             </div>
@@ -359,7 +357,7 @@ export const QuickEventCalculator: React.FC<QuickEventCalculatorProps> = ({
           <button
             type="button"
             onClick={handleSendWhatsAppQuote}
-            className="w-full py-3.5 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-xs"
+            className="w-full py-3.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-xs"
           >
             <MessageCircle className="w-4 h-4" />
             <span>طلب وحجز الباقة عبر واتساب</span>

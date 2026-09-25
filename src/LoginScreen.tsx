@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { controlClass } from './components/ui/Field';
 import { Lock, Mail, Phone, LogIn, AlertCircle, Eye, EyeOff, X, Camera, UserPlus, KeyRound, ArrowRight, RefreshCw } from 'lucide-react';
 import { UsilLockup } from './components/UsilLockup';
 import { EmailVerifyPanel } from './components/auth/EmailVerifyPanel';
@@ -102,6 +103,12 @@ export function LoginScreen({
   const [avatarDataUrl, setAvatarDataUrl] = useState('');
   const [verifyEmailSent, setVerifyEmailSent] = useState(true);
   const [onceVerifyCode, setOnceVerifyCode] = useState('');
+  /* Reset runs in two steps: request a mailed code, then code + new password. */
+  const [resetStep, setResetStep] = useState<'request' | 'confirm'>('request');
+  const [resetCode, setResetCode] = useState('');
+  /* Per-field errors sit next to the field they describe. The single banner
+     told the user something was wrong but not which box to fix. */
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (defaultMode === 'verify') setMode('verify');
@@ -128,16 +135,31 @@ export function LoginScreen({
     event.preventDefault();
     setError(null);
 
-    if (!email.trim() || !phone.trim() || !password) {
-      setError('البريد الإلكتروني ورقم الجوال والرقم السري مطلوبة كلها.');
-      return;
+    const nextFieldErrors: Record<string, string> = {};
+    if (!email.trim()) nextFieldErrors.email = 'اكتب بريدك الإلكتروني.';
+    if (!phone.trim()) nextFieldErrors.phone = 'اكتب رقم جوالك.';
+    if (!password) nextFieldErrors.password = 'اكتب الرقم السري.';
+    if (mode === 'register' && !name.trim()) nextFieldErrors.name = 'اكتب اسمك الكامل.';
+    if (mode === 'register' && password && password.length < 6) {
+      nextFieldErrors.password = 'الرقم السري يجب ألا يقل عن 6 خانات.';
     }
-    if (mode === 'register' && !name.trim()) {
-      setError('اكتب الاسم لإكمال إنشاء حساب العميل.');
-      return;
+    if (mode === 'register' && confirmPassword && password !== confirmPassword) {
+      nextFieldErrors.confirmPassword = 'الرقمان السريان غير متطابقين.';
     }
-    if (mode === 'register' && password.length < 6) {
-      setError('الرقم السري يجب ألا يقل عن 6 خانات.');
+    setFieldErrors(nextFieldErrors);
+
+    if (Object.keys(nextFieldErrors).length) {
+      if (!email.trim() || !phone.trim() || !password) {
+        setError('البريد الإلكتروني ورقم الجوال والرقم السري مطلوبة كلها.');
+      } else if (mode === 'register' && !name.trim()) {
+        setError('اكتب الاسم لإكمال إنشاء حساب العميل.');
+      } else if (mode === 'register' && password.length < 6) {
+        setError('الرقم السري يجب ألا يقل عن 6 خانات.');
+      }
+      // Move focus to the first offending field so keyboard and screen-reader
+      // users are not left hunting for what failed.
+      const first = Object.keys(nextFieldErrors)[0];
+      document.getElementById(`usil-login-${first}`)?.focus();
       return;
     }
 
@@ -181,38 +203,54 @@ export function LoginScreen({
     setError(null);
     setSuccessMsg(null);
 
-    if (!email.trim() || !phone.trim()) {
-      setError('أدخل البريد الإلكتروني ورقم الجوال معاً كما سجّلتهما.');
+    if (!email.trim()) {
+      setError('أدخل البريد الإلكتروني الذي سجّلت به.');
       return;
     }
-    if (!password || password.length < 8) {
-      setError('الرقم السري ضعيف. استخدم 8 خانات على الأقل.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('الرقم السري وتأكيده غير متطابقين.');
-      return;
+    if (resetStep === 'confirm') {
+      if (!/^\d{6}$/.test(resetCode.trim())) {
+        setError('أدخل رمز الاستعادة المكوّن من 6 أرقام.');
+        return;
+      }
+      if (!password || password.length < 8) {
+        setError('الرقم السري ضعيف. استخدم 8 خانات على الأقل.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('الرقم السري وتأكيده غير متطابقين.');
+        return;
+      }
     }
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      const requesting = resetStep === 'request';
+      const res = await fetch(requesting ? '/api/auth/forgot-password' : '/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          email: email.trim(),
-          phone: phone.trim(),
-          newPassword: password,
-        }),
+        body: JSON.stringify(
+          requesting
+            ? { email: email.trim() }
+            : { email: email.trim(), code: resetCode.trim(), newPassword: password },
+        ),
       });
       const data = await res.json();
       if (!data.success) {
         setError(data.error || 'تعذر استعادة الحساب. حاول مرة أخرى.');
         return;
       }
+      if (requesting) {
+        // Local runs without SMTP hand the code back once; production never does.
+        setResetCode(data.resetCode ? String(data.resetCode) : '');
+        setResetStep('confirm');
+        setSuccessMsg(data.message || 'إن كان البريد مسجّلاً فسيصلك رمز الاستعادة.');
+        return;
+      }
       setPassword('');
       setConfirmPassword('');
+      setResetCode('');
+      setResetStep('request');
       setMode('login');
       setSuccessMsg(data.message || 'تم تغيير الرقم السري. ادخل الآن.');
     } catch {
@@ -224,14 +262,41 @@ export function LoginScreen({
 
   const openForgot = () => {
     setMode('forgot');
+    setResetStep('request');
+    setResetCode('');
     setError(null);
     setSuccessMsg(null);
     setPassword('');
     setConfirmPassword('');
   };
 
-  const inputClass =
-    'w-full bg-[#F7F8FA] border border-[#E4E7EC] rounded-xl px-4 py-3 text-sm text-[#101828] placeholder:text-[#98A2B3] focus:outline-none focus:bg-white focus:border-[#155EEF]';
+  const clearFieldError = (key: string) =>
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+
+  const fieldError = (key: string) =>
+    fieldErrors[key] ? (
+      <p
+        id={`usil-login-${key}-error`}
+        role="alert"
+        className="mt-1.5 flex items-start gap-1.5 text-xs font-medium text-danger"
+      >
+        <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden />
+        {fieldErrors[key]}
+      </p>
+    ) : null;
+
+  const req = (
+    <span className="text-danger" aria-hidden>
+      *
+    </span>
+  );
+
+  const inputClass = controlClass;
 
   const title =
     mode === 'verify'
@@ -245,19 +310,21 @@ export function LoginScreen({
     mode === 'verify'
       ? 'أدخل رمز التأكيد. إن وُجد بريد على الخادم يصلك الرمز هناك، وإلا يظهر مرة واحدة هنا.'
       : mode === 'forgot'
-        ? 'أدخل البريد ورقم الجوال معاً كما سجّلتهما، ثم الرقم السري الجديد.'
+        ? resetStep === 'request'
+          ? 'أدخل بريدك المسجّل ونرسل إليه رمز استعادة من 6 أرقام.'
+          : 'أدخل الرمز الذي وصلك على بريدك، ثم الرقم السري الجديد.'
         : mode === 'register'
           ? 'سجّل كعميل بالبريد والجوال والرقم السري. يمكنك رفع صورة أو نولّد لك شعاراً باسمك.'
           : 'أدخل البريد والجوال والرقم السري. النظام يحوّلك تلقائيًا إلى واجهة العميل أو المورد أو الإدارة حسب حسابك.';
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#0A1A33] text-white flex items-center justify-center px-2 py-4 sm:p-4 overflow-x-hidden pattern-navy">
+    <div dir="rtl" className="min-h-screen bg-navy text-white flex items-center justify-center px-2 py-4 sm:p-4 overflow-x-hidden pattern-navy">
       <div className="w-full max-w-md mx-2 sm:mx-auto relative">
         {onClose ? (
           <button
             type="button"
             onClick={onClose}
-            className="absolute -top-1 left-0 w-9 h-9 rounded-full bg-white text-[#475467] hover:text-[#101828] flex items-center justify-center"
+            className="absolute -top-1 left-0 w-9 h-9 rounded-full bg-white text-ink-2 hover:text-ink flex items-center justify-center"
             aria-label="إغلاق"
           >
             <X className="w-4 h-4" />
@@ -266,12 +333,12 @@ export function LoginScreen({
 
         <div className="text-center mb-7 flex flex-col items-center">
           <UsilLockup variant="inverse" />
-          <h1 className="text-2xl font-display font-extrabold text-white mt-5">{title}</h1>
+          <h1 className="text-2xl font-display font-bold text-white mt-5">{title}</h1>
           <p className="text-sm text-white/65 mt-2 leading-relaxed max-w-sm">{subtitle}</p>
         </div>
 
         {mode === 'verify' ? (
-          <div className="bg-white text-[#101828] border border-[#E4E7EC] rounded-2xl p-5 sm:p-6 space-y-4 overflow-x-hidden">
+          <div className="bg-white text-ink border border-line rounded-2xl p-5 sm:p-6 space-y-4 overflow-x-hidden">
             <EmailVerifyPanel
               email={email.trim()}
               phone={phone.trim()}
@@ -283,7 +350,7 @@ export function LoginScreen({
         ) : (
         <form
           onSubmit={mode === 'forgot' ? submitForgot : submit}
-          className="bg-white text-[#101828] border border-[#E4E7EC] rounded-2xl p-5 sm:p-6 space-y-4 overflow-x-hidden"
+          className="bg-white text-ink border border-line rounded-2xl p-5 sm:p-6 space-y-4 overflow-x-hidden"
         >
           {mode !== 'forgot' ? (
             <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-2xl">
@@ -294,8 +361,8 @@ export function LoginScreen({
                   setError(null);
                   setSuccessMsg(null);
                 }}
-                className={`py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 ${
-                  mode === 'register' ? 'bg-[#155EEF] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                className={`py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 ${
+                  mode === 'register' ? 'bg-action text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <UserPlus className="w-3.5 h-3.5" />
@@ -307,7 +374,7 @@ export function LoginScreen({
                   setMode('login');
                   setError(null);
                 }}
-                className={`py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 ${
+                className={`py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 ${
                   mode === 'login' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -317,30 +384,40 @@ export function LoginScreen({
             </div>
           ) : (
             <div className="rounded-2xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs text-slate-600 font-medium leading-relaxed">
-              يلزم البريد ورقم الجوال معاً ليطابقا حساباً موجوداً. بعدها تضع الرقم السري الجديد.
+              {resetStep === 'request'
+                ? 'نرسل رمز الاستعادة إلى بريدك المسجّل. الرمز صالح لمدة 15 دقيقة.'
+                : 'الرمز صالح لمدة 15 دقيقة، وبعد 5 محاولات خاطئة يلزم طلب رمز جديد.'}
             </div>
           )}
 
           {mode === 'register' && (
             <>
               <label className="block text-sm">
-                <span className="text-slate-600 mb-1.5 block font-bold">الاسم</span>
+                <span className="text-slate-600 mb-1.5 block font-bold">الاسم {req}</span>
                 <input
+                  id="usil-login-name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className={inputClass}
+                  onChange={(e) => {
+                setName(e.target.value);
+                clearFieldError('name');
+              }}
+                  className={`${inputClass} ${fieldErrors.name ? 'border-danger bg-danger-bg' : ''}`}
                   placeholder="الاسم الكامل"
+                  required
+                  aria-invalid={fieldErrors.name ? true : undefined}
+                  aria-describedby={fieldErrors.name ? 'usil-login-name-error' : undefined}
                 />
+                {fieldError('name')}
               </label>
               <label className="block text-sm">
                 <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
-                  <Camera className="w-4 h-4 text-[#155EEF]" />
+                  <Camera className="w-4 h-4 text-action" />
                   صورة الحساب (اختياري)
                 </span>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  className="w-full text-xs file:ml-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[#0A1A33] file:text-white file:font-bold"
+                  className="w-full text-xs file:ml-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-navy file:text-white file:font-medium"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) {
@@ -356,7 +433,7 @@ export function LoginScreen({
                     }
                   }}
                 />
-                <p className="text-[11px] text-slate-500 mt-1">
+                <p className="text-2xs text-slate-500 mt-1">
                   إن لم ترفع صورة نولّد لك شعاراً باسمك بألوان يوصل. لا نستخدم صوراً تجريبية.
                 </p>
                 {avatarDataUrl ? (
@@ -368,49 +445,93 @@ export function LoginScreen({
 
           <label className="block text-sm">
             <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
-              <Mail className="w-4 h-4 text-[#155EEF]" />
-              البريد الإلكتروني
+              <Mail className="w-4 h-4 text-action" />
+              البريد الإلكتروني {req}
             </span>
             <input
+              id="usil-login-email"
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={inputClass}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearFieldError('email');
+              }}
+              className={`${inputClass} ${fieldErrors.email ? 'border-danger bg-danger-bg' : ''}`}
               placeholder="name@company.sa"
               autoComplete="email"
+              aria-invalid={fieldErrors.email ? true : undefined}
+              aria-describedby={fieldErrors.email ? 'usil-login-email-error' : undefined}
             />
+            {fieldError('email')}
           </label>
 
+          {mode === 'forgot' && resetStep === 'confirm' ? (
+            <label className="block text-sm">
+              <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
+                <KeyRound className="w-4 h-4 text-action" />
+                رمز الاستعادة {req}
+              </span>
+              <input
+                id="usil-login-reset-code"
+                inputMode="numeric"
+                required
+                maxLength={6}
+                value={resetCode}
+                onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className={`${inputClass} font-mono tracking-widest`}
+                placeholder="000000"
+                autoComplete="one-time-code"
+                dir="ltr"
+              />
+            </label>
+          ) : null}
+
+          {mode !== 'forgot' ? (
           <label className="block text-sm">
             <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
-              <Phone className="w-4 h-4 text-[#155EEF]" />
-              رقم الجوال
+              <Phone className="w-4 h-4 text-action" />
+              رقم الجوال {req}
             </span>
             <input
+              id="usil-login-phone"
               type="tel"
               required
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className={`${inputClass} font-mono`}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                clearFieldError('phone');
+              }}
+              className={`${inputClass} font-mono ${fieldErrors.phone ? 'border-danger bg-danger-bg' : ''}`}
               placeholder="05xxxxxxxx"
               autoComplete="tel"
               dir="ltr"
+              aria-invalid={fieldErrors.phone ? true : undefined}
+              aria-describedby={fieldErrors.phone ? 'usil-login-phone-error' : undefined}
             />
+            {fieldError('phone')}
           </label>
+          ) : null}
 
+          {mode !== 'forgot' || resetStep === 'confirm' ? (
           <label className="block text-sm">
             <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
-              <Lock className="w-4 h-4 text-[#155EEF]" />
-              {mode === 'forgot' ? 'الرقم السري الجديد' : 'الرقم السري'}
+              <Lock className="w-4 h-4 text-action" />
+              {mode === 'forgot' ? 'الرقم السري الجديد' : 'الرقم السري'} {req}
             </span>
             <div className="relative">
               <input
+                id="usil-login-password"
                 type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`${inputClass} pl-12`}
+                onChange={(e) => {
+                setPassword(e.target.value);
+                clearFieldError('password');
+              }}
+                aria-invalid={fieldErrors.password ? true : undefined}
+                aria-describedby={fieldErrors.password ? 'usil-login-password-error' : undefined}
+                className={`${inputClass} pl-12 ${fieldErrors.password ? 'border-danger bg-danger-bg' : ''}`}
                 placeholder="••••••••"
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               />
@@ -423,13 +544,15 @@ export function LoginScreen({
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            {fieldError('password')}
           </label>
+          ) : null}
 
           {mode === 'login' ? (
             <button
               type="button"
               onClick={openForgot}
-              className="text-[12px] font-bold text-[#155EEF] hover:underline"
+              className="text-xs font-medium text-action hover:underline"
             >
               نسيت كلمة المرور؟
             </button>
@@ -446,19 +569,19 @@ export function LoginScreen({
                   setRemember(next);
                   if (!next) persistRememberedLogin(false, '');
                 }}
-                className="mt-1 w-5 h-5 shrink-0 rounded border-slate-300 text-[#155EEF] accent-[#155EEF] focus:ring-[#155EEF] focus:ring-offset-0"
+                className="mt-1 w-5 h-5 shrink-0 rounded border-slate-300 text-action accent-action focus:ring-action focus:ring-offset-0"
               />
               <span className="min-w-0">
                 <span className="block text-sm font-bold text-slate-800">حفظ البيانات</span>
-                <span className="block text-[11px] text-slate-500 leading-relaxed">خلّك داخل على هذا الجهاز</span>
+                <span className="block text-2xs text-slate-500 leading-relaxed">خلّك داخل على هذا الجهاز</span>
               </span>
             </label>
           ) : null}
 
-          {mode === 'forgot' ? (
+          {mode === 'forgot' && resetStep === 'confirm' ? (
             <label className="block text-sm">
               <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
-                <Lock className="w-4 h-4 text-[#155EEF]" />
+                <Lock className="w-4 h-4 text-action" />
                 تأكيد الرقم السري
               </span>
               <input
@@ -487,26 +610,34 @@ export function LoginScreen({
             </div>
           ) : null}
 
-          {!email.trim() && !phone.trim() && !password && !error && !successMsg && !loading ? (
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              {mode === 'forgot'
-                ? 'الحقول فارغة — اكتب البريد والجوال معاً ثم الرقم السري الجديد (8 خانات على الأقل).'
-                : 'الحقول فارغة — البريد والجوال والرقم السري مطلوبة كلها.'}
-            </p>
-          ) : null}
+          {mode === 'forgot'
+            ? !email.trim() && !error && !successMsg && !loading ? (
+                <p className="text-2xs text-slate-500 leading-relaxed">
+                  الحقل فارغ — اكتب بريدك المسجّل لنرسل إليه رمز الاستعادة.
+                </p>
+              ) : null
+            : !email.trim() && !phone.trim() && !password && !error && !successMsg && !loading ? (
+                <p className="text-2xs text-slate-500 leading-relaxed">
+                  الحقول فارغة — البريد والجوال والرقم السري مطلوبة كلها.
+                </p>
+              ) : null}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] disabled:opacity-60 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"
+            className="w-full bg-action hover:bg-action-hover active:bg-action-pressed disabled:opacity-60 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"
           >
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : mode === 'forgot' ? <KeyRound className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
             {loading
               ? mode === 'forgot'
-                ? 'جارٍ حفظ الرقم السري…'
+                ? resetStep === 'request'
+                  ? 'جارٍ إرسال الرمز…'
+                  : 'جارٍ حفظ الرقم السري…'
                 : 'جارٍ التحقق…'
               : mode === 'forgot'
-                ? 'تغيير الرقم السري'
+                ? resetStep === 'request'
+                  ? 'أرسل رمز الاستعادة'
+                  : 'تغيير الرقم السري'
                 : mode === 'login'
                   ? 'دخول'
                   : 'إنشاء حساب عميل'}
@@ -516,7 +647,7 @@ export function LoginScreen({
             <button
               type="button"
               onClick={openForgot}
-              className="w-full text-[12px] font-bold text-[#155EEF] hover:underline"
+              className="w-full text-xs font-medium text-action hover:underline"
             >
               نسيت كلمة المرور؟
             </button>
@@ -527,12 +658,14 @@ export function LoginScreen({
               type="button"
               onClick={() => {
                 setMode('login');
+                setResetStep('request');
+                setResetCode('');
                 setError(null);
                 setSuccessMsg(null);
                 setPassword('');
                 setConfirmPassword('');
               }}
-              className="w-full text-[12px] font-bold text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1"
+              className="w-full text-xs font-medium text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1"
             >
               <ArrowRight className="w-3.5 h-3.5 rotate-180" />
               العودة لتسجيل الدخول
@@ -543,7 +676,7 @@ export function LoginScreen({
             <button
               type="button"
               onClick={onOpenVendorRegister}
-              className="w-full text-[11px] text-slate-400 hover:text-slate-600 font-medium"
+              className="w-full text-2xs text-slate-400 hover:text-slate-600 font-medium"
             >
               مورّد؟ سجّل مشروعك للمراجعة (ثانوي)
             </button>
@@ -552,7 +685,7 @@ export function LoginScreen({
             <button
               type="button"
               onClick={onOpenCourierRegister}
-              className="w-full text-[11px] text-slate-400 hover:text-slate-600 font-medium"
+              className="w-full text-2xs text-slate-400 hover:text-slate-600 font-medium"
             >
               سجّل معنا مندوب توصيل
             </button>
@@ -560,7 +693,7 @@ export function LoginScreen({
         </form>
         )}
 
-        <p className="mt-5 text-[11px] text-white/50 text-center leading-relaxed">
+        <p className="mt-5 text-2xs text-white/50 text-center leading-relaxed">
           حسابك محمي بجلسة آمنة. المورّد الجديد يبقى معلّقًا حتى موافقة إدارة يوصل.
         </p>
       </div>

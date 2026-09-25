@@ -3,8 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { CATEGORIES } from './data/services';
+import { FilterChips } from './components/ui/FilterChips';
+import { Button } from './components/ui/Button';
+import { CardGridSkeleton, EmptyState, ErrorState } from './components/ui/States';
 import { isPublicMarketplaceListing } from './utils/catalogMedia';
 import { cityFilterMatches, ALL_CITIES_LABEL } from './data/saudiPlaces';
 import {
@@ -46,7 +49,9 @@ import { Navbar } from './components/Navbar';
 import { CategoryFilterBar } from './components/CategoryFilterBar';
 import { ServiceCard } from './components/ServiceCard';
 import { ServiceDetailModal } from './components/ServiceDetailModal';
-import { QuickEventCalculator } from './components/QuickEventCalculator';
+const QuickEventCalculator = lazy(() =>
+  import('./components/QuickEventCalculator').then((m) => ({ default: m.QuickEventCalculator })),
+);
 import { BookingDrawer } from './components/BookingDrawer';
 import { Footer } from './components/Footer';
 import { PrivacyPolicy } from './components/legal/PrivacyPolicy';
@@ -62,26 +67,44 @@ import { RegionGate } from './components/RegionGate';
 import { loadSelectedRegion, saveSelectedRegion } from './utils/regionPreference';
 import { applySeo, applySeoFromPath, loadRemoteSeo } from './utils/seo';
 import { parseLocation, type SitePage } from './utils/siteRoutes';
-import { VendorHub } from './components/vendor/VendorHub';
+const VendorHub = lazy(() =>
+  import('./components/vendor/VendorHub').then((m) => ({ default: m.VendorHub })),
+);
 import { VendorOwnFileCard } from './components/vendor/VendorOwnFileCard';
 import { VendorPublicPage } from './components/vendor/VendorPublicPage';
-import { VendorRegisterWizard } from './components/auth/VendorRegisterWizard';
-import { CourierRegisterForm } from './components/auth/CourierRegisterForm';
+const VendorRegisterWizard = lazy(() =>
+  import('./components/auth/VendorRegisterWizard').then((m) => ({ default: m.VendorRegisterWizard })),
+);
+const CourierRegisterForm = lazy(() =>
+  import('./components/auth/CourierRegisterForm').then((m) => ({ default: m.CourierRegisterForm })),
+);
 import { LoginScreen, type SessionUser } from './LoginScreen';
 import { DashboardErrorBoundary } from './components/AppErrorBoundary';
+import { DashboardChunkFallback } from './components/ui/DashboardChunkFallback';
+import { useToast } from './components/ui/Toast';
 import { CityDemandForm } from './components/CityDemandForm';
 import { VendorHubPicker } from './components/admin/VendorHubPicker';
-import { AdminDashboard } from './components/admin/AdminDashboard';
+const AdminDashboard = lazy(() =>
+  import('./components/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })),
+);
 import { canFileExternalBooking, canUseVendorHub, dashboardFor, isVendorSupervisor, roleLabelAr } from './contracts/auth/roles';
 import { pickDefaultVendorHub, type VendorHubRow } from './contracts/vendors/vendor-hubs';
-import { VoiceAIAssistant } from './components/voice/VoiceAIAssistant';
-import { ClientOrderTrackingModal } from './components/client/ClientOrderTrackingModal';
-import { ServiceComparisonModal } from './components/client/ServiceComparisonModal';
+const VoiceAIAssistant = lazy(() =>
+  import('./components/voice/VoiceAIAssistant').then((m) => ({ default: m.VoiceAIAssistant })),
+);
+const ClientOrderTrackingModal = lazy(() =>
+  import('./components/client/ClientOrderTrackingModal').then((m) => ({ default: m.ClientOrderTrackingModal })),
+);
+const ServiceComparisonModal = lazy(() =>
+  import('./components/client/ServiceComparisonModal').then((m) => ({ default: m.ServiceComparisonModal })),
+);
 import { ServiceComparisonFloatingBar } from './components/client/ServiceComparisonFloatingBar';
-import { CrewFieldPortalModal } from './components/crew/CrewFieldPortalModal';
+const CrewFieldPortalModal = lazy(() =>
+  import('./components/crew/CrewFieldPortalModal').then((m) => ({ default: m.CrewFieldPortalModal })),
+);
 import { MobileBottomNav } from './components/mobile/MobileBottomNav';
 import { PWAInstallBanner } from './components/pwa/PWAInstallBanner';
-import { MessageCircle, RotateCcw, Mic, CheckCircle } from 'lucide-react';
+import { MessageCircle, RotateCcw, Mic, CheckCircle, PackageSearch } from 'lucide-react';
 import {
   categoryForSearchQuery,
   isHospitalitySearchQuery,
@@ -89,6 +112,9 @@ import {
   serviceMatchesPriceRange,
   serviceMatchesFulfillment,
   FulfillmentFilter,
+  AUDIENCE_OPTIONS,
+  PRICE_RANGES,
+  FULFILLMENT_FILTER_CHIPS,
 } from './data/saudiMarket';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserProfile } from './types';
@@ -110,6 +136,7 @@ import { clientHasLiveEvent } from './utils/eventTracking';
 
 export default function App() {
   // Mode View State: 'client' (Marketplace) or 'vendor' (Vendor Operating System Hub)
+  const { toast } = useToast();
   const [viewMode, setViewMode] = useState<'client' | 'vendor' | 'admin'>('client');
 
   // Client Marketplace States
@@ -666,18 +693,95 @@ export default function App() {
   };
 
   // Service Comparison Action Handlers
+  const COMPARE_LIMIT = 4;
+
+  /* The limit check reads current state rather than living inside the updater:
+     a state updater must stay pure, and under StrictMode it runs twice, which
+     fired the old alert() twice. */
+  /* Everything currently narrowing the grid, in one place, so the chips row
+     and the filter panel's counter always agree. */
+  const activeFilters = useMemo(() => {
+    const list: { key: string; label: string; value: string; onClear: () => void }[] = [];
+    if (selectedCategory !== 'all') {
+      list.push({
+        key: 'category',
+        label: 'القسم',
+        value: CATEGORIES.find((c) => c.id === selectedCategory)?.name || selectedCategory,
+        onClear: () => setSelectedCategory('all'),
+      });
+    }
+    if (selectedCity && selectedCity !== ALL_CITIES_LABEL) {
+      list.push({
+        key: 'city',
+        label: 'المدينة',
+        value: selectedCity,
+        onClear: () => setSelectedCity(ALL_CITIES_LABEL),
+      });
+    }
+    if (selectedAudience !== 'all') {
+      list.push({
+        key: 'audience',
+        label: 'الجمهور',
+        value: AUDIENCE_OPTIONS.find((o) => o.id === selectedAudience)?.label || selectedAudience,
+        onClear: () => setSelectedAudience('all'),
+      });
+    }
+    if (priceRange !== 'all') {
+      list.push({
+        key: 'price',
+        label: 'السعر',
+        value: PRICE_RANGES.find((r) => r.id === priceRange)?.label || priceRange,
+        onClear: () => setPriceRange('all'),
+      });
+    }
+    if (selectedFulfillment !== 'all') {
+      list.push({
+        key: 'lane',
+        label: 'مسار التوريد',
+        value:
+          FULFILLMENT_FILTER_CHIPS.find((c) => c.id === selectedFulfillment)?.chip ||
+          selectedFulfillment,
+        onClear: () => setSelectedFulfillment('all'),
+      });
+    }
+    if (searchQuery.trim()) {
+      list.push({
+        key: 'query',
+        label: 'البحث',
+        value: searchQuery.trim(),
+        onClear: () => setSearchQuery(''),
+      });
+    }
+    return list;
+  }, [
+    selectedCategory,
+    selectedCity,
+    selectedAudience,
+    priceRange,
+    selectedFulfillment,
+    searchQuery,
+  ]);
+
+  const clearAllFilters = () => {
+    setSelectedCategory('all');
+    setSelectedCity(ALL_CITIES_LABEL);
+    setSelectedAudience('all');
+    setPriceRange('all');
+    setSelectedFulfillment('all');
+    setSearchQuery('');
+  };
+
   const handleToggleCompare = (service: ServiceItem) => {
-    setComparedServices((prev) => {
-      const exists = prev.some((s) => s.id === service.id);
-      if (exists) {
-        return prev.filter((s) => s.id !== service.id);
-      }
-      if (prev.length >= 4) {
-        alert('يمكنك مقارنة 4 خدمات كحد أقصى في وقت واحد');
-        return prev;
-      }
-      return [...prev, service];
-    });
+    const exists = comparedServices.some((s) => s.id === service.id);
+    if (exists) {
+      setComparedServices((prev) => prev.filter((s) => s.id !== service.id));
+      return;
+    }
+    if (comparedServices.length >= COMPARE_LIMIT) {
+      toast(`تقدر تقارن ${COMPARE_LIMIT} منتجات كحد أقصى. احذف واحداً لإضافة غيره.`, 'warning');
+      return;
+    }
+    setComparedServices((prev) => [...prev, service]);
   };
 
   const handleRemoveFromCompare = (serviceId: string) => {
@@ -697,9 +801,19 @@ export default function App() {
       createdAt: new Date().toISOString(),
     };
     setVendorBookings((prev) => [newBooking, ...prev]);
-    createVendorBooking(newBooking as unknown as Record<string, unknown>, superviseId).catch(() => {
-      setVendorSync('error');
-    });
+    // The server owns the id, number, remainder and validation (past or blocked
+    // dates, foreign listings), so swap the optimistic row for its answer.
+    createVendorBooking(newBooking as unknown as Record<string, unknown>, superviseId)
+      .then((res) => {
+        const saved = res.booking as Partial<VendorBooking> | undefined;
+        if (!saved?.id) return;
+        setVendorBookings((prev) => prev.map((row) => (row.id === newBooking.id ? { ...row, ...saved } as VendorBooking : row)));
+      })
+      .catch((error: Error) => {
+        setVendorBookings((prev) => prev.filter((row) => row.id !== newBooking.id));
+        triggerAutoSaveToast(error.message || 'تعذر إنشاء الحجز');
+        setVendorSync('error');
+      });
   };
 
   const handleAddBlockedDate = (date: string, reason: string, type: BlockedDate['type']) => {
@@ -710,9 +824,21 @@ export default function App() {
       type,
     };
     setBlockedDates((prev) => [...prev, newBlock]);
-    createBlockedDate(newBlock as unknown as Record<string, unknown>, superviseId).catch(() => {
-      setVendorSync('error');
-    });
+    // The server assigns the id (and returns the existing row for a date that is already closed).
+    createBlockedDate(newBlock as unknown as Record<string, unknown>, superviseId)
+      .then((res) => {
+        const saved = res.blockedDate as BlockedDate | undefined;
+        if (!saved?.id) return;
+        setBlockedDates((prev) => {
+          const others = prev.filter((row) => row.id !== newBlock.id && row.id !== saved.id);
+          return [...others, saved];
+        });
+      })
+      .catch((error: Error) => {
+        setBlockedDates((prev) => prev.filter((row) => row.id !== newBlock.id));
+        triggerAutoSaveToast(error.message || 'تعذر إغلاق التاريخ');
+        setVendorSync('error');
+      });
   };
 
   const handleRemoveBlockedDate = (id: string) => {
@@ -1328,7 +1454,7 @@ export default function App() {
   }, [marketplaceServices, selectedCategory, selectedCity, selectedAudience, searchQuery, sortBy, priceRange, selectedFulfillment]);
 
   return (
-    <div className={`min-h-screen flex flex-col antialiased ${viewMode === 'vendor' ? 'bg-[#131314] text-[#e3e3e3]' : 'bg-[#F7F8FA] text-[#101828]'}`}>
+    <div className="min-h-screen flex flex-col antialiased bg-paper text-ink">
       {viewMode === 'client' && !sitePage ? (
         <RegionGate
           open={regionPickerOpen}
@@ -1364,7 +1490,8 @@ export default function App() {
         onOpenCart={() => setIsCartOpen(true)}
         onOpenCalculator={() => setIsCalculatorOpen(true)}
         onOpenCrewPortal={currentUser?.role === 'vendor' ? () => setIsCrewPortalOpen(true) : undefined}
-        onOpenTracker={showEventTracker ? () => setIsTrackerOpen(true) : undefined}
+        // Signed-in clients always reach it: it also lists their orders («طلباتي») with cancellation.
+        onOpenTracker={showEventTracker || currentUser?.role === 'client' ? () => setIsTrackerOpen(true) : undefined}
         onOpenCompare={() => setIsCompareModalOpen(true)}
         compareCount={comparedServices.length}
         viewMode={viewMode}
@@ -1405,8 +1532,8 @@ export default function App() {
       ) : null}
 
       {currentUser?.role === 'courier' ? (
-        <div className="bg-[#0A1A33] text-white px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs sm:text-sm font-bold">
+        <div className="bg-navy text-white px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs sm:text-sm font-medium">
             جاك حجز بره المنصة؟ سجّل بيانات اللي حجز معك عشان يوصل توثّقه لك.
           </p>
           <button
@@ -1415,7 +1542,7 @@ export default function App() {
               setCourierModalTab('external');
               setIsCourierRegisterOpen(true);
             }}
-            className="min-h-10 px-3 rounded-lg bg-[#155EEF] text-white text-xs font-black"
+            className="min-h-10 px-3 rounded-lg bg-action text-white text-xs font-medium"
           >
             تسجيل حجز خارجي
           </button>
@@ -1424,7 +1551,7 @@ export default function App() {
 
       {showPaidBanner && viewMode === 'client' ? (
         <div className="sticky top-0 z-40 bg-emerald-50 border-b border-emerald-200 text-emerald-950 px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs sm:text-sm font-bold">
+          <p className="text-xs sm:text-sm font-medium">
             تم استلام طلبك. إذا دفعت عبر ميسر، نراجع التحويل ونثبّت الحجز. تقدر تتابع من حسابك.
           </p>
           <button
@@ -1437,7 +1564,7 @@ export default function App() {
               url.searchParams.delete('status');
               window.history.replaceState({}, '', url.pathname + url.search + url.hash);
             }}
-            className="min-h-10 px-3 rounded-lg bg-emerald-700 text-white text-xs font-black"
+            className="min-h-10 px-3 rounded-lg bg-emerald-700 text-white text-xs font-medium"
           >
             إغلاق
           </button>
@@ -1447,11 +1574,14 @@ export default function App() {
       {/* Main Mode View */}
       {viewMode === 'admin' ? (
         <DashboardErrorBoundary onReset={() => setViewMode('client')}>
-        <AdminDashboard currentUser={currentUser} onOpenVendorHub={() => void openVendorHub()} />
+          <Suspense fallback={<DashboardChunkFallback label="جارٍ فتح لوحة الإدارة…" />}>
+            <AdminDashboard currentUser={currentUser} onOpenVendorHub={() => void openVendorHub()} />
+          </Suspense>
         </DashboardErrorBoundary>
       ) : viewMode === 'vendor' ? (
         <DashboardErrorBoundary onReset={() => setViewMode('client')}>
-        <VendorHub
+          <Suspense fallback={<DashboardChunkFallback label="جارٍ فتح مساحة المورّد…" />}>
+          <VendorHub
           bookings={vendorBookings}
           blockedDates={blockedDates}
           threads={whatsappThreads}
@@ -1531,6 +1661,7 @@ export default function App() {
             }
           }}
         />
+          </Suspense>
         </DashboardErrorBoundary>
       ) : sitePage ? (
         <>
@@ -1618,7 +1749,13 @@ export default function App() {
             <div className="mt-4">
               <HowUsilWorks />
             </div>
-            <section id="services-section" className="scroll-mt-44 mt-5">
+            <section
+              id="services-section"
+              /* --usil-header-h is published by Navbar; the mobile app bar is
+                 ~270px tall, far past the old 11rem guess, so smooth-scrolling
+                 here used to land the heading underneath it. */
+              className="mt-5 scroll-mt-[calc(var(--usil-header-h,11rem)+0.75rem)]"
+            >
               <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
               <div className="lg:w-56 xl:w-60 shrink-0">
               <CategoryFilterBar
@@ -1633,110 +1770,96 @@ export default function App() {
                 onSelectAudience={setSelectedAudience}
                 selectedPrice={priceRange}
                 onSelectPrice={setPriceRange}
+                selectedFulfillment={selectedFulfillment}
+                onSelectFulfillment={setSelectedFulfillment}
+                activeFilterCount={activeFilters.length}
               />
               </div>
               <div className="flex-1 min-w-0 space-y-4">
               {vendorOwnProfile && currentUser && viewMode === 'client' ? (
                 <VendorOwnFileCard profile={vendorOwnProfile} compact />
               ) : null}
-              <div className="flex items-center justify-between gap-3 text-right">
-                <h1 className="text-base sm:text-lg font-extrabold text-[#0A1A33]">
-                  {CATEGORIES.find((c) => c.id === selectedCategory)?.name || 'كل المنتجات'}
-                </h1>
-                <p className="text-xs text-slate-500 font-medium">
-                  {filteredServices.length} نتيجة · السعر والصورة من المورّد
-                </p>
+              <div className="space-y-3">
+                <div className="flex items-end justify-between gap-3 text-right">
+                  <div className="min-w-0">
+                    <h1 className="text-xl font-bold text-navy truncate">
+                      {CATEGORIES.find((c) => c.id === selectedCategory)?.name || 'كل المنتجات'}
+                    </h1>
+                    <p className="text-xs text-ink-3 mt-1">
+                      <span className="tnum font-semibold text-ink-2">
+                        {filteredServices.length}
+                      </span>{' '}
+                      نتيجة · السعر والصورة من المورّد
+                    </p>
+                  </div>
+                </div>
+                <FilterChips
+                  filters={activeFilters}
+                  onClearAll={clearAllFilters}
+                  resultCount={filteredServices.length}
+                />
               </div>
 
               {/* Service Cards Grid */}
               {catalogStatus === 'loading' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4" aria-busy="true" aria-label="جارٍ تحميل الخدمات">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="rounded-xl border border-[#E4E7EC] bg-white overflow-hidden animate-pulse">
-                      <div className="aspect-square bg-slate-200" />
-                      <div className="p-5 space-y-3">
-                        <div className="h-3 w-24 bg-slate-200 rounded" />
-                        <div className="h-4 w-3/4 bg-slate-200 rounded" />
-                        <div className="h-3 w-full bg-slate-100 rounded" />
-                        <div className="h-8 w-28 bg-slate-200 rounded-lg" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <CardGridSkeleton count={9} />
               ) : catalogStatus === 'error' ? (
-                <div className="py-16 text-center rounded-3xl bg-white border border-rose-200 card-shadow space-y-3">
-                  <p className="text-base font-bold text-slate-900">تعذر تحميل كتالوج المورّدين</p>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    حدّث الصفحة أو تواصل مع الدعم إن استمر الانقطاع. لم نختلق مورّدين وهميين لتعبئة السوق.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => window.location.reload()}
-                    className="mt-2 px-5 py-2.5 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white font-bold text-xs inline-flex items-center gap-1.5"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    إعادة المحاولة
-                  </button>
-                </div>
+                <ErrorState
+                  title="تعذر تحميل كتالوج المورّدين"
+                  description="حدّث الصفحة أو تواصل مع الدعم إن استمر الانقطاع. لم نختلق مورّدين وهميين لتعبئة السوق."
+                  onRetry={() => window.location.reload()}
+                />
               ) : filteredServices.length === 0 ? (
-                <div className="py-12 px-4 text-center rounded-2xl bg-white border border-[#E4E7EC] space-y-5">
-                  <p className="text-base font-extrabold text-slate-900">
-                    {marketplaceServices.length === 0
+                <EmptyState
+                  icon={PackageSearch}
+                  title={
+                    marketplaceServices.length === 0
                       ? 'ما فيه منتج في السوق بعد'
-                      : selectedCity !== 'جميع المدن'
-                        ? `ما لقينا منتجاً في «${selectedCity}»`
-                        : isHospitalitySearchQuery(searchQuery)
-                          ? `ما لقينا ضيافة تطابق «${searchQuery}»`
-                          : 'ما لقينا منتجاً يطابق هذا التصفية'}
-                  </p>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-                    اترك طلبك هنا أو سجّل كمورّد وارفع صور منتجك والسعر بالريال. السوق ما يعرض صور وهمية.
-                  </p>
-                  <CityDemandForm
-                    city={selectedCity}
-                    onCityChange={setSelectedCity}
-                    defaultOccasion={
-                      selectedCategory === 'hospitality'
-                        ? 'ضيافة وقهوة'
-                        : selectedCategory === 'buffet'
-                          ? 'بوفيه ومأكولات'
-                          : selectedCategory === 'photography'
-                            ? 'تصوير وتوثيق'
-                            : selectedCategory === 'halls'
-                              ? 'قاعة أو استراحة'
-                              : selectedCategory === 'condolence'
-                                ? 'عزاء'
-                                : 'عرس'
-                    }
-                  />
-                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategory('all');
-                        setSelectedCity('جميع المدن');
-                        setSelectedAudience('all');
-                        setPriceRange('all');
-                        setSelectedFulfillment('all');
-                        setSearchQuery('');
-                      }}
-                      className="px-5 py-2.5 rounded-xl bg-white border border-[#E4E7EC] text-[#0A1A33] font-bold text-xs inline-flex items-center gap-1.5"
+                      : activeFilters.length > 0
+                        ? 'ما لقينا منتجاً بهذي الفلاتر'
+                        : 'ما لقينا منتجاً مطابقاً'
+                  }
+                  description={
+                    marketplaceServices.length === 0
+                      ? 'السوق يعرض منتجات المورّدين المعتمدين فقط — ما نعرض صوراً ولا أسعاراً وهمية. اترك طلبك وبنوصلك أول ما يتوفر مورّد في منطقتك.'
+                      : 'جرّب توسيع نطاق البحث، أو اترك طلبك وبنجهّز لك مورّداً مناسباً.'
+                  }
+                  action={
+                    activeFilters.length > 0 ? (
+                      <Button variant="primary" icon={RotateCcw} onClick={clearAllFilters}>
+                        مسح كل الفلاتر
+                      </Button>
+                    ) : undefined
+                  }
+                  secondaryAction={
+                    <Button
+                      variant="secondary"
+                      onClick={() => setSitePage('support')}
                     >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      مسح الفلاتر
-                    </button>
-                    <a
-                      href="/support"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setSitePage('support');
-                      }}
-                      className="px-5 py-2.5 rounded-xl text-[#155EEF] font-bold text-xs"
-                    >
-                      أو راسل الدعم
-                    </a>
+                      راسل الدعم
+                    </Button>
+                  }
+                >
+                  <div className="max-w-md mx-auto text-right">
+                    <CityDemandForm
+                      city={selectedCity}
+                      onCityChange={setSelectedCity}
+                      defaultOccasion={
+                        selectedCategory === 'hospitality'
+                          ? 'ضيافة وقهوة'
+                          : selectedCategory === 'buffet'
+                            ? 'بوفيه ومأكولات'
+                            : selectedCategory === 'photography'
+                              ? 'تصوير وتوثيق'
+                              : selectedCategory === 'halls'
+                                ? 'قاعة أو استراحة'
+                                : selectedCategory === 'condolence'
+                                  ? 'عزاء'
+                                  : 'عرس'
+                      }
+                    />
                   </div>
-                </div>
+                </EmptyState>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                   {filteredServices.map((service) => (
@@ -1821,16 +1944,18 @@ export default function App() {
 
           {/* Event Quote Calculator Modal */}
           {isCalculatorOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 usil-modal-scroll">
               <div
                 className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
                 onClick={() => setIsCalculatorOpen(false)}
               />
               <div className="relative w-full max-w-4xl z-10 my-auto">
+                <Suspense fallback={null}>
                 <QuickEventCalculator
                   services={marketplaceServices}
                   onClose={() => setIsCalculatorOpen(false)}
                 />
+                </Suspense>
               </div>
             </div>
           )}
@@ -1857,35 +1982,43 @@ export default function App() {
                 e.preventDefault();
                 setSitePage('support');
               }}
-              className="h-12 px-4 rounded-full bg-[#155EEF] hover:bg-[#0F45B5] text-white flex items-center gap-2.5 shadow-lg transition-transform active:scale-95"
+              className="h-12 px-4 rounded-full bg-action hover:bg-action-hover text-white flex items-center gap-2.5 shadow-lg transition-transform active:scale-95"
               title="دعم يوصل"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <MessageCircle className="w-4 h-4 text-[#C0A16B]" />
-              <span className="text-xs font-bold">دعم يوصل</span>
+              <MessageCircle className="w-4 h-4 text-sand" />
+              <span className="text-xs font-medium">دعم يوصل</span>
             </a>
           </div>
         </>
       )}
 
       {/* Client Order Live Tracking Modal */}
-      <ClientOrderTrackingModal
-        isOpen={isTrackerOpen}
-        onClose={() => setIsTrackerOpen(false)}
-        trackings={orderTrackings}
-        brandSettings={brandSettings}
-        initialTrackingCode={activeTrackingCode}
-      />
+      {isTrackerOpen ? (
+        <Suspense fallback={null}>
+          <ClientOrderTrackingModal
+          isOpen={isTrackerOpen}
+          onClose={() => setIsTrackerOpen(false)}
+          trackings={orderTrackings}
+          brandSettings={brandSettings}
+          initialTrackingCode={activeTrackingCode}
+        />
+        </Suspense>
+      ) : null}
 
       {/* Crew Field Portal & GPS Attendance Modal */}
-      <CrewFieldPortalModal
-        isOpen={isCrewPortalOpen}
-        onClose={() => setIsCrewPortalOpen(false)}
-        crewMembers={crewMembers}
-        bookings={vendorBookings}
-        onAddWorkLog={handleAddWorkLog}
-        onUpdateCrewStatus={handleUpdateCrewStatus}
-      />
+      {isCrewPortalOpen ? (
+        <Suspense fallback={null}>
+          <CrewFieldPortalModal
+          isOpen={isCrewPortalOpen}
+          onClose={() => setIsCrewPortalOpen(false)}
+          crewMembers={crewMembers}
+          bookings={vendorBookings}
+          onAddWorkLog={handleAddWorkLog}
+          onUpdateCrewStatus={handleUpdateCrewStatus}
+        />
+        </Suspense>
+      ) : null}
 
       {/* Auto-Save Notification Toast (LocalForage Engine) */}
       <AnimatePresence>
@@ -1895,14 +2028,14 @@ export default function App() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#0A1A33]/95 backdrop-blur-md text-white border border-[#C0A16B]/40 shadow-2xl pointer-events-none"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-navy/95 backdrop-blur-md text-white border border-sand/40 shadow-2xl pointer-events-none"
           >
             <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
               <CheckCircle className="w-3.5 h-3.5" />
             </div>
             <div className="flex items-center gap-1.5 text-right font-sans">
-              <span className="text-xs font-bold text-slate-100">{autoSaveNotification.message}</span>
-              <span className="text-[10px] text-[#C0A16B] font-semibold bg-[#C0A16B]/10 px-1.5 py-0.5 rounded-md border border-[#C0A16B]/20">
+              <span className="text-xs font-medium text-slate-100">{autoSaveNotification.message}</span>
+              <span className="text-2xs text-sand font-semibold bg-sand/10 px-1.5 py-0.5 rounded-md border border-sand/20">
                 IndexedDB
               </span>
             </div>
@@ -1914,18 +2047,18 @@ export default function App() {
       <div className="hidden md:block fixed bottom-6 right-6 z-30">
         <button
           onClick={() => setIsVoiceAIOpen(true)}
-          className="h-13 px-4 sm:px-5 rounded-full bg-gradient-to-r from-[#0A1A33] via-[#0F284D] to-[#155EEF] text-white flex items-center gap-3 shadow-xl hover:shadow-2xl transition-all active:scale-95 border-2 border-white/20 group cursor-pointer"
+          className="h-13 px-4 sm:px-5 rounded-full bg-gradient-to-r from-navy via-[#0F284D] to-action text-white flex items-center gap-3 shadow-xl hover:shadow-2xl transition-all active:scale-95 border-2 border-white/20 group cursor-pointer"
           title="تحدث صوتياً مع وكيل يوصل الذكي"
         >
           <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[#C0A16B]">
-              <Mic className="w-4 h-4 text-[#C0A16B] group-hover:scale-110 transition-transform" />
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sand">
+              <Mic className="w-4 h-4 text-sand group-hover:scale-110 transition-transform" />
             </div>
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0A1A33] absolute -top-0.5 -right-0.5 animate-ping" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-navy absolute -top-0.5 -right-0.5 animate-ping" />
           </div>
           <div className="text-right">
-            <span className="text-xs font-black block leading-tight">الوكيل الصوتي الذكي</span>
-            <span className="text-[10px] text-[#C0A16B] font-bold">تحدث لتجهيز مناسبتك ⚡</span>
+            <span className="text-xs font-medium block leading-tight">الوكيل الصوتي الذكي</span>
+            <span className="text-2xs text-sand font-medium">تحدث لتجهيز مناسبتك ⚡</span>
           </div>
         </button>
       </div>
@@ -1949,8 +2082,14 @@ export default function App() {
         cartCount={cartItems.length}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenVoiceAI={() => setIsVoiceAIOpen(true)}
-        onOpenTracker={showEventTracker ? () => setIsTrackerOpen(true) : undefined}
+        // Always reachable from the bar: the modal takes a tracking code, so it
+        // is useful even before this device has a live event of its own.
+        onOpenTracker={() => setIsTrackerOpen(true)}
         onOpenCrewPortal={() => setIsCrewPortalOpen(true)}
+        onGoHome={() => {
+          goHome();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         onOpenAuth={() => {
           setAuthDefaultMode('login');
           setIsAuthOpen(true);
@@ -1971,7 +2110,7 @@ export default function App() {
       ) : null}
 
       {isAuthOpen ? (
-        <div className="fixed inset-0 z-[80] overflow-y-auto bg-slate-900/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[80] overflow-y-auto bg-slate-900/40 backdrop-blur-sm usil-safe-overlay">
           <LoginScreen
             defaultMode={authDefaultMode}
             verifyPrefill={
@@ -2002,6 +2141,7 @@ export default function App() {
       ) : null}
 
       {isVendorRegisterOpen ? (
+        <Suspense fallback={null}>
         <VendorRegisterWizard
           onClose={() => setIsVendorRegisterOpen(false)}
           onLoggedIn={(user) => {
@@ -2017,9 +2157,11 @@ export default function App() {
             setIsCourierRegisterOpen(true);
           }}
         />
+        </Suspense>
       ) : null}
 
       {isCourierRegisterOpen ? (
+        <Suspense fallback={null}>
         <CourierRegisterForm
           onClose={() => {
             setIsCourierRegisterOpen(false);
@@ -2028,46 +2170,49 @@ export default function App() {
           canFileExternal={canFileExternalBooking(currentUser?.role)}
           defaultTab={courierModalTab}
         />
+        </Suspense>
       ) : null}
 
       {/* Interactive Human-like Voice AI Assistant */}
-      <VoiceAIAssistant
-        isOpen={isVoiceAIOpen}
-        onClose={() => setIsVoiceAIOpen(false)}
-        onAddToCart={(srv) => {
-          handleAddToCart(srv);
-          setIsCartOpen(true);
-        }}
-        onOpenServiceDetails={(srv) => setActiveDetailService(srv)}
-        onOpenCalculator={() => setIsCalculatorOpen(true)}
-        currentCity={selectedCity}
-        services={marketplaceServices}
-      />
+      {isVoiceAIOpen ? (
+        <Suspense fallback={null}>
+          <VoiceAIAssistant
+          isOpen={isVoiceAIOpen}
+          onClose={() => setIsVoiceAIOpen(false)}
+          onAddToCart={(srv) => {
+            handleAddToCart(srv);
+            setIsCartOpen(true);
+          }}
+          onOpenServiceDetails={(srv) => setActiveDetailService(srv)}
+          onOpenCalculator={() => setIsCalculatorOpen(true)}
+          currentCity={selectedCity}
+          services={marketplaceServices}
+        />
+        </Suspense>
+      ) : null}
 
       {/* Hospitality Services Technical Comparison Modal */}
-      <ServiceComparisonModal
-        isOpen={isCompareModalOpen}
-        onClose={() => setIsCompareModalOpen(false)}
-        comparedServices={comparedServices}
-        allServices={marketplaceServices}
-        onRemoveFromCompare={handleRemoveFromCompare}
-        onAddToCompare={(service) => {
-          if (comparedServices.length >= 4) {
-            alert('يمكنك مقارنة 4 خدمات كحد أقصى في وقت واحد');
-            return;
-          }
-          setComparedServices((prev) => [...prev, service]);
-        }}
-        onAddToCart={(service) => {
-          handleAddToCart(service);
-        }}
-        onOpenDetails={(service) => {
-          setIsCompareModalOpen(false);
-          setActiveDetailService(service);
-        }}
-        cartItemIds={cartItems.map((item) => item.service.id)}
-        onClearAll={handleClearAllCompare}
-      />
+      {isCompareModalOpen ? (
+        <Suspense fallback={null}>
+          <ServiceComparisonModal
+          isOpen={isCompareModalOpen}
+          onClose={() => setIsCompareModalOpen(false)}
+          comparedServices={comparedServices}
+          allServices={marketplaceServices}
+          onRemoveFromCompare={handleRemoveFromCompare}
+          onAddToCompare={handleToggleCompare}
+          onAddToCart={(service) => {
+            handleAddToCart(service);
+          }}
+          onOpenDetails={(service) => {
+            setIsCompareModalOpen(false);
+            setActiveDetailService(service);
+          }}
+          cartItemIds={cartItems.map((item) => item.service.id)}
+          onClearAll={handleClearAllCompare}
+        />
+        </Suspense>
+      ) : null}
 
     </div>
   );

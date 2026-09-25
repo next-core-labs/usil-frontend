@@ -10,9 +10,9 @@ type UsilLockupProps = {
 /** Primary horizontal lockup: Arabic name + Latin, separator, mark on the right (RTL). */
 export function UsilLockup({ variant = 'color', subtitle, compact = false }: UsilLockupProps) {
   const inverse = variant === 'inverse';
-  const name = inverse ? 'text-white' : 'text-[#0A1A33]';
-  const latin = inverse ? 'text-white/70' : 'text-[#667085]';
-  const rule = inverse ? 'bg-white/25' : 'bg-[#E4E7EC]';
+  const name = inverse ? 'text-white' : 'text-navy';
+  const latin = inverse ? 'text-white/70' : 'text-ink-3';
+  const rule = inverse ? 'bg-white/25' : 'bg-line';
 
   return (
     <div className="flex items-center gap-2.5 sm:gap-3" dir="rtl">
@@ -22,14 +22,14 @@ export function UsilLockup({ variant = 'color', subtitle, compact = false }: Usi
       />
       <span className={`w-px self-stretch ${rule}`} aria-hidden="true" />
       <div className="text-right leading-none">
-        <div className={`font-display font-extrabold tracking-tight ${name} ${compact ? 'text-lg' : 'text-xl sm:text-[1.35rem]'}`}>
+        <div className={`font-display font-bold tracking-tight ${name} ${compact ? 'text-lg' : 'text-xl sm:text-[1.35rem]'}`}>
           يوصل
         </div>
-        <div className={`font-latin font-medium ${latin} ${compact ? 'text-[10px] mt-0.5' : 'text-[11px] mt-1'}`}>
+        <div className={`font-latin font-medium ${latin} ${compact ? 'text-2xs mt-0.5' : 'text-2xs mt-1'}`}>
           Usil
         </div>
         {subtitle ? (
-          <div className={`mt-1 font-normal ${compact ? 'text-[9px]' : 'text-[10px]'} ${inverse ? 'text-white/55' : 'text-[#667085]'}`}>
+          <div className={`mt-1 font-normal ${compact ? 'text-2xs' : 'text-2xs'} ${inverse ? 'text-white/55' : 'text-ink-3'}`}>
             {subtitle}
           </div>
         ) : null}

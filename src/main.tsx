@@ -4,8 +4,14 @@ import './i18n';
 import { CurrencyProvider } from './context/CurrencyContext.tsx';
 import App from './App.tsx';
 import './index.css';
-import { bootNativeShell, isNativeApp } from './native';
+import { bootNativeShell, hideNativeSplash, isNativeApp } from './native';
+import { installNativeApiOrigin } from './native-origin';
 import { AppErrorBoundary } from './components/AppErrorBoundary';
+import { ToastProvider } from './components/ui/Toast';
+
+// Must precede the first request or render so /api and /uploads resolve
+// against the live API instead of the local bundle.
+installNativeApiOrigin();
 
 bootNativeShell();
 
@@ -40,9 +46,13 @@ if ('serviceWorker' in navigator && !isNativeApp()) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AppErrorBoundary>
-      <CurrencyProvider>
-        <App />
-      </CurrencyProvider>
+      <ToastProvider>
+        <CurrencyProvider>
+          <App />
+        </CurrencyProvider>
+      </ToastProvider>
     </AppErrorBoundary>
   </StrictMode>,
 );
+
+hideNativeSplash();

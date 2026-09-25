@@ -17,12 +17,19 @@ import {
   Download,
   MapPin,
   CreditCard,
+  Package,
+  MessageCircle,
 } from 'lucide-react';
 import { CATEGORIES } from '../../data/services';
+import { Tabs } from '../ui/Tabs';
+import { StatCard } from '../ui/Card';
+import { controlClass } from '../ui/Field';
 import type { UserProfile } from '../../types';
 import { BOOKING_PENDING_APPROVAL_STATUS, BOOKING_REJECTED_STATUS } from '../../contracts/vendors/vendor-listings';
 import { SeoSettingsPanel } from './SeoSettingsPanel';
 import { MoyasarSettingsPanel } from './MoyasarSettingsPanel';
+import { OwnerWhatsAppPanel } from './OwnerWhatsAppPanel';
+import { whatsappChatUrl } from '../../utils/ownerWhatsApp';
 import { DEMAND_STATUS_AR, DEMAND_STATUSES, type DemandStatus } from '../../data/cityDemand';
 import {
   COLLECTION_OPTIONS,
@@ -95,6 +102,17 @@ const FULFILLMENT_ADMIN_LABEL: Record<string, string> = {
 };
 
 const FULFILLMENT_IDS = ['hour', 'same_day', 'tomorrow', 'instant'] as const;
+
+type AdminSection =
+  | 'overview'
+  | 'seo'
+  | 'moyasar'
+  | 'couriers'
+  | 'external'
+  | 'listings'
+  | 'socials'
+  | 'demand'
+  | 'whatsapp';
 
 type CourierApplication = {
   id: string;
@@ -217,12 +235,11 @@ export function AdminDashboard({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [adminSection, setAdminSection] = useState<
-    'overview' | 'seo' | 'moyasar' | 'couriers' | 'external' | 'listings' | 'socials' | 'demand'
-  >('overview');
+  const [adminSection, setAdminSection] = useState<AdminSection>('overview');
   const [cityRequests, setCityRequests] = useState<CityDemandRow[]>([]);
   const [vendorSocials, setVendorSocials] = useState<AdminVendorSocials[]>([]);
   const [externalBookings, setExternalBookings] = useState<ExternalBookingRow[]>([]);
+  const [newSupportCount, setNewSupportCount] = useState(0);
   const [externalCourierFilter, setExternalCourierFilter] = useState('all');
   const [externalStatusFilter, setExternalStatusFilter] = useState('all');
   const [form, setForm] = useState({
@@ -237,7 +254,7 @@ export function AdminDashboard({
     setLoading(true);
     setError(null);
     try {
-      const [usersRes, bookingsRes, appsRes, couriersRes, listingsRes, socialsRes, externalRes, demandRes] = await Promise.all([
+      const [usersRes, bookingsRes, appsRes, couriersRes, listingsRes, socialsRes, externalRes, demandRes, supportRes] = await Promise.all([
         fetch('/api/admin/users', { credentials: 'include' }),
         fetch('/api/bookings', { credentials: 'include' }),
         fetch('/api/admin/vendor-applications', { credentials: 'include' }),
@@ -246,6 +263,7 @@ export function AdminDashboard({
         fetch('/api/admin/vendor-socials', { credentials: 'include' }),
         fetch('/api/external-bookings', { credentials: 'include' }),
         fetch('/api/admin/city-requests', { credentials: 'include' }),
+        fetch('/api/admin/support-messages', { credentials: 'include' }),
       ]);
       const usersData = await usersRes.json();
       const bookingsData = await bookingsRes.json();
@@ -255,6 +273,7 @@ export function AdminDashboard({
       const socialsData = await socialsRes.json();
       const externalData = await externalRes.json();
       const demandData = demandRes.ok ? await demandRes.json() : { data: [] };
+      const supportData = supportRes.ok ? await supportRes.json() : { data: [] };
       if (!usersRes.ok || !usersData.success) {
         setError(usersData.error || 'تعذر تحميل حسابات المنصة.');
         return;
@@ -271,6 +290,9 @@ export function AdminDashboard({
       setVendorSocials(socialsData.data || []);
       setExternalBookings(externalData.data || []);
       setCityRequests(demandData.data || []);
+      setNewSupportCount(
+        ((supportData.data || []) as Array<{ status?: string }>).filter((row) => (row.status || 'new') === 'new').length,
+      );
     } catch {
       setError('تعذر الاتصال بالخادم.');
     } finally {
@@ -503,22 +525,22 @@ export function AdminDashboard({
     if (data.success) setBookings((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const inputClass =
-    'w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#155EEF]';
+  // Was a tenth local copy of the input string; now the shared treatment.
+  const inputClass = controlClass;
 
   return (
-    <main className="flex-1 container mx-auto px-3 sm:px-4 lg:px-8 py-8 space-y-8" dir="rtl">
-      <section className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+    <main className="flex-1 container mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8 space-y-6" dir="rtl">
+      <section className="bg-surface border border-line rounded-panel p-5 sm:p-6 shadow-e1">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1A33] text-[#C0A16B] text-xs font-bold">
-              <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-navy text-sand text-xs font-medium">
+              <ShieldCheck className="w-3.5 h-3.5" aria-hidden />
               مدير كل الحسابات في يوصل
             </span>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mt-3">
+            <h1 className="text-2xl font-bold text-navy mt-3">
               مرحباً {currentUser?.name || 'إدارة يوصل'}
             </h1>
-            <p className="text-slate-500 mt-2 max-w-2xl">
+            <p className="text-sm text-ink-3 mt-2 max-w-2xl leading-relaxed">
               من هنا تُدار حسابات العملاء والموردين والإداريين: إنشاء، تغيير الصلاحية، أو الحذف. الدخول يحدد الواجهة تلقائياً حسب نوع الحساب.
             </p>
           </div>
@@ -527,151 +549,111 @@ export function AdminDashboard({
               <button
                 type="button"
                 onClick={onOpenVendorHub}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0A1A33] text-white text-sm font-bold hover:bg-[#20304C]"
+                className="inline-flex items-center gap-2 min-h-11 px-4 rounded-control bg-navy text-white text-sm font-semibold hover:bg-navy-700 transition-colors"
               >
-                <Store className="w-4 h-4 text-[#C0A16B]" />
+                <Store className="w-4 h-4 text-sand" aria-hidden />
                 لوحة المورد
               </button>
             ) : null}
             <button
               onClick={load}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold hover:bg-slate-100"
+              className="inline-flex items-center gap-2 min-h-11 px-4 rounded-control bg-surface border border-line text-sm font-semibold text-ink hover:border-navy-300 transition-colors"
+              aria-busy={loading || undefined}
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden />
               تحديث
             </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-6">
-          <button
-            type="button"
-            onClick={() => setAdminSection('overview')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold border ${
-              adminSection === 'overview'
-                ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
-                : 'bg-slate-50 text-slate-700 border-slate-200'
-            }`}
-          >
-            نظرة عامة
-          </button>
-          <button
-            type="button"
-            onClick={() => setAdminSection('seo')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold border ${
-              adminSection === 'seo'
-                ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
-                : 'bg-slate-50 text-slate-700 border-slate-200'
-            }`}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <Search className="w-3.5 h-3.5" />
-              تحسين الظهور / SEO
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setAdminSection('moyasar')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold border ${
-              adminSection === 'moyasar'
-                ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
-                : 'bg-slate-50 text-slate-700 border-slate-200'
-            }`}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <CreditCard className="w-3.5 h-3.5" />
-              ميسر
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setAdminSection('couriers')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold border ${
-              adminSection === 'couriers'
-                ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
-                : 'bg-slate-50 text-slate-700 border-slate-200'
-            }`}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <Bike className="w-3.5 h-3.5" />
-              مناديب التوصيل
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setAdminSection('external')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold border ${
-              adminSection === 'external'
-                ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
-                : 'bg-slate-50 text-slate-700 border-slate-200'
-            }`}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <ClipboardList className="w-3.5 h-3.5" />
-              حجوزات خارجية
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setAdminSection('listings')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold border ${
-              adminSection === 'listings'
-                ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
-                : 'bg-slate-50 text-slate-700 border-slate-200'
-            }`}
-          >
-            منتجات الموردين
-          </button>
-          <button
-            type="button"
-            onClick={() => setAdminSection('socials')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold border ${
-              adminSection === 'socials'
-                ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
-                : 'bg-slate-50 text-slate-700 border-slate-200'
-            }`}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <Share2 className="w-3.5 h-3.5" />
-              حسابات التواصل
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setAdminSection('demand')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold border ${
-              adminSection === 'demand'
-                ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
-                : 'bg-slate-50 text-slate-700 border-slate-200'
-            }`}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5" />
-              طلبات المدن
-              {cityRequests.filter((row) => row.status === 'new').length ? (
-                <span className="min-w-5 h-5 px-1 rounded-md bg-[#155EEF] text-white text-[11px] font-mono">
-                  {cityRequests.filter((row) => row.status === 'new').length}
-                </span>
-              ) : null}
-            </span>
-          </button>
-        </div>
+        {/* One scrollable tab strip with real tablist semantics, replacing ten
+            hand-rolled pills that wrapped into a ragged block on laptops. */}
+        <Tabs<AdminSection>
+          className="mt-6"
+          ariaLabel="أقسام لوحة الإدارة"
+          active={adminSection}
+          onChange={setAdminSection}
+          tabs={[
+            { id: 'overview', label: 'نظرة عامة' },
+            { id: 'seo', label: 'تحسين الظهور / SEO', icon: Search },
+            { id: 'moyasar', label: 'ميسر', icon: CreditCard },
+            {
+              id: 'couriers',
+              label: 'مناديب التوصيل',
+              icon: Bike,
+              count: couriers.filter((item) => item.status === 'pending').length,
+              countTone: 'warning' as const,
+            },
+            { id: 'external', label: 'حجوزات خارجية', icon: ClipboardList },
+            { id: 'listings', label: 'منتجات الموردين', icon: Package },
+            { id: 'socials', label: 'حسابات التواصل', icon: Share2 },
+            {
+              id: 'demand',
+              label: 'طلبات المدن',
+              icon: MapPin,
+              count: cityRequests.filter((row) => row.status === 'new').length,
+              countTone: 'action' as const,
+            },
+            {
+              id: 'whatsapp',
+              label: 'واتساب',
+              icon: MessageCircle,
+              count: newSupportCount,
+              countTone: 'warning' as const,
+            },
+          ]}
+        />
 
+        {/* KPIs ordered by what needs action first: pending approvals lead,
+            totals follow. Anything awaiting a decision is toned, not neutral. */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
           {[
-            { label: 'كل الحسابات', value: users.length, icon: Users },
-            { label: 'طلبات الموردين', value: applications.filter((item) => item.status === 'pending').length, icon: Store },
-            { label: 'مناديب التوصيل', value: couriers.filter((item) => item.status === 'pending').length, icon: Bike },
-            { label: 'الحجوزات', value: bookings.length, icon: CalendarCheck2 },
-            { label: 'حجوزات خارجية', value: externalBookings.length, icon: ClipboardList },
-            { label: 'طلبات المدن', value: cityRequests.filter((row) => row.status === 'new').length, icon: MapPin },
-            { label: 'خدمات الكتالوج', value: listings.length, icon: CheckCircle2 },
+            {
+              label: 'طلبات موردين معلّقة',
+              value: applications.filter((item) => item.status === 'pending').length,
+              icon: Store,
+              tone: applications.some((item) => item.status === 'pending') ? 'warning' : 'default',
+              onClick: () => setAdminSection('overview'),
+            },
+            {
+              label: 'مناديب بانتظار المراجعة',
+              value: couriers.filter((item) => item.status === 'pending').length,
+              icon: Bike,
+              tone: couriers.some((item) => item.status === 'pending') ? 'warning' : 'default',
+              onClick: () => setAdminSection('couriers'),
+            },
+            {
+              label: 'طلبات مدن جديدة',
+              value: cityRequests.filter((row) => row.status === 'new').length,
+              icon: MapPin,
+              tone: cityRequests.some((row) => row.status === 'new') ? 'warning' : 'default',
+              onClick: () => setAdminSection('demand'),
+            },
+            { label: 'كل الحسابات', value: users.length, icon: Users, tone: 'default' },
+            { label: 'الحجوزات', value: bookings.length, icon: CalendarCheck2, tone: 'default' },
+            {
+              label: 'حجوزات خارجية',
+              value: externalBookings.length,
+              icon: ClipboardList,
+              tone: 'default',
+              onClick: () => setAdminSection('external'),
+            },
+            {
+              label: 'خدمات الكتالوج',
+              value: listings.length,
+              icon: CheckCircle2,
+              tone: 'default',
+              onClick: () => setAdminSection('listings'),
+            },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <stat.icon className="w-5 h-5 text-[#155EEF] mb-2" />
-              <div className="text-2xl font-black text-slate-900">{stat.value}</div>
-              <div className="text-xs font-bold text-slate-500 mt-1">{stat.label}</div>
-            </div>
+            <StatCard
+              key={stat.label}
+              label={stat.label}
+              value={stat.value}
+              icon={stat.icon}
+              tone={stat.tone as 'default' | 'warning'}
+              onClick={stat.onClick}
+            />
           ))}
         </div>
       </section>
@@ -687,8 +669,8 @@ export function AdminDashboard({
       ) : null}
 
       {adminSection === 'couriers' ? (
-        <section className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
-          <h2 className="text-lg font-black">مناديب التوصيل</h2>
+        <section className="bg-surface border border-line rounded-panel p-5 shadow-e1 space-y-4">
+          <h2 className="text-lg font-bold">مناديب التوصيل</h2>
           {couriers.length === 0 ? (
             <p className="text-sm text-slate-500">ما فيه طلبات مناديب حالياً. تظهر هنا بعد سجّل معنا كمندوب توصيل.</p>
           ) : (
@@ -697,7 +679,7 @@ export function AdminDashboard({
                 <article key={row.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4 space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="font-black text-slate-900">
+                      <p className="font-bold text-slate-900">
                         {row.firstName} {row.familyName}
                       </p>
                       <p className="text-xs text-slate-500">
@@ -705,12 +687,12 @@ export function AdminDashboard({
                         {row.carTypeOther ? ` · ${row.carTypeOther}` : ''}
                       </p>
                       {row.fulfillment?.length ? (
-                        <p className="text-[11px] text-[#155EEF] font-bold mt-0.5">
+                        <p className="text-2xs text-action font-medium mt-0.5">
                           أقدر أوصل: {row.fulfillment.map((lane) => FULFILLMENT_ADMIN_LABEL[lane] || lane).join(' · ')}
                         </p>
                       ) : null}
                       {row.products?.length ? (
-                        <p className="text-[11px] text-slate-600 mt-0.5">
+                        <p className="text-2xs text-slate-600 mt-0.5">
                           المنتجات اللي أوصّلها:{' '}
                           {row.products
                             .map((product) =>
@@ -723,7 +705,7 @@ export function AdminDashboard({
                       ) : null}
                     </div>
                     <span
-                      className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
+                      className={`text-2xs font-bold px-2.5 py-1 rounded-full ${
                         row.status === 'pending'
                           ? 'bg-amber-50 text-amber-700'
                           : row.status === 'approved'
@@ -737,20 +719,20 @@ export function AdminDashboard({
                   <p className="text-xs text-slate-600" dir="ltr">
                     هوية {row.nationalId}
                   </p>
-                  <p className="text-[11px] text-slate-400">{new Date(row.createdAt).toLocaleString('ar-SA')}</p>
+                  <p className="text-2xs text-slate-400">{new Date(row.createdAt).toLocaleString('ar-SA')}</p>
                   {row.status === 'pending' ? (
                     <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={() => decideCourier(row.id, 'approve')}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold"
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium"
                       >
                         موافقة
                       </button>
                       <button
                         type="button"
                         onClick={() => decideCourier(row.id, 'reject')}
-                        className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 text-xs font-bold"
+                        className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 text-xs font-medium"
                       >
                         رفض
                       </button>
@@ -770,7 +752,7 @@ export function AdminDashboard({
           <section className="bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-sm space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-black">الحجوزات الخارجية</h2>
+                <h2 className="text-lg font-bold">الحجوزات الخارجية</h2>
                 <p className="text-xs text-slate-500 mt-1">
                   حجوزات جاءت للمناديب خارج المنصة — تُسجّل هنا للمتابعة والتحصيل.
                 </p>
@@ -779,7 +761,7 @@ export function AdminDashboard({
                 type="button"
                 onClick={exportExternalCsv}
                 disabled={filteredExternal.length === 0}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold hover:bg-slate-100 disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium hover:bg-slate-100 disabled:opacity-50"
               >
                 <Download className="w-3.5 h-3.5" />
                 تصدير CSV
@@ -790,7 +772,7 @@ export function AdminDashboard({
               <select
                 value={externalCourierFilter}
                 onChange={(e) => setExternalCourierFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold"
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium"
               >
                 <option value="all">كل المناديب</option>
                 {externalCourierChoices.map(([id, name]) => (
@@ -802,7 +784,7 @@ export function AdminDashboard({
               <select
                 value={externalStatusFilter}
                 onChange={(e) => setExternalStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold"
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium"
               >
                 <option value="all">كل الحالات</option>
                 {EXTERNAL_STATUSES.map((status) => (
@@ -843,14 +825,14 @@ export function AdminDashboard({
                         <td className="py-3 text-xs text-slate-600 whitespace-nowrap">
                           {row.createdAt?.slice(0, 10)}
                           {row.eventDate ? (
-                            <div className="text-[10px] text-slate-400">مناسبة {row.eventDate}</div>
+                            <div className="text-2xs text-slate-400">مناسبة {row.eventDate}</div>
                           ) : null}
                         </td>
                         <td className="py-3 font-bold whitespace-nowrap">{row.courierName}</td>
                         <td className="py-3">
                           <div className="font-bold">{row.customerName}</div>
                           {row.vendorName ? (
-                            <div className="text-[10px] text-slate-400">مورّد: {row.vendorName}</div>
+                            <div className="text-2xs text-slate-400">مورّد: {row.vendorName}</div>
                           ) : null}
                         </td>
                         <td className="py-3 font-mono text-xs whitespace-nowrap" dir="ltr">
@@ -859,11 +841,11 @@ export function AdminDashboard({
                         <td className="py-3 whitespace-nowrap">{row.city}</td>
                         <td className="py-3">
                           {row.serviceType}
-                          {row.guests ? <div className="text-[10px] text-slate-400">{row.guests} ضيف</div> : null}
+                          {row.guests ? <div className="text-2xs text-slate-400">{row.guests} ضيف</div> : null}
                         </td>
                         <td className="py-3 whitespace-nowrap">
                           {row.amount} ر.س
-                          <div className="text-[10px] text-slate-400">
+                          <div className="text-2xs text-slate-400">
                             {row.taxIncluded ? 'شامل الضريبة' : 'غير شامل الضريبة'} ·{' '}
                             {COLLECTION_LABEL[row.collection] || row.collection}
                           </div>
@@ -872,7 +854,7 @@ export function AdminDashboard({
                           <select
                             value={row.status}
                             onChange={(e) => updateExternalStatus(row.id, e.target.value)}
-                            className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold"
+                            className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium"
                           >
                             {EXTERNAL_STATUSES.map((status) => (
                               <option key={status} value={status}>
@@ -902,9 +884,9 @@ export function AdminDashboard({
       ) : null}
 
       {adminSection === 'socials' ? (
-        <section className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+        <section className="bg-surface border border-line rounded-panel p-5 shadow-e1 space-y-4">
           <div>
-            <h2 className="text-lg font-black">حسابات التواصل للموردين</h2>
+            <h2 className="text-lg font-bold">حسابات التواصل للموردين</h2>
             <p className="text-xs text-slate-500 mt-1">
               التوثيق هنا مراجعة يوصل للرابط — ليست علامة ميتا أو تيك توك الرسمية. العميل يرى شارة «موثّق» فقط بعد هذا الزر.
             </p>
@@ -916,7 +898,7 @@ export function AdminDashboard({
               {vendorSocials.map((row) => (
                 <article key={row.vendorId} className="rounded-2xl border border-slate-100 bg-slate-50 p-4 space-y-3">
                   <div>
-                    <p className="font-black text-slate-900">{row.projectName || row.name}</p>
+                    <p className="font-bold text-slate-900">{row.projectName || row.name}</p>
                     <p className="text-xs text-slate-500" dir="ltr">
                       {row.email || row.vendorId}
                     </p>
@@ -928,19 +910,19 @@ export function AdminDashboard({
                       {row.socials.links.map((link) => (
                         <div key={link.network} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white border border-slate-200 px-3 py-2">
                           <div className="min-w-0">
-                            <p className="text-xs font-black text-slate-800">{link.network}</p>
-                            <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-[#155EEF] break-all" dir="ltr">
+                            <p className="text-xs font-medium text-slate-800">{link.network}</p>
+                            <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-2xs text-action break-all" dir="ltr">
                               {link.url}
                             </a>
                           </div>
                           <div className="flex items-center gap-2">
                             {link.status === 'verified' ? (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700">
+                              <span className="inline-flex items-center gap-1 text-2xs font-medium text-emerald-700">
                                 <BadgeCheck className="w-3.5 h-3.5" />
                                 موثّق
                               </span>
                             ) : (
-                              <span className="text-[10px] font-bold text-slate-500">
+                              <span className="text-2xs font-medium text-slate-500">
                                 {link.status === 'linked' ? 'مربوط' : 'بانتظار التوثيق'}
                               </span>
                             )}
@@ -948,7 +930,7 @@ export function AdminDashboard({
                               <button
                                 type="button"
                                 onClick={() => toggleSocialVerify(row.vendorId, link.network, false)}
-                                className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-bold"
+                                className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-2xs font-medium"
                               >
                                 إلغاء توثيق
                               </button>
@@ -956,7 +938,7 @@ export function AdminDashboard({
                               <button
                                 type="button"
                                 onClick={() => toggleSocialVerify(row.vendorId, link.network, true)}
-                                className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold"
+                                className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-2xs font-medium"
                               >
                                 توثيق
                               </button>
@@ -973,10 +955,19 @@ export function AdminDashboard({
         </section>
       ) : null}
 
+      {adminSection === 'whatsapp' ? (
+        <OwnerWhatsAppPanel
+          users={users}
+          applications={applications}
+          vendorSocials={vendorSocials}
+          onNewSupportCount={setNewSupportCount}
+        />
+      ) : null}
+
       {adminSection === 'demand' ? (
-        <section className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+        <section className="bg-surface border border-line rounded-panel p-5 shadow-e1 space-y-4">
           <div>
-            <h2 className="text-lg font-black">طلبات المدن</h2>
+            <h2 className="text-lg font-bold">طلبات المدن</h2>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
               طلبات عملاء ما لقوا منتجاً في مدينتهم. تواصل ثم حدّث الحالة بعد المطابقة.
             </p>
@@ -988,18 +979,18 @@ export function AdminDashboard({
           ) : (
             <div className="space-y-3">
               {cityRequests.map((row) => {
-                const wa = `https://wa.me/966${row.phone.replace(/^0/, '')}`;
+                const wa = whatsappChatUrl(row.phone);
                 return (
                   <article key={row.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4 space-y-2">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
-                        <p className="font-black text-slate-900">{row.name}</p>
+                        <p className="font-bold text-slate-900">{row.name}</p>
                         <p className="text-xs text-slate-500 mt-0.5">
                           {row.city} · {row.occasion}
                           {row.eventDate ? ` · ${row.eventDate}` : ''}
                         </p>
                       </div>
-                      <span className="px-2.5 py-1 rounded-full bg-white border border-slate-200 text-[11px] font-extrabold">
+                      <span className="px-2.5 py-1 rounded-full bg-white border border-slate-200 text-2xs font-medium">
                         {DEMAND_STATUS_AR[row.status]}
                       </span>
                     </div>
@@ -1008,22 +999,24 @@ export function AdminDashboard({
                     </p>
                     {row.notes ? <p className="text-xs text-slate-600 leading-relaxed">{row.notes}</p> : null}
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <a
-                        href={wa}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 h-9 rounded-xl bg-[#155EEF] text-white text-[11px] font-bold inline-flex items-center"
-                      >
-                        واتساب
-                      </a>
+                      {wa ? (
+                        <a
+                          href={wa}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 h-9 rounded-xl bg-action text-white text-2xs font-medium inline-flex items-center"
+                        >
+                          واتساب
+                        </a>
+                      ) : null}
                       {DEMAND_STATUSES.map((status) => (
                         <button
                           key={status}
                           type="button"
                           onClick={() => void setDemandStatus(row.id, status)}
-                          className={`px-3 h-9 rounded-xl text-[11px] font-bold border ${
+                          className={`px-3 h-9 rounded-xl text-2xs font-bold border ${
                             row.status === status
-                              ? 'bg-[#0A1A33] text-white border-[#0A1A33]'
+                              ? 'bg-navy text-white border-navy'
                               : 'bg-white text-slate-700 border-slate-200'
                           }`}
                         >
@@ -1040,8 +1033,8 @@ export function AdminDashboard({
       ) : null}
 
       {adminSection === 'listings' ? (
-        <section className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
-          <h2 className="text-lg font-black">منتجات الموردين ومسار يوصل</h2>
+        <section className="bg-surface border border-line rounded-panel p-5 shadow-e1 space-y-4">
+          <h2 className="text-lg font-bold">منتجات الموردين ومسار يوصل</h2>
           {listings.length === 0 ? (
             <p className="text-sm text-slate-500">ما فيه منتجات مورّدين مسجّلة بعد. تظهر هنا بعد تسجيل المنتج من لوحة المورد.</p>
           ) : (
@@ -1049,7 +1042,7 @@ export function AdminDashboard({
               {listings.map((item) => (
                 <article key={item.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4 space-y-2">
                   <div>
-                    <p className="font-black text-slate-900">{item.title}</p>
+                    <p className="font-bold text-slate-900">{item.title}</p>
                     <p className="text-xs text-slate-500">
                       {item.vendorName} · {item.categoryName} · {item.price} ر.س
                     </p>
@@ -1062,9 +1055,9 @@ export function AdminDashboard({
                           key={lane}
                           type="button"
                           onClick={() => toggleListingLane(item, lane)}
-                          className={`px-3 h-8 rounded-full text-[11px] font-extrabold border ${
+                          className={`px-3 h-8 rounded-full text-2xs font-bold border ${
                             active
-                              ? 'bg-[#155EEF] border-[#155EEF] text-white'
+                              ? 'bg-action border-action text-white'
                               : 'bg-white border-slate-200 text-slate-600'
                           }`}
                         >
@@ -1082,8 +1075,8 @@ export function AdminDashboard({
 
       {adminSection === 'overview' ? (
       <>
-      <section className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
-        <h2 className="text-lg font-black">طلبات تسجيل الموردين</h2>
+      <section className="bg-surface border border-line rounded-panel p-5 shadow-e1 space-y-4">
+        <h2 className="text-lg font-bold">طلبات تسجيل الموردين</h2>
         {applications.length === 0 ? (
           <p className="text-sm text-slate-500">ما فيه طلبات مورّدين حالياً.</p>
         ) : (
@@ -1092,27 +1085,27 @@ export function AdminDashboard({
               <article key={app.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4 space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="font-black text-slate-900">
+                    <p className="font-bold text-slate-900">
                       {app.firstName} {app.fatherName} {app.familyName}
                     </p>
                     <p className="text-xs text-slate-500">{app.projectName} · {app.projectType}</p>
                     {app.fulfillment?.length ? (
-                      <p className="text-[11px] text-[#155EEF] font-bold mt-0.5">
+                      <p className="text-2xs text-action font-medium mt-0.5">
                         أقدر أخدم في: {app.fulfillment.map((lane) => FULFILLMENT_ADMIN_LABEL[lane] || lane).join(' · ')}
                       </p>
                     ) : null}
                     {app.socials?.links?.length ? (
-                      <p className="text-[11px] text-slate-600 mt-0.5">
+                      <p className="text-2xs text-slate-600 mt-0.5">
                         سوشل:{' '}
                         {app.socials.links
                           .map((link) => `${link.network}${link.status === 'verified' ? ' (موثّق)' : ''}`)
                           .join(' · ')}
                       </p>
                     ) : (
-                      <p className="text-[11px] text-slate-400 mt-0.5">المورد ما ربط حسابات بعد</p>
+                      <p className="text-2xs text-slate-400 mt-0.5">المورد ما ربط حسابات بعد</p>
                     )}
                   </div>
-                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
+                  <span className={`text-2xs font-bold px-2.5 py-1 rounded-full ${
                     app.status === 'pending' ? 'bg-amber-50 text-amber-700' : app.status === 'approved' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
                   }`}>
                     {app.status === 'pending' ? 'بانتظار موافقة يوصل' : app.status === 'approved' ? 'تمت الموافقة' : 'مرفوض'}
@@ -1129,14 +1122,14 @@ export function AdminDashboard({
                     <button
                       type="button"
                       onClick={() => decideApplication(app.id, 'approve')}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium"
                     >
                       موافقة وفتح الدخول
                     </button>
                     <button
                       type="button"
                       onClick={() => decideApplication(app.id, 'reject')}
-                      className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 text-xs font-bold"
+                      className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 text-xs font-medium"
                     >
                       رفض
                     </button>
@@ -1150,8 +1143,8 @@ export function AdminDashboard({
 
       <section className="grid lg:grid-cols-5 gap-6">
         <form onSubmit={createAccount} className="lg:col-span-2 bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
-          <h2 className="text-lg font-black flex items-center gap-2">
-            <Plus className="w-4 h-4 text-[#155EEF]" />
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <Plus className="w-4 h-4 text-action" />
             إنشاء حساب جديد
           </h2>
           <input className={inputClass} placeholder="الاسم" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
@@ -1168,14 +1161,14 @@ export function AdminDashboard({
           <button
             type="submit"
             disabled={saving}
-            className="w-full bg-[#155EEF] hover:bg-[#1249c7] text-white font-bold py-2.5 rounded-xl disabled:opacity-60"
+            className="w-full bg-action hover:bg-[#1249c7] text-white font-bold py-2.5 rounded-xl disabled:opacity-60"
           >
             {saving ? 'جارٍ الإنشاء…' : 'حفظ الحساب'}
           </button>
         </form>
 
         <div className="lg:col-span-3 bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
-          <h2 className="text-lg font-black mb-4">كل حسابات يوصل</h2>
+          <h2 className="text-lg font-bold mb-4">كل حسابات يوصل</h2>
           <div className="space-y-2">
             {users.map((user) => (
               <div key={user.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
@@ -1184,7 +1177,7 @@ export function AdminDashboard({
                   <div className="text-xs text-slate-500 mt-0.5" dir="ltr">
                     {user.email} · {user.phone}
                   </div>
-                  <div className="text-[11px] font-bold mt-1">
+                  <div className="text-2xs font-medium mt-1">
                     {user.emailVerified === false ? (
                       <span className="text-amber-800">البريد غير مؤكد</span>
                     ) : (
@@ -1197,7 +1190,7 @@ export function AdminDashboard({
                     <button
                       type="button"
                       onClick={() => markEmailVerified(user.id)}
-                      className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-black border border-emerald-200"
+                      className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-2xs font-medium border border-emerald-200"
                     >
                       تأكيد البريد
                     </button>
@@ -1205,7 +1198,7 @@ export function AdminDashboard({
                   <select
                     value={user.role}
                     onChange={(e) => changeRole(user.id, e.target.value as AdminUser['role'])}
-                    className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold"
+                    className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium"
                   >
                     <option value="client">عميل</option>
                     <option value="vendor">مورّد</option>
@@ -1222,7 +1215,7 @@ export function AdminDashboard({
                       <Trash2 className="w-4 h-4" />
                     </button>
                   ) : (
-                    <span className="text-[10px] font-bold text-[#155EEF]">حسابك</span>
+                    <span className="text-2xs font-medium text-action">حسابك</span>
                   )}
                 </div>
               </div>
@@ -1235,8 +1228,8 @@ export function AdminDashboard({
       </section>
 
       <section className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
-          <h2 className="text-lg font-black mb-4">أقسام الكتالوج المعتمدة</h2>
+        <div className="bg-surface border border-line rounded-panel p-5 shadow-e1">
+          <h2 className="text-lg font-bold mb-4">أقسام الكتالوج المعتمدة</h2>
           <div className="grid grid-cols-2 gap-2">
             {CATEGORIES.filter((cat) => cat.id !== 'all').map((cat) => (
               <div key={cat.id} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
@@ -1248,8 +1241,8 @@ export function AdminDashboard({
             ))}
           </div>
         </div>
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm overflow-x-auto">
-          <h2 className="text-lg font-black mb-4">حجوزات المنصة</h2>
+        <div className="bg-surface border border-line rounded-panel p-5 shadow-e1 overflow-x-auto">
+          <h2 className="text-lg font-bold mb-4">حجوزات المنصة</h2>
           {bookings.length === 0 && !loading ? (
             <p className="text-sm text-slate-500">لا توجد حجوزات مسجّلة بعد.</p>
           ) : (
@@ -1276,7 +1269,7 @@ export function AdminDashboard({
                       <select
                         value={booking.status}
                         onChange={(e) => updateStatus(booking.id, e.target.value)}
-                        className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold"
+                        className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium"
                       >
                         {[booking.status, ...STATUS_OPTIONS.filter((s) => s !== booking.status)].map((status) => (
                           <option key={status} value={status}>

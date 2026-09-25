@@ -123,11 +123,11 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
       {/* Header Banner */}
       <div className="p-5 rounded-3xl bg-white border border-slate-200 card-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-900 text-xs font-bold border border-indigo-200">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-900 text-xs font-medium border border-indigo-200">
             <Receipt className="w-3.5 h-3.5 text-indigo-600" />
             <span>سندات الصرف والمصروفات والعهد النثرية (Expenses & Petty Cash)</span>
           </div>
-          <h3 className="text-xl font-extrabold text-slate-900">
+          <h3 className="text-xl font-bold text-slate-900">
             إدارة النفقات التشغيلية والمشتريات والعهد الميدانية
           </h3>
           <p className="text-xs sm:text-sm text-slate-600">
@@ -137,7 +137,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-xs transition-colors"
+          className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium flex items-center gap-2 shadow-xs transition-colors"
         >
           <Plus className="w-4 h-4 text-emerald-400" />
           <span>إصدار سند صرف جديد</span>
@@ -149,12 +149,12 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
         
         {/* Total Expenses */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200 card-shadow space-y-1.5">
-          <span className="text-xs text-slate-500 font-bold">إجمالي المصروفات والنفقات (شامل الضريبة)</span>
-          <div className="text-2xl font-extrabold font-mono text-slate-900">
+          <span className="text-xs text-slate-500 font-medium">إجمالي المصروفات والنفقات (شامل الضريبة)</span>
+          <div className="text-2xl font-bold font-mono text-slate-900">
             {totalExpensesAmount.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-slate-500">ر.س</span>
           </div>
-          <div className="text-[11px] text-slate-500">
+          <div className="text-2xs text-slate-500">
             عدد السندات: <span className="font-bold text-slate-800">{expenses.length} سند صرف</span>
           </div>
         </div>
@@ -162,26 +162,26 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
         {/* Input VAT to deduct */}
         <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 card-shadow space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-emerald-900 font-bold">ضريبة المدخلات القابلة للاسترداد (15%)</span>
+            <span className="text-xs text-emerald-900 font-medium">ضريبة المدخلات القابلة للاسترداد (15%)</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-extrabold font-mono text-emerald-950">
+          <div className="text-2xl font-bold font-mono text-emerald-950">
             {totalInputTaxDeductible.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-emerald-800">ر.س</span>
           </div>
-          <div className="text-[11px] text-emerald-800">
+          <div className="text-2xs text-emerald-800">
             تُخصم مباشرة من ضريبة المبيعات في إقرار الزكاة
           </div>
         </div>
 
         {/* Raw Materials Total */}
         <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 card-shadow space-y-1.5">
-          <span className="text-xs text-amber-900 font-bold">مشتريات الخامات والمواد التموينية</span>
-          <div className="text-2xl font-extrabold font-mono text-amber-950">
+          <span className="text-xs text-amber-900 font-medium">مشتريات الخامات والمواد التموينية</span>
+          <div className="text-2xl font-bold font-mono text-amber-950">
             {rawMaterialsTotal.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-amber-800">ر.س</span>
           </div>
-          <div className="text-[11px] text-amber-800">
+          <div className="text-2xs text-amber-800">
             بن خولاني، تمور ملكية، لحوم، وفواكه
           </div>
         </div>
@@ -218,7 +218,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
                 }`}
               >
                 <span>{catInfo.label.split('(')[0]}</span>
-                <span className="text-[10px] opacity-75">({count})</span>
+                <span className="text-2xs opacity-75">({count})</span>
               </button>
             );
           })}
@@ -274,17 +274,17 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
                       {/* Voucher Number & Date */}
                       <td className="py-3.5 px-4">
                         <div className="font-mono font-bold text-slate-900">{expense.voucherNumber}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">{expense.date}</div>
+                        <div className="text-2xs text-slate-400 font-mono">{expense.date}</div>
                       </td>
 
                       {/* Title & Notes */}
                       <td className="py-3.5 px-4 max-w-xs">
                         <div className="font-bold text-slate-800">{expense.title}</div>
                         {expense.notes && (
-                          <div className="text-[10px] text-slate-500 truncate">{expense.notes}</div>
+                          <div className="text-2xs text-slate-500 truncate">{expense.notes}</div>
                         )}
                         {expense.relatedBookingId && (
-                          <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[9px] font-bold">
+                          <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-2xs font-medium">
                             مرتبط بمناسبة {expense.relatedBookingId}
                           </span>
                         )}
@@ -292,7 +292,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
 
                       {/* Category Badge */}
                       <td className="py-3.5 px-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${catMeta.color}`}>
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-2xs font-bold ${catMeta.color}`}>
                           <Icon className="w-3 h-3" />
                           <span>{catMeta.label.split('(')[0]}</span>
                         </span>
@@ -302,7 +302,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-slate-800">{expense.paidTo}</div>
                         {expense.invoiceReference && (
-                          <div className="text-[10px] text-slate-400 font-mono">
+                          <div className="text-2xs text-slate-400 font-mono">
                             فاتورة: {expense.invoiceReference}
                           </div>
                         )}
@@ -319,12 +319,12 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
                       </td>
 
                       {/* Total Amount */}
-                      <td className="py-3.5 px-4 font-mono font-extrabold text-slate-950 text-sm">
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-950 text-sm">
                         {expense.totalAmount.toLocaleString('ar-SA')} ر.س
                       </td>
 
                       {/* Payment Method */}
-                      <td className="py-3.5 px-4 text-[11px] text-slate-600">
+                      <td className="py-3.5 px-4 text-2xs text-slate-600">
                         {expense.paymentMethod === 'mada' && 'شبكة مدى'}
                         {expense.paymentMethod === 'petty_cash' && 'عهدة نقدية (كاش)'}
                         {expense.paymentMethod === 'bank_transfer' && 'تحويل بنكي'}
@@ -362,12 +362,12 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
 
       {/* ADD EXPENSE MODAL */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs usil-modal-scroll">
           <div className="w-full max-w-lg bg-white rounded-3xl p-6 space-y-4 text-right card-shadow my-auto">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h4 className="text-base font-extrabold text-slate-900">
+                <h4 className="text-base font-bold text-slate-900">
                   إصدار سند صرف وقيد مصروف جديد (Payment Voucher)
                 </h4>
                 <p className="text-xs text-slate-500">
@@ -376,7 +376,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
               </div>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-medium"
               >
                 ✕
               </button>
@@ -406,7 +406,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold bg-white focus:border-blue-500 focus:outline-none text-right"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium bg-white focus:border-blue-500 focus:outline-none text-right"
                   >
                     {Object.entries(CATEGORY_LABELS).map(([catKey, catInfo]) => (
                       <option key={catKey} value={catKey}>
@@ -442,7 +442,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
                     min={1}
                     value={amount || ''}
                     onChange={(e) => setAmount(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono font-bold text-xs focus:border-blue-500 focus:outline-none text-right"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono font-medium text-xs focus:border-blue-500 focus:outline-none text-right"
                   />
                 </div>
 
@@ -453,7 +453,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
                   <select
                     value={taxRate}
                     onChange={(e) => setTaxRate(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold bg-white focus:border-blue-500 focus:outline-none text-right"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium bg-white focus:border-blue-500 focus:outline-none text-right"
                   >
                     <option value={0.15}>15% (النسبة الأساسية - ضريبة مدخلات)</option>
                     <option value={0}>0% (معفى ضريبياً / عمالة فردية / خضار وفواكه)</option>
@@ -464,7 +464,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
               {/* Total calculation preview */}
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
                 <span>الإجمالي شامل الضريبة:</span>
-                <span className="font-mono font-extrabold text-slate-900 text-sm">
+                <span className="font-mono font-bold text-slate-900 text-sm">
                   {(amount + amount * taxRate).toLocaleString('ar-SA')} ر.س
                 </span>
               </div>
@@ -477,7 +477,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold bg-white focus:border-blue-500 focus:outline-none text-right"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium bg-white focus:border-blue-500 focus:outline-none text-right"
                   >
                     <option value="mada">بطاقة مدى / بنكية</option>
                     <option value="petty_cash">عهدة نقدية ميدانية (كاش)</option>
@@ -521,7 +521,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
                   <select
                     value={relatedBookingId}
                     onChange={(e) => setRelatedBookingId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold bg-white focus:border-blue-500 focus:outline-none text-right"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium bg-white focus:border-blue-500 focus:outline-none text-right"
                   >
                     <option value="">-- مصروف عام للمنشأة --</option>
                     {bookings.map((b) => (
@@ -549,14 +549,14 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
               <div className="flex items-center gap-3 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-xs transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs shadow-xs transition-colors"
                 >
                   حفظ وتسجيل سند الصرف
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                  className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium"
                 >
                   إلغاء
                 </button>

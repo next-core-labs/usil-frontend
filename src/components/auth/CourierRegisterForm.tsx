@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
+import { controlClass } from '../ui/Field';
 import { AlertCircle, Bike, CheckCircle2, ClipboardList, Plus, Trash2, X } from 'lucide-react';
 import { UsilLockup } from '../UsilLockup';
 import { ExternalBookingForm } from '../courier/ExternalBookingForm';
 import { FulfillmentLanePicker } from '../FulfillmentLanePicker';
 import { FulfillmentLane } from '../../types';
 
-const inputClass =
-  'w-full bg-[#F7F8FA] border border-[#E4E7EC] rounded-xl px-4 py-3 text-sm text-[#101828] placeholder:text-[#98A2B3] focus:outline-none focus:bg-white focus:border-[#155EEF]';
+const inputClass = controlClass;
 
 const CAR_TYPES = ['سيدان', 'دفع رباعي', 'فان', 'دباب/سكوتر', 'بيك أب', 'أخرى'] as const;
 const PLATE_LETTERS = ['ا', 'ب', 'ح', 'د', 'ر', 'س', 'ص', 'ط', 'ع', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ى'] as const;
@@ -17,6 +17,8 @@ type FormState = {
   firstName: string;
   familyName: string;
   nationalId: string;
+  email: string;
+  phone: string;
   plateLetters: string;
   plateNumbers: string;
   carType: string;
@@ -29,6 +31,8 @@ const emptyForm = (): FormState => ({
   firstName: '',
   familyName: '',
   nationalId: '',
+  email: '',
+  phone: '',
   plateLetters: '',
   plateNumbers: '',
   carType: '',
@@ -42,6 +46,12 @@ function clientValidate(form: FormState): string {
   if (!form.familyName.trim()) return 'اكتب اسم العائلة';
   if (!/^[12]\d{9}$/.test(form.nationalId.replace(/\s+/g, ''))) {
     return 'رقم الهوية أو الإقامة يجب أن يكون 10 أرقام ويبدأ بـ 1 أو 2';
+  }
+  if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    return 'البريد الإلكتروني غير صحيح';
+  }
+  if (form.phone.trim() && !/^(05\d{8}|5\d{8}|(\+|00)?9665\d{8})$/.test(form.phone.replace(/[\s-]/g, ''))) {
+    return 'رقم الجوال غير صحيح — اكتبه بصيغة 05xxxxxxxx';
   }
   const letters = form.plateLetters.replace(/[^\u0621-\u064A]/g, '');
   if (!letters || letters.length > 3 || [...letters].some((letter) => !(PLATE_LETTERS as readonly string[]).includes(letter))) {
@@ -93,6 +103,8 @@ export function CourierRegisterForm({
           firstName: form.firstName.trim(),
           familyName: form.familyName.trim(),
           nationalId: form.nationalId.replace(/\s+/g, ''),
+          email: form.email.trim() || undefined,
+          phone: form.phone.trim() || undefined,
           plateLetters: form.plateLetters,
           plateNumbers: form.plateNumbers,
           carType: form.carType,
@@ -120,9 +132,9 @@ export function CourierRegisterForm({
   };
 
   return (
-    <div dir="rtl" className="fixed inset-0 z-[90] bg-[#0A1A33]/80 backdrop-blur-sm overflow-y-auto">
+    <div dir="rtl" className="fixed inset-0 z-[90] bg-navy/80 backdrop-blur-sm overflow-y-auto usil-safe-overlay">
       <div className="min-h-full flex items-center justify-center p-4">
-        <div className="w-full max-w-xl bg-white rounded-3xl border border-[#E4E7EC] shadow-2xl relative">
+        <div className="w-full max-w-xl bg-white rounded-3xl border border-line shadow-2xl relative">
           <button
             type="button"
             onClick={onClose}
@@ -136,10 +148,10 @@ export function CourierRegisterForm({
             <div className="flex items-center gap-3 mb-4 ps-10">
               <UsilLockup compact />
               <div className="min-w-0">
-                <p className="text-[11px] font-bold text-[#155EEF]">
+                <p className="text-2xs font-medium text-action">
                   {tab === 'external' ? 'حجوزات خارجية — سجّل الحجز اللي جاك بره المنصة' : 'انضمام مندوب توصيل — مراجعة قبل التفعيل'}
                 </p>
-                <h2 className="text-xl font-black text-[#0A1A33]">
+                <h2 className="text-xl font-bold text-navy">
                   {tab === 'external' ? 'تسجيل حجز خارجي' : 'سجّل معنا كمندوب توصيل'}
                 </h2>
               </div>
@@ -151,7 +163,7 @@ export function CourierRegisterForm({
                   type="button"
                   onClick={() => setTab('apply')}
                   className={`px-3 py-2 rounded-xl text-xs font-bold border inline-flex items-center gap-1.5 ${
-                    tab === 'apply' ? 'bg-[#0A1A33] text-white border-[#0A1A33]' : 'bg-slate-50 text-slate-700 border-slate-200'
+                    tab === 'apply' ? 'bg-navy text-white border-navy' : 'bg-slate-50 text-slate-700 border-slate-200'
                   }`}
                 >
                   <Bike className="w-3.5 h-3.5" />
@@ -161,7 +173,7 @@ export function CourierRegisterForm({
                   type="button"
                   onClick={() => setTab('external')}
                   className={`px-3 py-2 rounded-xl text-xs font-bold border inline-flex items-center gap-1.5 ${
-                    tab === 'external' ? 'bg-[#0A1A33] text-white border-[#0A1A33]' : 'bg-slate-50 text-slate-700 border-slate-200'
+                    tab === 'external' ? 'bg-navy text-white border-navy' : 'bg-slate-50 text-slate-700 border-slate-200'
                   }`}
                 >
                   <ClipboardList className="w-3.5 h-3.5" />
@@ -174,7 +186,7 @@ export function CourierRegisterForm({
               <ExternalBookingForm variant="plain" />
             ) : (
             <>
-            <p className="mb-5 text-[12px] text-[#344054] leading-relaxed">
+            <p className="mb-5 text-xs text-ink-1 leading-relaxed">
               املأ الاسم والعائلة والهوية أو الإقامة وحروف ورقم اللوحة ونوع السيارة. الطلب يبقى معلّقاً حتى توافق إدارة يوصل.
             </p>
 
@@ -183,11 +195,11 @@ export function CourierRegisterForm({
                 <div className="w-14 h-14 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
                   <CheckCircle2 className="w-7 h-7" />
                 </div>
-                <h3 className="text-lg font-black text-[#0A1A33]">استلمنا طلبك — نراجع البيانات ونتواصل معك</h3>
+                <h3 className="text-lg font-bold text-navy">استلمنا طلبك — نراجع البيانات ونتواصل معك</h3>
                 <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
                   لن تُفعَّل كمندوب توصيل حتى تراجع الإدارة الطلب. لا تحتاج حساب عميل لهذا التسجيل.
                 </p>
-                <button type="button" onClick={onClose} className="mt-2 px-5 py-2.5 rounded-xl bg-[#155EEF] text-white text-sm font-bold">
+                <button type="button" onClick={onClose} className="mt-2 px-5 py-2.5 rounded-xl bg-action text-white text-sm font-bold">
                   حسناً
                 </button>
               </div>
@@ -227,6 +239,34 @@ export function CourierRegisterForm({
                     />
                   </label>
                   <label className="block text-sm">
+                    <span className="text-slate-600 mb-1.5 block font-bold">البريد الإلكتروني</span>
+                    <input
+                      className={inputClass}
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => set('email', e.target.value)}
+                      placeholder="name@example.com"
+                      dir="ltr"
+                      autoComplete="email"
+                    />
+                  </label>
+                  <label className="block text-sm">
+                    <span className="text-slate-600 mb-1.5 block font-bold">رقم الجوال</span>
+                    <input
+                      className={`${inputClass} font-mono`}
+                      type="tel"
+                      value={form.phone}
+                      onChange={(e) => set('phone', e.target.value)}
+                      placeholder="05xxxxxxxx"
+                      inputMode="tel"
+                      dir="ltr"
+                      autoComplete="tel"
+                    />
+                  </label>
+                  <p className="text-2xs text-slate-500 sm:col-span-2 -mt-1">
+                    اكتب بريد أو جوال حسابك في يوصل — نفعّل عليه دور المندوب بعد الاعتماد.
+                  </p>
+                  <label className="block text-sm">
                     <span className="text-slate-600 mb-1.5 block font-bold">حروف اللوحة</span>
                     <input
                       className={inputClass}
@@ -235,7 +275,7 @@ export function CourierRegisterForm({
                       placeholder="مثال: ب ر د"
                       dir="rtl"
                     />
-                    <span className="mt-1 block text-[10px] text-slate-400 leading-relaxed">
+                    <span className="mt-1 block text-2xs text-slate-400 leading-relaxed">
                       الحروف المعتمدة: ا ب ح د ر س ص ط ع ق ك ل م ن ه و ى
                     </span>
                   </label>
@@ -286,10 +326,10 @@ export function CourierRegisterForm({
                   )}
                 </div>
 
-                <section className="rounded-2xl border border-[#E4E7EC] p-3 space-y-3">
+                <section className="rounded-2xl border border-line p-3 space-y-3">
                   <div>
-                    <h3 className="text-sm font-extrabold text-[#0A1A33]">المنتجات اللي أوصّلها</h3>
-                    <p className="text-[11px] text-[#475467] mt-0.5">
+                    <h3 className="text-sm font-bold text-navy">المنتجات اللي أوصّلها</h3>
+                    <p className="text-2xs text-ink-2 mt-0.5">
                       حدّد مسارات يوصل التي تقدر تغطيها. تقدر تضيف أسماء منتجات إن حبيت.
                     </p>
                   </div>
@@ -306,7 +346,7 @@ export function CourierRegisterForm({
                   />
                   <div className="space-y-2">
                     {form.products.map((row, index) => (
-                      <div key={`crr-prod-${index}`} className="rounded-xl border border-[#E4E7EC] bg-[#F7F8FA] p-2.5 space-y-2">
+                      <div key={`crr-prod-${index}`} className="rounded-xl border border-line bg-paper p-2.5 space-y-2">
                         <div className="flex items-center gap-2">
                           <input
                             className={inputClass}
@@ -326,7 +366,7 @@ export function CourierRegisterForm({
                                 products: prev.products.filter((_, i) => i !== index),
                               }))
                             }
-                            className="w-10 h-10 shrink-0 rounded-xl bg-white border border-[#E4E7EC] text-rose-600 inline-flex items-center justify-center"
+                            className="w-10 h-10 shrink-0 rounded-xl bg-white border border-line text-rose-600 inline-flex items-center justify-center"
                             aria-label="حذف المنتج"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -353,7 +393,7 @@ export function CourierRegisterForm({
                           products: [...prev.products, { name: '', fulfillment: [...prev.fulfillment] }],
                         }))
                       }
-                      className="h-10 px-3 rounded-xl bg-white border border-[#E4E7EC] text-[#155EEF] text-xs font-bold inline-flex items-center gap-1.5"
+                      className="h-10 px-3 rounded-xl bg-white border border-line text-action text-xs font-medium inline-flex items-center gap-1.5"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       إضافة منتج
@@ -371,7 +411,7 @@ export function CourierRegisterForm({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-5 py-3 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-60"
+                  className="w-full px-5 py-3 rounded-xl bg-action hover:bg-action-hover text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   <Bike className="w-4 h-4" />
                   {loading ? 'جارٍ الإرسال…' : 'إرسال طلب المندوب'}

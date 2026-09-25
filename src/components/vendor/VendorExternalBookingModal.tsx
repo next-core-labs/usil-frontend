@@ -110,7 +110,7 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 usil-modal-scroll">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" onClick={onClose} />
 
@@ -120,11 +120,11 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
         {/* Modal Header */}
         <div className="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-800 text-xs font-bold border border-blue-200">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#155EEF]" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-800 text-xs font-medium border border-blue-200">
+              <ShieldCheck className="w-3.5 h-3.5 text-action" />
               <span>تسجيل حجز مركزي في التقويم</span>
             </div>
-            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900">
               تسجيل حجز خارجي (اتصال / إنستقرام / واتساب)
             </h3>
             <p className="text-xs text-slate-500 font-normal">
@@ -135,9 +135,7 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
           <button
             onClick={onClose}
             className="p-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-900 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+           aria-label="إغلاق"><X className="w-4 h-4" /></button>
         </div>
 
         {/* Form Body */}
@@ -157,7 +155,7 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
               </p>
             </div>
           ) : (
-            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 font-bold">
+            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 font-medium">
               <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>الموعد متاح بالكامل وجاهز للحجز والتثبيت بدون أي تعارض.</span>
             </div>
@@ -165,38 +163,38 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
 
           {/* Section 1: Client & Source */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <h4 className="text-xs font-medium text-slate-900 uppercase tracking-wider">
               1. بيانات العميل ومصدر الحجز
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">اسم العميل</label>
+                <label className="block text-2xs font-medium text-slate-700 mb-1">اسم العميل</label>
                 <input
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="مثال: تركي الشمري"
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-[#155EEF] focus:bg-white"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-action focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">رقم الجوال</label>
+                <label className="block text-2xs font-medium text-slate-700 mb-1">رقم الجوال</label>
                 <input
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="05XXXXXXXX"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono focus:outline-none focus:border-[#155EEF] focus:bg-white"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono focus:outline-none focus:border-action focus:bg-white"
                 />
               </div>
             </div>
 
             {/* Booking Source Buttons */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-700 mb-1.5">مصدر الطلب</label>
+              <label className="block text-2xs font-medium text-slate-700 mb-1.5">مصدر الطلب</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
                   { id: 'external_phone', label: 'مكالمة اتصال', icon: PhoneCall },
@@ -213,7 +211,7 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
                       onClick={() => setSource(s.id as BookingSource)}
                       className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                         isSel
-                          ? 'bg-[#0A1A33] border-[#0A1A33] text-white'
+                          ? 'bg-navy border-navy text-white'
                           : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                       }`}
                     >
@@ -228,17 +226,17 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
 
           {/* Section 2: Service & Event Details */}
           <div className="space-y-3 pt-2 border-t border-slate-100">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <h4 className="text-xs font-medium text-slate-900 uppercase tracking-wider">
               2. تفاصيل الخدمة والجدولة
             </h4>
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-700 mb-1">الخدمة المطلوبة</label>
+              <label className="block text-2xs font-medium text-slate-700 mb-1">الخدمة المطلوبة</label>
               {listings.length > 0 ? (
                 <select
                   value={serviceId}
                   onChange={(e) => setServiceId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold focus:outline-none focus:border-[#155EEF]"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:outline-none focus:border-action"
                 >
                   {listings.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -252,47 +250,47 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
                   value={customServiceTitle}
                   onChange={(e) => setCustomServiceTitle(e.target.value)}
                   placeholder="اسم منتجك الحقيقي (ما نستخدم كتالوج وهمي)"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold focus:outline-none focus:border-[#155EEF]"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:outline-none focus:border-action"
                 />
               )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">تاريخ المناسبة</label>
+                <label className="block text-2xs font-medium text-slate-700 mb-1">تاريخ المناسبة</label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-[#155EEF]"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-action"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">وقت البدء</label>
+                <label className="block text-2xs font-medium text-slate-700 mb-1">وقت البدء</label>
                 <input
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-[#155EEF]"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-action"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">وقت الانتهاء</label>
+                <label className="block text-2xs font-medium text-slate-700 mb-1">وقت الانتهاء</label>
                 <input
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-[#155EEF]"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold focus:outline-none focus:border-action"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">المدينة</label>
+                <label className="block text-2xs font-medium text-slate-700 mb-1">المدينة</label>
                 <PlaceSearchSelect
                   value={city}
                   onChange={setSelectedCity}
@@ -303,23 +301,23 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">الموقع / اسم القاعة</label>
+                <label className="block text-2xs font-medium text-slate-700 mb-1">الموقع / اسم القاعة</label>
                 <input
                   type="text"
                   value={venueName}
                   onChange={(e) => setVenueName(e.target.value)}
                   placeholder="مثال: قاعة الخزامى"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-[#155EEF]"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-action"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">عدد الضيوف</label>
+                <label className="block text-2xs font-medium text-slate-700 mb-1">عدد الضيوف</label>
                 <input
                   type="number"
                   value={guestCount}
                   onChange={(e) => setGuestCount(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono font-bold focus:outline-none focus:border-[#155EEF]"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono font-medium focus:outline-none focus:border-action"
                 />
               </div>
             </div>
@@ -327,40 +325,40 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
 
           {/* Section 3: Financials & Deposits */}
           <div className="space-y-3 pt-2 border-t border-slate-100">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <h4 className="text-xs font-medium text-slate-900 uppercase tracking-wider">
               3. المبالغ والعربون المحصّل
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                <label className="block text-[11px] text-slate-500 font-bold mb-1">المبلغ الإجمالي</label>
+                <label className="block text-2xs text-slate-500 font-medium mb-1">المبلغ الإجمالي</label>
                 <div className="flex items-center gap-1">
                   <input
                     type="number"
                     value={totalAmount}
                     onChange={(e) => setTotalAmount(Number(e.target.value))}
-                    className="w-full bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-900 text-xs font-mono"
+                    className="w-full bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-medium text-slate-900 text-xs font-mono"
                   />
-                  <span className="text-[11px] text-slate-500 font-medium">ر.س</span>
+                  <span className="text-2xs text-slate-500 font-medium">ر.س</span>
                 </div>
               </div>
 
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                <label className="block text-[11px] text-slate-500 font-bold mb-1">العربون المسدد</label>
+                <label className="block text-2xs text-slate-500 font-medium mb-1">العربون المسدد</label>
                 <div className="flex items-center gap-1">
                   <input
                     type="number"
                     value={depositAmount}
                     onChange={(e) => setDepositAmount(Number(e.target.value))}
-                    className="w-full bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-900 text-xs font-mono"
+                    className="w-full bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-medium text-slate-900 text-xs font-mono"
                   />
-                  <span className="text-[11px] text-slate-500 font-medium">ر.س</span>
+                  <span className="text-2xs text-slate-500 font-medium">ر.س</span>
                 </div>
               </div>
 
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-center">
-                <span className="text-[11px] text-slate-500 font-bold">المتبقي عند التنفيذ</span>
-                <span className="text-base font-extrabold text-slate-900 font-mono">
+                <span className="text-2xs text-slate-500 font-medium">المتبقي عند التنفيذ</span>
+                <span className="text-base font-bold text-slate-900 font-mono">
                   {Math.max(0, totalAmount - depositAmount).toLocaleString('ar-SA')} ر.س
                 </span>
               </div>
@@ -369,7 +367,7 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
 
           {/* Section 4: Assign Crew */}
           <div className="space-y-2.5 pt-2 border-t border-slate-100">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <h4 className="text-xs font-medium text-slate-900 uppercase tracking-wider">
               4. تعيين طاقم العمل الميداني للمناسبة
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -381,14 +379,14 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
                     onClick={() => handleToggleCrew(c.id)}
                     className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-blue-50 border-[#155EEF] text-blue-900 font-bold'
+                        ? 'bg-blue-50 border-action text-blue-900 font-bold'
                         : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
                     <img src={c.avatar} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />
                     <div className="min-w-0 flex-1">
                       <span className="text-xs block truncate">{c.name}</span>
-                      <span className="text-[10px] text-slate-500 block truncate">{c.role}</span>
+                      <span className="text-2xs text-slate-500 block truncate">{c.role}</span>
                     </div>
                   </div>
                 );
@@ -398,7 +396,7 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
 
           {/* Section 5: Custom Notes */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+            <label className="block text-2xs font-medium text-slate-700 mb-1">
               ملاحظات تجهيز أو متطلبات خاصة
             </label>
             <textarea
@@ -406,7 +404,7 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="مثال: زيادة دلال قهوة هيل زائد، وصول الطاقم قبل الموعد بساعة..."
-              className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-[#155EEF] font-normal"
+              className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-action font-normal"
             />
           </div>
 
@@ -414,7 +412,7 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
           <div className="pt-3 border-t border-slate-200 flex items-center gap-3">
             <button
               type="submit"
-              className="flex-1 py-3.5 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
+              className="flex-1 py-3.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
             >
               <Plus className="w-4 h-4" />
               <span>تثبيت الحجز وقفل التاريخ في التقويم</span>
@@ -422,7 +420,7 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm transition-colors"
+              className="px-5 py-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs sm:text-sm transition-colors"
             >
               إلغاء
             </button>

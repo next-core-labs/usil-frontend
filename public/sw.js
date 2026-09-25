@@ -17,7 +17,7 @@
  * يجب أن يرفعه. عند التفعيل تُحذف كل الكاشات التي لا تحمل هذا الإصدار،
  * فلا يبقى أصل قديم يُخدَم لمستخدم بعد النشر.
  */
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_PREFIX = 'usil-';
 const PAGES_CACHE = `${CACHE_PREFIX}pages-${CACHE_VERSION}`;
 const ASSETS_CACHE = `${CACHE_PREFIX}assets-${CACHE_VERSION}`;
@@ -29,7 +29,7 @@ const OFFLINE_URL = '/offline';
  * الحد الأدنى فقط. كل أصل إضافي هنا يعني تثبيتًا أبطأ واحتمال فشل التثبيت كاملًا
  * إن سقط أحد الطلبات، فلا نضع فيه إلا ما لا تعمل الصفحة بدونه.
  */
-const PRECACHE_URLS = [OFFLINE_URL, '/manifest.webmanifest', '/icon.svg'];
+const PRECACHE_URLS = [OFFLINE_URL, '/manifest.webmanifest', '/icons/icon-192.png'];
 
 /**
  * المسارات الممنوع تخزينها إطلاقًا.

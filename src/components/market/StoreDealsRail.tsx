@@ -10,7 +10,7 @@ export const StoreDealsRail: React.FC<StoreDealsRailProps> = ({ onPickPackage })
   return (
     <section className="space-y-4 text-right" aria-label="باقات حسب المناسبة">
       <div>
-        <h2 className="text-sm font-extrabold text-[#0A1A33] mb-2">باقات حسب المناسبة</h2>
+        <h2 className="text-sm font-bold text-navy mb-2">باقات حسب المناسبة</h2>
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {OCCASION_PACKAGES.map((pack) => (
             <button
@@ -20,10 +20,10 @@ export const StoreDealsRail: React.FC<StoreDealsRailProps> = ({ onPickPackage })
                 onPickPackage(pack.category, pack.audience, pack.title);
                 document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="shrink-0 w-[11.5rem] rounded-xl border border-[#E4E7EC] bg-white p-3 text-right hover:border-[#155EEF] card-shadow"
+              className="shrink-0 w-[11.5rem] rounded-xl border border-line bg-white p-3 text-right hover:border-action card-shadow"
             >
-              <p className="text-xs font-extrabold text-[#0A1A33]">{pack.title}</p>
-              <p className="text-[10px] text-[#475467] mt-1 leading-snug line-clamp-2">{pack.blurb}</p>
+              <p className="text-xs font-medium text-navy">{pack.title}</p>
+              <p className="text-2xs text-ink-2 mt-1 leading-snug line-clamp-2">{pack.blurb}</p>
             </button>
           ))}
         </div>

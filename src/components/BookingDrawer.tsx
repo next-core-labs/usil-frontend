@@ -231,12 +231,12 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
             {/* Header */}
             <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/90">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#0A1A33] text-white flex items-center justify-center shadow-xs">
-                  <ShoppingBag className="w-4 h-4 text-[#C0A16B]" />
+                <div className="w-9 h-9 rounded-xl bg-navy text-white flex items-center justify-center shadow-xs">
+                  <ShoppingBag className="w-4 h-4 text-sand" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-black text-slate-900">سلة حجز وترتيب المناسبة</h3>
-                  <span className="text-[11px] text-slate-500 font-medium">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900">سلة حجز وترتيب المناسبة</h3>
+                  <span className="text-2xs text-slate-500 font-medium">
                     {items.length} خدمات مضافة • منصة يوصل (Usil)
                   </span>
                 </div>
@@ -247,7 +247,7 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                   <motion.button
                     whileTap={{ scale: 0.92 }}
                     onClick={onClearCart}
-                    className="text-xs text-rose-600 hover:text-rose-700 font-bold transition-colors p-1 cursor-pointer"
+                    className="text-xs text-rose-600 hover:text-rose-700 font-medium transition-colors p-1 cursor-pointer"
                   >
                     إفراغ السلة
                   </motion.button>
@@ -270,12 +270,12 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-xl font-black text-slate-900">تم تسجيل طلبك في يوصل</h4>
+                    <h4 className="text-xl font-bold text-slate-900">تم تسجيل طلبك في يوصل</h4>
                     <p className="text-xs text-slate-500 max-w-sm mx-auto">
                       بنحوّلك لصفحة الدفع الإلكتروني عند ميسر (مدى / آبل باي / STC Pay).
                     </p>
                     <p
-                      className={`text-[11px] font-bold max-w-sm mx-auto ${
+                      className={`text-2xs font-bold max-w-sm mx-auto ${
                         needsVendorApproval ? 'text-amber-700' : 'text-emerald-700'
                       }`}
                     >
@@ -286,11 +286,11 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                   </div>
 
                   <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 max-w-sm mx-auto space-y-2 text-right">
-                    <span className="text-[11px] text-slate-500 font-bold block">رمز التتبع المباشر للطلب:</span>
-                    <div className="text-lg font-mono font-black text-[#155EEF] bg-white p-2.5 rounded-xl border border-blue-200 text-center tracking-widest">
+                    <span className="text-2xs text-slate-500 font-medium block">رمز التتبع المباشر للطلب:</span>
+                    <div className="text-lg font-mono font-bold text-action bg-white p-2.5 rounded-xl border border-blue-200 text-center tracking-widest">
                       {completedOrderCode}
                     </div>
-                    <p className="text-[10px] text-slate-600">
+                    <p className="text-2xs text-slate-600">
                       يمكنك متابعة تحرك الطاقم ووصول الموقع لحظة بلحظة عبر بوابة التتبع المباشرة.
                     </p>
                   </div>
@@ -302,7 +302,7 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                         onClose();
                         onClearCart();
                       }}
-                      className="w-full py-3 rounded-xl bg-[#0A1A33] hover:bg-slate-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+                      className="w-full py-3 rounded-xl bg-navy hover:bg-slate-800 text-white font-medium text-xs shadow-xs cursor-pointer"
                     >
                       متابعة التتبع وإغلاق السلة
                     </motion.button>
@@ -320,7 +320,7 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={onClose}
-                    className="mt-2 px-4 py-2.5 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                    className="mt-2 px-4 py-2.5 rounded-xl bg-action hover:bg-action-hover text-white text-xs font-medium shadow-xs transition-colors cursor-pointer"
                   >
                     استعراض الخدمات المتاحة
                   </motion.button>
@@ -347,15 +347,15 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                             />
                           ) : null}
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold text-slate-900 truncate">
+                            <h4 className="text-xs font-medium text-slate-900 truncate">
                               {item.service.title}
                             </h4>
-                            <span className="text-[11px] text-slate-700 font-bold block mt-0.5 font-mono">
+                            <span className="text-2xs text-slate-700 font-medium block mt-0.5 font-mono">
                               {hasCheckoutPrice(item.service.price)
                                 ? `${item.service.price.toLocaleString('ar-SA')} ر.س / ${item.service.priceUnit}`
                                 : 'بدون سعر'}
                             </span>
-                            <span className="text-[10px] text-slate-400">
+                            <span className="text-2xs text-slate-400">
                               {item.city || 'الرياض'}
                             </span>
                           </div>
@@ -374,23 +374,23 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                               whileTap={{ scale: 0.85 }}
                               type="button"
                               onClick={() => onUpdateQuantity(item.service.id, -1)}
-                              className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold hover:bg-slate-100 cursor-pointer"
+                              className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center text-xs font-medium hover:bg-slate-100 cursor-pointer"
                             >
                               -
                             </motion.button>
-                            <span className="text-xs font-bold text-slate-900 px-2 font-mono">
+                            <span className="text-xs font-medium text-slate-900 px-2 font-mono">
                               {item.quantity}
                             </span>
                             <motion.button
                               whileTap={{ scale: 0.85 }}
                               type="button"
                               onClick={() => onUpdateQuantity(item.service.id, 1)}
-                              className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold hover:bg-slate-100 cursor-pointer"
+                              className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center text-xs font-medium hover:bg-slate-100 cursor-pointer"
                             >
                               +
                             </motion.button>
                           </div>
-                          <span className="text-xs font-bold text-slate-900 font-mono">
+                          <span className="text-xs font-medium text-slate-900 font-mono">
                             {hasCheckoutPrice(item.service.price)
                               ? `${(item.service.price * item.quantity).toLocaleString('ar-SA')} ر.س`
                               : '—'}
@@ -402,35 +402,35 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
 
                   {/* Event Details Form */}
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                    <h4 className="text-xs font-bold text-slate-900">بيانات صاحب المناسبة والموقع</h4>
+                    <h4 className="text-xs font-medium text-slate-900">بيانات صاحب المناسبة والموقع</h4>
 
                     <div>
-                      <label className="block text-[11px] text-slate-700 font-bold mb-1">الاسم الكريم *</label>
+                      <label className="block text-2xs text-slate-700 font-medium mb-1">الاسم الكريم *</label>
                       <input
                         type="text"
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
                         placeholder="اسم صاحب الحجز / الجهة"
                         required
-                        className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:border-[#155EEF] focus:outline-none font-semibold"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:border-action focus:outline-none font-semibold"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] text-slate-700 font-bold mb-1">جوال سعودي لتأكيد الطلب والدفع *</label>
+                      <label className="block text-2xs text-slate-700 font-medium mb-1">جوال سعودي لتأكيد الطلب والدفع *</label>
                       <input
                         type="tel"
                         value={customerPhone}
                         onChange={(e) => setCustomerPhone(e.target.value)}
                         placeholder="05XXXXXXXX"
                         required
-                        className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:border-[#155EEF] focus:outline-none font-mono font-semibold"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:border-action focus:outline-none font-mono font-semibold"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-[11px] text-slate-700 font-bold mb-1">المدينة</label>
+                        <label className="block text-2xs text-slate-700 font-medium mb-1">المدينة</label>
                         <PlaceSearchSelect
                           value={eventCity}
                           onChange={setEventCity}
@@ -441,45 +441,45 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-[11px] text-slate-700 font-bold mb-1">تاريخ المناسبة</label>
+                        <label className="block text-2xs text-slate-700 font-medium mb-1">تاريخ المناسبة</label>
                         <input
                           type="date"
                           value={eventDate}
                           onChange={(e) => setEventDate(e.target.value)}
                           aria-label="تاريخ المناسبة"
-                          className="w-full px-2 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-semibold focus:border-[#155EEF] focus:outline-none cursor-pointer"
+                          className="w-full px-2 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-semibold focus:border-action focus:outline-none cursor-pointer"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-[11px] text-slate-700 font-bold mb-1">ملاحظات أو توجيهات خاصة</label>
+                      <label className="block text-2xs text-slate-700 font-medium mb-1">ملاحظات أو توجيهات خاصة</label>
                       <input
                         type="text"
                         value={generalNotes}
                         onChange={(e) => setGeneralNotes(e.target.value)}
                         placeholder="أوقات معينة، لون الثياب، موقع القاعة..."
-                        className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:border-[#155EEF] focus:outline-none font-normal"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:border-action focus:outline-none font-normal"
                       />
                     </div>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-slate-900">تأكيد الطلب والدفع</h4>
+                      <h4 className="text-xs font-medium text-slate-900">تأكيد الطلب والدفع</h4>
                     </div>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                    <p className="text-2xs text-slate-500 leading-relaxed">
                       {hasCheckoutPrice(totalAmount)
                         ? 'التأكيد على جوالك السعودي 05xxxxxxxx. الدفع إلكتروني عبر ميسر: مدى، آبل باي، أو STC Pay. البطاقة تبقى عند ميسر.'
                         : 'التأكيد على جوالك السعودي. الدفع عبر ميسر بعد ما المورّد يثبّت السعر الحقيقي. ما نخصم مبلغ تجريبي.'}
                     </p>
 
-                    <div className="p-3 rounded-xl border border-[#155EEF] bg-[#155EEF] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs">
+                    <div className="p-3 rounded-xl border border-action bg-action text-white text-xs font-medium flex items-center justify-center gap-2 shadow-xs">
                       <CreditCard className="w-3.5 h-3.5" />
                       <span>دفع إلكتروني — مدى / آبل باي / STC Pay</span>
                     </div>
                     <p
-                      className={`p-2.5 rounded-xl border text-[11px] font-bold leading-relaxed ${
+                      className={`p-2.5 rounded-xl border text-2xs font-bold leading-relaxed ${
                         needsVendorApproval
                           ? 'bg-amber-50 border-amber-200 text-amber-900'
                           : 'bg-emerald-50 border-emerald-200 text-emerald-900'
@@ -490,7 +490,7 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                         : 'طريقة تأكيد الحجز: حجز فوري — الطلب يتأكد مباشرة بدون انتظار موافقة.'}
                     </p>
                     {submitError ? (
-                      <p className="text-[11px] text-rose-700 font-bold">{submitError}</p>
+                      <p className="text-2xs text-rose-700 font-medium">{submitError}</p>
                     ) : null}
                   </div>
                 </>
@@ -511,7 +511,7 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                   type="button"
                   onClick={handleConfirmOrder}
                   disabled={isProcessingPayment}
-                  className="w-full py-3.5 rounded-xl bg-[#0A1A33] hover:bg-slate-800 active:bg-slate-900 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-70 cursor-pointer"
+                  className="w-full py-3.5 rounded-xl bg-navy hover:bg-slate-800 active:bg-slate-900 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-70 cursor-pointer"
                 >
                   {isProcessingPayment ? (
                     <>
@@ -520,7 +520,7 @@ export const BookingDrawer: React.FC<BookingDrawerProps> = ({
                     </>
                   ) : (
                     <>
-                      <CreditCard className="w-4 h-4 text-[#C0A16B]" />
+                      <CreditCard className="w-4 h-4 text-sand" />
                       <span>
                         {needsVendorApproval ? 'اطلب الحجز وادفع إلكترونياً' : 'احجز الآن — دفع إلكتروني'}
                       </span>

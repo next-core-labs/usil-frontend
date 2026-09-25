@@ -6,6 +6,7 @@ import { AUDIENCE_LABEL, FULFILLMENT_LANE_BY_ID } from '../data/saudiMarket';
 import { listingPhotoUrls } from '../utils/catalogMedia';
 import { PlaceSearchSelect } from './PlaceSearchSelect';
 import { VendorSocialIcons } from './vendor/VendorSocialIcons';
+import { useToast } from './ui/Toast';
 
 interface ServiceDetailModalProps {
   service: ServiceItem | null;
@@ -34,6 +35,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
   const [eventTime, setEventTime] = useState('18:00');
   const [notes, setNotes] = useState('');
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const { toast } = useToast();
 
   const totalPrice = service.price * quantity;
   const needsVendorApproval = service.bookingMode === 'approval';
@@ -43,7 +45,10 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
 
   const handleBooking = () => {
     if (isDateFullyBooked) {
-      alert('عذراً، هذا التاريخ محجوز بالكامل أو مغلق للصيانة لدى المورّد. يرجى اختيار تاريخ آخر لتجنب أي تعارض.');
+      toast(
+        'هذا التاريخ محجوز بالكامل لدى المورّد. اختر تاريخاً آخر لتفادي التعارض.',
+        'warning',
+      );
       return;
     }
     onAddToCart(service, quantity, eventDate, eventTime, selectedCity, notes);
@@ -59,7 +64,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 overflow-y-auto pointer-events-auto">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 pointer-events-auto usil-modal-scroll">
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
@@ -72,24 +77,24 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
         {/* Header bar */}
         <div className="flex flex-wrap items-center justify-between gap-2 p-3 sm:p-5 border-b border-slate-100 bg-slate-50/70">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className="px-3 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold">
+            <span className="px-3 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 text-xs font-medium">
               {service.categoryName}
             </span>
             {(service.fulfillment || []).map((lane) => (
               <span
                 key={lane}
-                className="px-3 py-1 rounded-lg bg-[#155EEF] text-white text-xs font-bold"
+                className="px-3 py-1 rounded-lg bg-action text-white text-xs font-medium"
               >
                 {FULFILLMENT_LANE_BY_ID[lane]?.chip || lane}
               </span>
             ))}
             {service.badge && (
-              <span className="px-3 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">
+              <span className="px-3 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium">
                 {service.badge}
               </span>
             )}
-            <span className="px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#155EEF]" />
+            <span className="px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-xs font-medium flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-action" />
               <span className="hidden sm:inline">نظام حماية عدم التعارض</span><span className="sm:hidden">حماية</span>
             </span>
           </div>
@@ -112,9 +117,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
             <button
               onClick={onClose}
               className="p-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-900 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+             aria-label="إغلاق"><X className="w-4 h-4" /></button>
           </div>
         </div>
 
@@ -144,7 +147,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                     type="button"
                     onClick={() => setActiveImage(img)}
                     className={`relative w-20 h-14 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
-                      activeImage === img ? 'border-[#155EEF]' : 'border-slate-200 opacity-60 hover:opacity-100'
+                      activeImage === img ? 'border-action' : 'border-slate-200 opacity-60 hover:opacity-100'
                     }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
@@ -156,20 +159,20 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
             {/* Provider Box */}
             <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-emerald-50/40 border border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-[#0A1A33] text-[#C0A16B] flex items-center justify-center font-bold text-base shadow-xs">
+                <div className="w-11 h-11 rounded-xl bg-navy text-sand flex items-center justify-center font-bold text-base shadow-xs">
                   {service.provider.name.charAt(0)}
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 font-bold text-slate-900 text-sm flex-wrap">
                     <span>{service.provider.name}</span>
                     {service.provider.verified ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-2xs font-medium border border-emerald-200">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
                         <span>موثّق</span>
                       </span>
                     ) : null}
                     {service.licensedKitchen ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 text-[10px] font-black border border-amber-200">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 text-2xs font-medium border border-amber-200">
                         <ChefHat className="w-3.5 h-3.5" />
                         <span>مطبخ مرخّص</span>
                       </span>
@@ -193,14 +196,14 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
 
             {/* Inclusions List */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-              <h4 className="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#155EEF]" />
+              <h4 className="font-medium text-slate-900 text-xs sm:text-sm flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-action" />
                 <span>مشتملات وتجهيزات الخدمة</span>
               </h4>
               <ul className="space-y-2">
                 {service.includes.map((item, i) => (
                   <li key={i} className="text-xs text-slate-700 flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#155EEF] mt-1.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-action mt-1.5 shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -221,12 +224,12 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                 {service.occasions && service.occasions.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {service.audience && AUDIENCE_LABEL[service.audience] ? (
-                      <span className="px-2 py-0.5 rounded-md bg-[#0A1A33] text-white text-[10px] font-bold">
+                      <span className="px-2 py-0.5 rounded-md bg-navy text-white text-2xs font-medium">
                         {AUDIENCE_LABEL[service.audience]}
                       </span>
                     ) : null}
                     {service.occasions.slice(0, 4).map((occ) => (
-                      <span key={occ} className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-bold border border-slate-200">
+                      <span key={occ} className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-2xs font-medium border border-slate-200">
                         {occ}
                       </span>
                     ))}
@@ -237,24 +240,24 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
               {/* Specs Pills */}
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-slate-700 font-semibold">
-                  <Clock className="w-4 h-4 text-[#155EEF] shrink-0" />
+                  <Clock className="w-4 h-4 text-action shrink-0" />
                   <span>الطلب قبل: {service.minNotice}</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-slate-700 font-semibold">
-                  <MapPin className="w-4 h-4 text-[#155EEF] shrink-0" />
+                  <MapPin className="w-4 h-4 text-action shrink-0" />
                   <span>التغطية: {service.cities.length} مدن</span>
                 </div>
               </div>
 
               {/* Booking Configurator Form */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5">
-                <h4 className="text-xs font-bold text-slate-900">
+                <h4 className="text-xs font-medium text-slate-900">
                   تخصيص تفاصيل مناسبتك وفحص التوفر الفوري
                 </h4>
 
                 {/* City selection */}
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  <label className="block text-2xs font-medium text-slate-700 mb-1">
                     مدينة المناسبة
                   </label>
                   <PlaceSearchSelect
@@ -269,7 +272,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                 {/* Date & Time with Airbnb-style Conflict Checker */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    <label className="block text-2xs font-medium text-slate-700 mb-1">
                       تاريخ المناسبة
                     </label>
                     <input
@@ -277,11 +280,11 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                       value={eventDate}
                       onChange={(e) => setEventDate(e.target.value)}
                       aria-label="تاريخ المناسبة"
-                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:border-[#155EEF] focus:outline-none font-semibold"
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:border-action focus:outline-none font-semibold"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    <label className="block text-2xs font-medium text-slate-700 mb-1">
                       وقت التجهيز / البدء
                     </label>
                     <input
@@ -289,7 +292,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                       value={eventTime}
                       onChange={(e) => setEventTime(e.target.value)}
                       aria-label="وقت التجهيز أو البدء"
-                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:border-[#155EEF] focus:outline-none font-semibold"
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:border-action focus:outline-none font-semibold"
                     />
                   </div>
                 </div>
@@ -303,12 +306,12 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                           <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
                           <span>تنبيه: هذا الموعد محجوز بالكامل أو مغلق للصيانة</span>
                         </div>
-                        <p className="text-[11px] text-rose-800 font-normal">
+                        <p className="text-2xs text-rose-800 font-normal">
                           نظام منع التعارض يحظر الحجز المزدوج. يرجى اختيار يوم آخر (مثل 2026-08-28 أو 2026-08-30).
                         </p>
                       </div>
                     ) : (
-                      <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2 font-bold">
+                      <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2 font-medium">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                         <span>✓ التاريخ متاح وجاهز للحجز الفوري بدون أي تعارض.</span>
                       </div>
@@ -318,7 +321,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
 
                 {/* Quantity */}
                 <div className="flex items-center justify-between pt-1">
-                  <label className="text-xs font-bold text-slate-700">
+                  <label className="text-xs font-medium text-slate-700">
                     الكمية ({service.priceUnit})
                   </label>
                   <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -344,7 +347,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
 
                 {/* Notes */}
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  <label className="block text-2xs font-medium text-slate-700 mb-1">
                     متطلبات إضافية أو ملاحظات خاصة (اختياري)
                   </label>
                   <input
@@ -352,7 +355,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="مثال: الحضور قبل الموعد بساعة، ترتيبات أزياء..."
-                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs placeholder:text-slate-400 focus:border-[#155EEF] focus:outline-none font-normal"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs placeholder:text-slate-400 focus:border-action focus:outline-none font-normal"
                   />
                 </div>
               </div>
@@ -363,7 +366,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
               <BookingTrustBox services={[service]} totalGross={totalPrice} />
 
               <div
-                className={`p-2.5 rounded-xl border text-[11px] font-bold leading-relaxed ${
+                className={`p-2.5 rounded-xl border text-2xs font-bold leading-relaxed ${
                   needsVendorApproval
                     ? 'bg-amber-50 border-amber-200 text-amber-900'
                     : 'bg-emerald-50 border-emerald-200 text-emerald-900'
@@ -383,7 +386,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                   className={`py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors ${
                     isDateFullyBooked
                       ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                      : 'bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] text-white'
+                      : 'bg-action hover:bg-action-hover active:bg-action-pressed text-white'
                   }`}
                 >
                   {isInCart ? <Check className="w-4 h-4 stroke-[3]" /> : <ShoppingBag className="w-4 h-4" />}
@@ -395,15 +398,15 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                 <button
                   type="button"
                   onClick={handleAskSupport}
-                  className="py-3 px-4 rounded-xl bg-[#0A1A33] hover:bg-[#101828] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
+                  className="py-3 px-4 rounded-xl bg-navy hover:bg-ink text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
                 >
-                  <MessageCircle className="w-4 h-4 text-[#C0A16B]" />
+                  <MessageCircle className="w-4 h-4 text-sand" />
                   <span>راسل دعم يوصل</span>
                 </button>
               </div>
 
               {showSuccessToast && (
-                <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs text-center font-bold">
+                <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs text-center font-medium">
                   ✓ تم إضافة الخدمة وتثبيت الموعد بنجاح
                 </div>
               )}

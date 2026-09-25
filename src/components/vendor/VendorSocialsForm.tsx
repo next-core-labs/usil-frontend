@@ -1,4 +1,5 @@
 import React from 'react';
+import { controlClass } from '../ui/Field';
 import {
   SOCIAL_LABELS,
   SOCIAL_NETWORKS,
@@ -6,8 +7,7 @@ import {
   type SocialNetwork,
 } from '../../contracts/vendors/vendor-socials';
 
-const inputClass =
-  'w-full bg-[#F7F8FA] border border-[#E4E7EC] rounded-xl px-4 py-3 text-sm text-[#101828] placeholder:text-[#98A2B3] focus:outline-none focus:bg-white focus:border-[#155EEF]';
+const inputClass = controlClass;
 
 export type SocialFormValues = Record<SocialNetwork, string>;
 
@@ -36,14 +36,14 @@ export function VendorSocialsForm({
   requireOneHint?: boolean;
 }) {
   return (
-    <section className="rounded-2xl border border-[#E4E7EC] bg-white p-4 space-y-3">
+    <section className="rounded-2xl border border-line bg-white p-4 space-y-3">
       <div>
-        <h3 className="text-sm font-black text-[#0A1A33]">حسابات التواصل — اربطها عشان العميل يشوفها</h3>
-        <p className="text-[11px] text-slate-500 leading-relaxed mt-1">
+        <h3 className="text-sm font-bold text-navy">حسابات التواصل — اربطها عشان العميل يشوفها</h3>
+        <p className="text-2xs text-slate-500 leading-relaxed mt-1">
           الصق رابط الحساب الرسمي أو المعرّف @. التوثيق هنا يعني إن الإدارة راجعت الرابط على يوصل — مو علامة ميتا أو تيك توك الزرقاء.
         </p>
         {requireOneHint ? (
-          <p className="text-[11px] font-bold text-[#155EEF] mt-1">اربط حساباً واحداً على الأقل في طلب الانضمام.</p>
+          <p className="text-2xs font-medium text-action mt-1">اربط حساباً واحداً على الأقل في طلب الانضمام.</p>
         ) : null}
       </div>
       <div className="grid sm:grid-cols-2 gap-3">
@@ -52,9 +52,9 @@ export function VendorSocialsForm({
             <span className="text-slate-600 mb-1.5 flex items-center justify-between font-bold">
               <span>{SOCIAL_LABELS[network]}</span>
               {statuses?.[network] ? (
-                <span className="text-[10px] font-black text-slate-500">{statuses[network]}</span>
+                <span className="text-2xs font-medium text-slate-500">{statuses[network]}</span>
               ) : (
-                <span className="text-[10px] font-normal text-slate-400">اختياري</span>
+                <span className="text-2xs font-normal text-slate-400">اختياري</span>
               )}
             </span>
             <input
@@ -75,7 +75,7 @@ export function VendorSocialsForm({
           onChange={(e) => onConfirmedOwnChange(e.target.checked)}
         />
         <span>
-          <span className="font-black text-[#0A1A33]">هذا الحساب لي.</span> أؤكد أن الروابط أعلاه لحساباتي الرسمية، وتظهر للعميل في ملف المورد بعد الحفظ.
+          <span className="font-bold text-navy">هذا الحساب لي.</span> أؤكد أن الروابط أعلاه لحساباتي الرسمية، وتظهر للعميل في ملف المورد بعد الحفظ.
         </span>
       </label>
     </section>

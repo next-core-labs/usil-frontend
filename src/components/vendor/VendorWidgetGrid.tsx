@@ -210,19 +210,19 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
         return (
           <div
             onClick={() => !isCustomizing && onNavigateTab('calendar')}
-            className={`p-4 rounded-2xl bg-white border border-slate-200 card-shadow space-y-1.5 transition-all relative group cursor-pointer hover:border-[#155EEF] hover:shadow-md ${
+            className={`p-4 rounded-2xl bg-white border border-slate-200 card-shadow space-y-1.5 transition-all relative group cursor-pointer hover:border-action hover:shadow-md ${
               isCustomizing ? 'ring-2 ring-blue-400/40 bg-blue-50/20' : ''
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
-                <CalendarIcon className="w-3.5 h-3.5 text-[#155EEF]" />
+              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                <CalendarIcon className="w-3.5 h-3.5 text-action" />
                 {widget.title}
               </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-[#155EEF] font-bold">التقويم</span>
+              <span className="text-2xs px-1.5 py-0.5 rounded bg-blue-50 text-action font-medium">التقويم</span>
             </div>
-            <div className="text-xl font-extrabold font-mono text-slate-900">{bookings.length} مناسبة</div>
-            <span className="text-[11px] text-emerald-700 font-semibold block">
+            <div className="text-xl font-bold font-mono text-slate-900">{bookings.length} مناسبة</div>
+            <span className="text-2xs text-emerald-700 font-semibold block">
               منها {externalBookingsCount} حجز مباشر وكاشير (0% عمولة)
             </span>
           </div>
@@ -237,17 +237,17 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
+              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                 {widget.title}
               </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">فوري</span>
+              <span className="text-2xs px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">فوري</span>
             </div>
-            <div className="text-xl font-extrabold text-emerald-700 flex items-center gap-1">
+            <div className="text-xl font-bold text-emerald-700 flex items-center gap-1">
               <ShieldCheck className="w-5 h-5 text-emerald-600" />
               <span>100% نشط</span>
             </div>
-            <span className="text-[11px] text-slate-500 block">فحص فوري للمبيعات والكاشير والمنصة</span>
+            <span className="text-2xs text-slate-500 block">فحص فوري للمبيعات والكاشير والمنصة</span>
           </div>
         );
 
@@ -260,16 +260,16 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
+              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
                 {widget.title}
               </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">المحاسبة</span>
+              <span className="text-2xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">المحاسبة</span>
             </div>
-            <div className="text-xl font-extrabold font-mono text-slate-900">
+            <div className="text-xl font-bold font-mono text-slate-900">
               {totalRevenue.toLocaleString('ar-SA')} <span className="text-xs font-sans text-slate-500">ر.س</span>
             </div>
-            <span className="text-[11px] text-emerald-700 font-semibold block">شاملة مبيعات الكاشير وحجوزات المنصة</span>
+            <span className="text-2xs text-emerald-700 font-semibold block">شاملة مبيعات الكاشير وحجوزات المنصة</span>
           </div>
         );
 
@@ -282,17 +282,17 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
+              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
                 <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
                 {widget.title}
               </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">API</span>
+              <span className="text-2xs px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">API</span>
             </div>
-            <div className="text-xl font-extrabold font-mono text-slate-900 flex items-center gap-2">
+            <div className="text-xl font-bold font-mono text-slate-900 flex items-center gap-2">
               <span>{unreadMessagesCount} محادثة جديدة</span>
               {unreadMessagesCount > 0 && <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />}
             </div>
-            <span className="text-[11px] text-slate-500 block">WhatsApp Business Cloud متصل</span>
+            <span className="text-2xs text-slate-500 block">WhatsApp Business Cloud متصل</span>
           </div>
         );
 
@@ -300,21 +300,21 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
         return (
           <div
             onClick={() => !isCustomizing && onNavigateTab('ledger')}
-            className={`p-4 rounded-2xl bg-white border border-slate-200 card-shadow space-y-1.5 transition-all relative group cursor-pointer hover:border-[#C0A16B] hover:shadow-md ${
+            className={`p-4 rounded-2xl bg-white border border-slate-200 card-shadow space-y-1.5 transition-all relative group cursor-pointer hover:border-sand hover:shadow-md ${
               isCustomizing ? 'ring-2 ring-blue-400/40 bg-blue-50/20' : ''
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
-                <Wallet className="w-3.5 h-3.5 text-[#C0A16B]" />
+              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                <Wallet className="w-3.5 h-3.5 text-sand" />
                 {widget.title}
               </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-bold">قائمة الدخل</span>
+              <span className="text-2xs px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-medium">قائمة الدخل</span>
             </div>
-            <div className={`text-xl font-extrabold font-mono ${netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+            <div className={`text-xl font-bold font-mono ${netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
               {netProfit.toLocaleString('ar-SA')} <span className="text-xs font-sans text-slate-500">ر.س</span>
             </div>
-            <span className="text-[11px] text-slate-500 block">
+            <span className="text-2xs text-slate-500 block">
               الإيرادات - المصروفات ({totalExpenses.toLocaleString('ar-SA')} ر.س)
             </span>
           </div>
@@ -329,16 +329,16 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
+              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
                 <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
                 {widget.title}
               </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-bold">الذمم</span>
+              <span className="text-2xs px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-medium">الذمم</span>
             </div>
-            <div className="text-xl font-extrabold font-mono text-rose-700">
+            <div className="text-xl font-bold font-mono text-rose-700">
               {totalOverdueAmount.toLocaleString('ar-SA')} <span className="text-xs font-sans text-slate-500">ر.س</span>
             </div>
-            <span className="text-[11px] text-rose-600 font-semibold block">
+            <span className="text-2xs text-rose-600 font-semibold block">
               {overdueDebtsCount > 0 ? `${overdueDebtsCount} مطالبات متأخرة تحتاج تذكيراً` : 'جميع الذمم مسددة ومنتظمة'}
             </span>
           </div>
@@ -353,16 +353,16 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
+              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-blue-600" />
                 {widget.title}
               </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">الميدان</span>
+              <span className="text-2xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">الميدان</span>
             </div>
-            <div className="text-xl font-extrabold font-mono text-slate-900">
+            <div className="text-xl font-bold font-mono text-slate-900">
               {onDutyCrewCount} / {crewMembers.length} <span className="text-xs font-sans text-slate-500">مباشر ومناوبة</span>
             </div>
-            <span className="text-[11px] text-slate-500 block">تسجيل الحضور بـ GPS والسيارات</span>
+            <span className="text-2xs text-slate-500 block">تسجيل الحضور بـ GPS والسيارات</span>
           </div>
         );
 
@@ -375,16 +375,16 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
+              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 text-amber-600" />
                 {widget.title}
               </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-bold">حي ومباشر</span>
+              <span className="text-2xs px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-medium">حي ومباشر</span>
             </div>
-            <div className="text-xl font-extrabold font-mono text-slate-900">
+            <div className="text-xl font-bold font-mono text-slate-900">
               {activeTrackingsCount} <span className="text-xs font-sans text-slate-500">مناسبة جارية الآن</span>
             </div>
-            <span className="text-[11px] text-emerald-700 font-semibold block">متابعة مراحل التجهيز وصب القهوة</span>
+            <span className="text-2xs text-emerald-700 font-semibold block">متابعة مراحل التجهيز وصب القهوة</span>
           </div>
         );
 
@@ -403,26 +403,26 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
-                <Package className={`w-3.5 h-3.5 ${inventoryDeficitCount > 0 ? 'text-rose-600' : 'text-[#155EEF]'}`} />
+              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                <Package className={`w-3.5 h-3.5 ${inventoryDeficitCount > 0 ? 'text-rose-600' : 'text-action'}`} />
                 {widget.title}
               </span>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+              <span className={`text-2xs px-1.5 py-0.5 rounded font-bold ${
                 inventoryDeficitCount > 0
                   ? 'bg-rose-100 text-rose-800 animate-pulse'
-                  : 'bg-blue-50 text-[#155EEF]'
+                  : 'bg-blue-50 text-action'
               }`}>
                 {inventoryDeficitCount > 0 ? 'عجز وشيك' : 'المستودع'}
               </span>
             </div>
-            <div className="text-xl font-extrabold font-mono text-slate-900 flex items-center gap-2">
+            <div className="text-xl font-bold font-mono text-slate-900 flex items-center gap-2">
               {inventoryDeficitCount > 0 ? (
-                <span className="text-rose-600 font-black">{inventoryDeficitCount} بنود ستنفد ⚠️</span>
+                <span className="text-rose-600 font-bold">{inventoryDeficitCount} بنود ستنفد ⚠️</span>
               ) : (
                 <span>{inventoryItems?.length || 0} بنود جاهزة</span>
               )}
             </div>
-            <span className={`text-[11px] font-semibold block ${
+            <span className={`text-2xs font-semibold block ${
               inventoryDeficitCount > 0 ? 'text-rose-700' : 'text-slate-500'
             }`}>
               {inventoryDeficitCount > 0
@@ -444,11 +444,11 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
       {/* Widget Grid Control Bar */}
       <div className="flex items-center justify-between flex-wrap gap-2 pt-1 pb-1">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-800">
-            <SlidersHorizontal className="w-4 h-4 text-[#155EEF]" />
+          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-800">
+            <SlidersHorizontal className="w-4 h-4 text-action" />
             <span>بطاقات العمليات ومؤشرات الأداء (KPIs)</span>
           </div>
-          <span className="text-[11px] text-slate-500 hidden sm:inline">
+          <span className="text-2xs text-slate-500 hidden sm:inline">
             (اسحب وأفلت لترتيب البطاقات حسب أولوياتك اليومية)
           </span>
         </div>
@@ -456,7 +456,7 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
         <div className="flex items-center gap-2">
           {/* Toast Notification */}
           {toastMessage && (
-            <div className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200 animate-fade-in flex items-center gap-1.5">
+            <div className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-medium border border-emerald-200 animate-fade-in flex items-center gap-1.5">
               <Check className="w-3.5 h-3.5 text-emerald-600" />
               <span>{toastMessage}</span>
             </div>
@@ -481,7 +481,7 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
             onClick={() => setIsCustomizing((prev) => !prev)}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all border ${
               isCustomizing
-                ? 'bg-[#155EEF] text-white border-[#155EEF] shadow-xs'
+                ? 'bg-action text-white border-action shadow-xs'
                 : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
             }`}
           >
@@ -493,8 +493,8 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
           {isCustomizing && (
             <button
               onClick={handleResetToDefault}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1 transition-colors border border-slate-200"
-              title="إعادة الترتيب الافتراضي"
+              className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1 transition-colors border border-slate-200"
+              title="إعادة الترتيب الافتراضي" aria-label="إعادة الترتيب الافتراضي"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">إعادة ضبط</span>
@@ -507,8 +507,8 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
       {showVisibilityManager && (
         <div className="p-4 rounded-2xl bg-white border border-slate-200 card-shadow space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-              <Eye className="w-4 h-4 text-[#155EEF]" />
+            <span className="text-xs font-medium text-slate-900 flex items-center gap-1.5">
+              <Eye className="w-4 h-4 text-action" />
               حدد البطاقات التي ترغب بظهورها في شاشتك الرئيسية:
             </span>
             <button
@@ -534,7 +534,7 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
                 >
                   <span className="truncate">{widget.title}</span>
                   {isVis ? (
-                    <Eye className="w-3.5 h-3.5 text-[#155EEF] shrink-0" />
+                    <Eye className="w-3.5 h-3.5 text-action shrink-0" />
                   ) : (
                     <EyeOff className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                   )}
@@ -549,14 +549,14 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
       {isCustomizing && (
         <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <GripVertical className="w-4 h-4 text-[#155EEF] shrink-0" />
+            <GripVertical className="w-4 h-4 text-action shrink-0" />
             <span className="font-semibold">
               وضع الترتيب نشط: اسحب أي بطاقة من مقبض السحب وأفلتها في الموقع المطلوب، أو استخدم الأسهم للتحريك.
             </span>
           </div>
           <button
             onClick={() => setIsCustomizing(false)}
-            className="px-3 py-1 rounded-lg bg-[#155EEF] text-white font-bold text-xs shrink-0 hover:bg-[#0F45B5]"
+            className="px-3 py-1 rounded-lg bg-action text-white font-medium text-xs shrink-0 hover:bg-action-hover"
           >
             حفظ وإنهاء
           </button>
@@ -579,7 +579,7 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
               onDragEnd={handleDragEnd}
               className={`relative transition-all duration-200 ${
                 isDragging ? 'opacity-30 scale-95' : 'opacity-100 scale-100'
-              } ${isOver && !isDragging ? 'ring-2 ring-[#155EEF] ring-offset-2 rounded-2xl' : ''}`}
+              } ${isOver && !isDragging ? 'ring-2 ring-action ring-offset-2 rounded-2xl' : ''}`}
             >
               {/* Drag Handle & Reorder overlay when in Customizing Mode */}
               {isCustomizing && (
@@ -595,7 +595,7 @@ export const VendorWidgetGrid: React.FC<VendorWidgetGridProps> = ({
                   </button>
 
                   <div
-                    className="cursor-grab active:cursor-grabbing p-1 text-slate-600 hover:text-[#155EEF]"
+                    className="cursor-grab active:cursor-grabbing p-1 text-slate-600 hover:text-action"
                     title="اسحب للإفلات"
                   >
                     <GripVertical className="w-3.5 h-3.5" />

@@ -18,3 +18,28 @@ Production — the backend serves the built SPA:
 
   cd usil && npm run build
   cd "../usil backend" && npm run sync:web && npm run build && npm start
+
+Native apps (Capacitor) — iOS + Android:
+
+  The native shells ship the built SPA from dist/ and call the live API at
+  https://usil.app. Root-relative /api and /uploads requests are rewritten to
+  that origin at runtime by src/native-origin.ts, and CapacitorHttp routes them
+  through the native HTTP stack so they are not subject to browser CORS.
+
+  npm run cap:sync          # build the web app, then sync ios + android
+  npm run ios:open          # open ios/App/App.xcworkspace in Xcode
+  npm run android:open      # open android/ in Android Studio
+
+  Re-run cap:sync after every web change — the native projects hold a copy of
+  dist/, they do not read it live.
+
+  App icons and splash screens are generated from assets/ (icon.png,
+  icon-foreground.png, icon-background.png, splash.png, splash-dark.png):
+
+  npx capacitor-assets generate --iconBackgroundColor '#0A1A33' \
+    --iconBackgroundColorDark '#0A1A33' --splashBackgroundColor '#0A1A33' \
+    --splashBackgroundColorDark '#0A1A33'
+
+  That command also rewrites public/manifest.json with broken PWA entries
+  (relative ../icons paths, .webp files typed as image/png) — revert that file
+  afterwards.

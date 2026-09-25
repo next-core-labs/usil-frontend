@@ -221,26 +221,26 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
   return (
     <div
       id="vendor-database-backup-modal"
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6 text-right font-sans"
+      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6 text-right font-sans usil-modal-scroll"
     >
       <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Modal Header */}
-        <div className="p-5 sm:p-6 bg-gradient-to-l from-[#0A1A33] via-[#0F284D] to-[#155EEF] text-white relative overflow-hidden flex items-center justify-between gap-4 shrink-0">
+        <div className="p-5 sm:p-6 bg-gradient-to-l from-navy via-[#0F284D] to-action text-white relative overflow-hidden flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3.5 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-[#C0A16B]/20 border border-[#C0A16B]/40 flex items-center justify-center text-[#C0A16B] shadow-inner">
+            <div className="w-12 h-12 rounded-2xl bg-sand/20 border border-sand/40 flex items-center justify-center text-sand shadow-inner">
               <Database className="w-6 h-6 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-white/20 text-[#C0A16B] font-mono tracking-wider">
+                <span className="text-2xs font-medium px-2 py-0.5 rounded-md bg-white/20 text-sand font-mono tracking-wider">
                   LOCALFORAGE DB SAFEGUARD
                 </span>
                 <span className="text-xs text-white/80 font-medium hidden sm:inline">
                   إجراء أمان ونسخ وقائي
                 </span>
               </div>
-              <h2 className="text-base sm:text-xl font-black text-white mt-0.5 flex items-center gap-2">
+              <h2 className="text-base sm:text-xl font-bold text-white mt-0.5 flex items-center gap-2">
                 <span>تصدير نسخة احتياطية لقاعدة البيانات (JSON)</span>
               </h2>
             </div>
@@ -250,9 +250,7 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
             id="close-db-backup-modal-btn"
             onClick={onClose}
             className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+           aria-label="إغلاق"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Modal Body */}
@@ -260,13 +258,13 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
           
           {/* Success Download Toast */}
           {downloadSuccess && (
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2 shadow-xs">
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-medium flex items-center gap-3 animate-in fade-in slide-in-from-top-2 shadow-xs">
               <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <span className="block font-black text-emerald-950">تم تحميل النسخة الاحتياطية بنجاح!</span>
-                <span className="text-[11px] font-mono text-emerald-700 block">
+                <span className="block font-bold text-emerald-950">تم تحميل النسخة الاحتياطية بنجاح!</span>
+                <span className="text-2xs font-mono text-emerald-700 block">
                   الملف المحفوظ: {downloadSuccess}
                 </span>
               </div>
@@ -278,44 +276,44 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
-                <h3 className="text-sm font-extrabold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-900">
                   حالة قاعدة البيانات المحلية (localforage Engine)
                 </h3>
               </div>
-              <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-[#155EEF] border border-blue-100">
+              <span className="text-2xs font-mono font-medium px-2.5 py-1 rounded-lg bg-blue-50 text-action border border-blue-100">
                 {storageDriver}
               </span>
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              تعتمد منصة يوصل على محرك التخزين المحلي عالي السرعة <code className="text-[#155EEF] font-mono font-bold">localforage</code> (المعتمد على IndexedDB في المتصفح) لحفظ بيانات متجرك وعملياتك بشكل فوري ودائم دون الحاجة لاتصال مستمر. يتيح لك هذا الإجراء الوقائي تنزيل نسخة بصيغة JSON لحفظها على جهازك أو استرجاعها عند الحاجة.
+              تعتمد منصة يوصل على محرك التخزين المحلي عالي السرعة <code className="text-action font-mono font-bold">localforage</code> (المعتمد على IndexedDB في المتصفح) لحفظ بيانات متجرك وعملياتك بشكل فوري ودائم دون الحاجة لاتصال مستمر. يتيح لك هذا الإجراء الوقائي تنزيل نسخة بصيغة JSON لحفظها على جهازك أو استرجاعها عند الحاجة.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="text-[10px] text-slate-400 font-bold block">إجمالي السجلات المؤمنة</span>
-                <span className="text-base font-black text-slate-900 font-mono">
+                <span className="text-2xs text-slate-400 font-medium block">إجمالي السجلات المؤمنة</span>
+                <span className="text-base font-bold text-slate-900 font-mono">
                   {totalCalculatedRecords} سجل
                 </span>
               </div>
 
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="text-[10px] text-slate-400 font-bold block">حجم النسخة التقريبي</span>
-                <span className="text-base font-black text-emerald-700 font-mono">
+                <span className="text-2xs text-slate-400 font-medium block">حجم النسخة التقريبي</span>
+                <span className="text-base font-bold text-emerald-700 font-mono">
                   ~ {estimatedSizeKB} KB
                 </span>
               </div>
 
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="text-[10px] text-slate-400 font-bold block">تاريخ الإصدار</span>
-                <span className="text-xs font-black text-slate-900 font-mono">
+                <span className="text-2xs text-slate-400 font-medium block">تاريخ الإصدار</span>
+                <span className="text-xs font-medium text-slate-900 font-mono">
                   v2.5.0
                 </span>
               </div>
 
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="text-[10px] text-slate-400 font-bold block">بصمة التحقق (Checksum)</span>
-                <span className="text-[11px] font-black text-[#C0A16B] font-mono truncate block">
+                <span className="text-2xs text-slate-400 font-medium block">بصمة التحقق (Checksum)</span>
+                <span className="text-2xs font-medium text-sand font-mono truncate block">
                   {backupData?.meta.checksum || 'SHA-Verified'}
                 </span>
               </div>
@@ -324,15 +322,15 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
 
           {/* Breakdown of Data Included in Backup */}
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
-            <h4 className="text-xs font-extrabold text-slate-800 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-[#155EEF]" />
+            <h4 className="text-xs font-medium text-slate-800 flex items-center gap-2">
+              <Layers className="w-4 h-4 text-action" />
               <span>محتويات الجداول وسجلات المتجر المتضمنة بالنسخة:</span>
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-xs">
               <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-[#155EEF]" />
+                  <Calendar className="w-4 h-4 text-action" />
                   <span className="font-bold text-slate-700">الحجوزات والتقويم</span>
                 </div>
                 <span className="font-mono font-bold text-slate-900 bg-white px-2 py-0.5 rounded-md border border-slate-200">
@@ -392,10 +390,10 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
 
               <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-[#C0A16B]" />
+                  <Building2 className="w-4 h-4 text-sand" />
                   <span className="font-bold text-slate-700">هوية البراند والحسابات</span>
                 </div>
-                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                <span className="text-2xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                   مكتملة
                 </span>
               </div>
@@ -405,8 +403,8 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
           {/* Primary Action Card */}
           <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1 text-center sm:text-right">
-              <h4 className="text-sm font-black text-slate-900 flex items-center justify-center sm:justify-start gap-2">
-                <HardDrive className="w-4 h-4 text-[#155EEF]" />
+              <h4 className="text-sm font-bold text-slate-900 flex items-center justify-center sm:justify-start gap-2">
+                <HardDrive className="w-4 h-4 text-action" />
                 <span>تحميل وتوليد ملف النسخة الاحتياطية الكاملة</span>
               </h4>
               <p className="text-xs text-slate-600">
@@ -419,8 +417,8 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
                 id="btn-copy-backup-json"
                 onClick={handleCopyJSON}
                 disabled={isGenerating || !backupData}
-                className="px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0"
-                title="نسخ محتوى الـ JSON إلى الحافظة"
+                className="px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                title="نسخ محتوى الـ JSON إلى الحافظة" aria-label="نسخ محتوى الـ JSON إلى الحافظة"
               >
                 {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                 <span>{copied ? 'تم النسخ' : 'نسخ الـ JSON'}</span>
@@ -430,7 +428,7 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
                 id="btn-download-backup-json"
                 onClick={handleDownload}
                 disabled={isGenerating || !backupData}
-                className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] text-white text-xs sm:text-sm font-black flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
+                className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white text-xs sm:text-sm font-medium flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
               >
                 {isGenerating ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -446,19 +444,19 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
           <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white">
             <button
               onClick={() => setPreviewOpen(!previewOpen)}
-              className="w-full p-4 text-right flex items-center justify-between text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="w-full p-4 text-right flex items-center justify-between text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <span className="flex items-center gap-2">
-                <FileCode className="w-4 h-4 text-[#155EEF]" />
+                <FileCode className="w-4 h-4 text-action" />
                 <span>معاينة بنية ملف الـ JSON المصدّر (Schema Preview)</span>
               </span>
-              <span className="text-[11px] text-slate-500 font-normal">
+              <span className="text-2xs text-slate-500 font-normal">
                 {previewOpen ? 'إخفاء المعاينة ▲' : 'إظهار المعاينة ▼'}
               </span>
             </button>
 
             {previewOpen && backupData && (
-              <div className="p-4 bg-slate-900 text-slate-200 text-left font-mono text-[11px] max-h-60 overflow-y-auto border-t border-slate-800 leading-relaxed">
+              <div className="p-4 bg-slate-900 text-slate-200 text-left font-mono text-2xs max-h-60 overflow-y-auto border-t border-slate-800 leading-relaxed">
                 <pre>{JSON.stringify({ meta: backupData.meta, sampleKeys: Object.keys(backupData.localforageRawDump || {}) }, null, 2)}</pre>
               </div>
             )}
@@ -467,11 +465,11 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
           {/* Inspect / Verify Existing Backup File */}
           <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
-                <Upload className="w-4 h-4 text-[#C0A16B]" />
+              <h4 className="text-xs font-medium text-slate-800 flex items-center gap-2">
+                <Upload className="w-4 h-4 text-sand" />
                 <span>فحص ومطابقة نسخة احتياطية سابقة:</span>
               </h4>
-              <label className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold cursor-pointer transition-colors">
+              <label className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xs font-medium cursor-pointer transition-colors">
                 <span>اختر ملف JSON للفحص</span>
                 <input
                   type="file"
@@ -498,11 +496,11 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
                 <div className="flex-1">
                   <span className="font-bold block">{inspectResult.fileName}</span>
                   {inspectResult.valid ? (
-                    <span className="text-[11px] text-emerald-700 font-mono">
+                    <span className="text-2xs text-emerald-700 font-mono">
                       نسخة صالحة ومعتمدة (الإصدار: {inspectResult.version} • {inspectResult.recordsCount} سجل)
                     </span>
                   ) : (
-                    <span className="text-[11px] text-rose-700">{inspectResult.error}</span>
+                    <span className="text-2xs text-rose-700">{inspectResult.error}</span>
                   )}
                 </div>
               </div>
@@ -521,21 +519,21 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
 
         {/* Modal Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
-          <div className="text-[11px] text-slate-500 font-mono">
+          <div className="text-2xs text-slate-500 font-mono">
             Usil Local DB Version 2.5 • localforage IndexedDB
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-medium transition-colors cursor-pointer"
             >
               إغلاق
             </button>
             <button
               onClick={handleDownload}
               disabled={isGenerating || !backupData}
-              className="px-5 py-2 rounded-xl bg-[#155EEF] hover:bg-[#0F45B5] text-white text-xs font-black flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+              className="px-5 py-2 rounded-xl bg-action hover:bg-action-hover text-white text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>تحميل (JSON)</span>

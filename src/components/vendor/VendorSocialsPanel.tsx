@@ -77,8 +77,8 @@ export function VendorSocialsPanel() {
     <div className="p-5 sm:p-8 rounded-3xl bg-white border border-slate-200 card-shadow space-y-5" dir="rtl">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-            <Share2 className="w-5 h-5 text-[#155EEF]" />
+          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <Share2 className="w-5 h-5 text-action" />
             حسابات التواصل
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
@@ -102,7 +102,7 @@ export function VendorSocialsPanel() {
             statuses={statuses}
           />
           <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-            <p className="text-[11px] font-bold text-slate-500 mb-2">كيف يطلع للعميل</p>
+            <p className="text-2xs font-medium text-slate-500 mb-2">كيف يطلع للعميل</p>
             <VendorSocialIcons links={socials?.links} />
           </div>
         </>
@@ -125,11 +125,11 @@ export function VendorSocialsPanel() {
         type="button"
         onClick={save}
         disabled={saving || loading}
-        className="px-5 py-2.5 rounded-xl bg-[#155EEF] text-white text-sm font-bold disabled:opacity-60"
+        className="px-5 py-2.5 rounded-xl bg-action text-white text-sm font-bold disabled:opacity-60"
       >
         {saving ? 'جارٍ الحفظ…' : 'حفظ الحسابات'}
       </button>
-      <p className="text-[11px] text-slate-400">
+      <p className="text-2xs text-slate-400">
         الشبكات: {SOCIAL_NETWORKS.map((n) => n).join(' · ')} — الحفظ لا يغيّر توثيق الإدارة إذا بقي نفس الرابط.
       </p>
     </div>

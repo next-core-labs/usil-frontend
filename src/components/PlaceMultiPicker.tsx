@@ -25,7 +25,7 @@ export function PlaceMultiPicker({ value, onToggle }: Props) {
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-slate-500 leading-relaxed">
+      <p className="text-2xs text-slate-500 leading-relaxed">
         اضغط المنطقة لتغطية كل محافظاتها وقراها. ابحث إذا تغطي محافظة أو قرية فقط.
       </p>
 
@@ -39,12 +39,12 @@ export function PlaceMultiPicker({ value, onToggle }: Props) {
               onClick={() => onToggle(region)}
               className={`px-3 py-2 rounded-xl text-right border ${
                 selected
-                  ? 'bg-[#155EEF] border-[#155EEF] text-white'
-                  : 'bg-white border-slate-200 text-slate-800 hover:border-[#155EEF]'
+                  ? 'bg-action border-action text-white'
+                  : 'bg-white border-slate-200 text-slate-800 hover:border-action'
               }`}
             >
-              <span className="block text-xs font-extrabold">{region}</span>
-              <span className={`block text-[10px] ${selected ? 'text-white/80' : 'text-slate-500'}`}>
+              <span className="block text-xs font-medium">{region}</span>
+              <span className={`block text-2xs ${selected ? 'text-white/80' : 'text-slate-500'}`}>
                 {selected ? 'المنطقة كاملة' : formatRegionCoverage(region)}
               </span>
             </button>
@@ -61,7 +61,7 @@ export function PlaceMultiPicker({ value, onToggle }: Props) {
 
       {value.length ? (
         <div className="space-y-1.5">
-          <p className="text-[11px] font-bold text-slate-600">{formatSelectionCoverage(value)}</p>
+          <p className="text-2xs font-medium text-slate-600">{formatSelectionCoverage(value)}</p>
           <div className="flex flex-wrap gap-1.5">
             {value.map((city) => {
               const place = findPlace(city);
@@ -70,7 +70,7 @@ export function PlaceMultiPicker({ value, onToggle }: Props) {
                   key={city}
                   type="button"
                   onClick={() => onToggle(city)}
-                  className="px-2.5 min-h-8 rounded-full text-[11px] font-bold border bg-[#155EEF] border-[#155EEF] text-white"
+                  className="px-2.5 min-h-8 rounded-full text-2xs font-medium border bg-action border-action text-white"
                 >
                   {place?.kind === 'region' ? `${city} · كاملة` : city} ×
                 </button>
@@ -79,13 +79,13 @@ export function PlaceMultiPicker({ value, onToggle }: Props) {
           </div>
         </div>
       ) : (
-        <p className="text-[11px] text-amber-700 font-bold">اختر منطقة أو مكاناً واحداً على الأقل.</p>
+        <p className="text-2xs text-amber-700 font-medium">اختر منطقة أو مكاناً واحداً على الأقل.</p>
       )}
 
       {query.trim() ? (
         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-auto">
           {searchHits.length === 0 ? (
-            <p className="text-[11px] text-slate-500">لا توجد نتيجة لهذا الاسم</p>
+            <p className="text-2xs text-slate-500">لا توجد نتيجة لهذا الاسم</p>
           ) : (
             searchHits.map((place) => {
               const selected = value.includes(place.name);
@@ -98,9 +98,9 @@ export function PlaceMultiPicker({ value, onToggle }: Props) {
                   onClick={() => onToggle(place.name)}
                   disabled={covered}
                   title={covered && parent ? `مغطاة ضمن ${parent}` : undefined}
-                  className={`px-2.5 min-h-8 rounded-full text-[11px] font-bold border ${
+                  className={`px-2.5 min-h-8 rounded-full text-2xs font-bold border ${
                     selected
-                      ? 'bg-[#155EEF] border-[#155EEF] text-white'
+                      ? 'bg-action border-action text-white'
                       : covered
                         ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-default'
                         : 'bg-white border-slate-200 text-slate-700'

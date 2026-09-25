@@ -29,8 +29,19 @@ export async function bootNativeShell() {
   CapApp.addListener('backButton', ({ canGoBack }) => {
     if (canGoBack) window.history.back();
   });
+}
 
-  window.setTimeout(() => {
-    SplashScreen.hide().catch(() => {});
-  }, 400);
+/**
+ * Hand the screen over to the app once React has actually painted, rather than
+ * on a fixed timer — hiding early just swaps the splash for an empty navy body.
+ * launchAutoHide in capacitor.config.ts remains the backstop if render throws.
+ */
+export function hideNativeSplash() {
+  if (!isNativeApp()) return;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      SplashScreen.hide({ fadeOutDuration: 200 }).catch(() => {});
+    });
+  });
 }

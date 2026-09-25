@@ -318,11 +318,11 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
       {/* Header Banner */}
       <div className="p-6 rounded-3xl bg-white border border-slate-200 card-shadow flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-900 text-xs font-bold border border-blue-200">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-900 text-xs font-medium border border-blue-200">
             <Users className="w-3.5 h-3.5 text-blue-600" />
             <span>نظام أتمتة مسير الرواتب وسندات الصرف الموحدة (Automated Crew Payroll Engine)</span>
           </div>
-          <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+          <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
             أتمتة مسير أجور الطاقم وسندات الصرف الموحدة
           </h3>
           <p className="text-xs sm:text-sm text-slate-600">
@@ -333,7 +333,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             onClick={handleRunAutomation}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs sm:text-sm font-extrabold flex items-center gap-2 shadow-xs transition-all"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs sm:text-sm font-medium flex items-center gap-2 shadow-xs transition-all"
           >
             <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
             <span>أتمتة الحساب من ساعات العمل ⚡</span>
@@ -341,7 +341,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
 
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-xs transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium flex items-center gap-2 shadow-xs transition-colors"
           >
             <Plus className="w-4 h-4 text-emerald-400" />
             <span>تسجيل مستحق يدوي</span>
@@ -351,14 +351,14 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
 
       {/* Automation Alert Feedback Banner */}
       {automationNotice && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-fadeIn">
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs sm:text-sm font-medium flex items-center justify-between gap-3 animate-fadeIn">
           <div className="flex items-center gap-2.5">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             <span>{automationNotice}</span>
           </div>
           <button
             onClick={() => setAutomationNotice('')}
-            className="text-slate-400 hover:text-slate-700 text-xs font-bold"
+            className="text-slate-400 hover:text-slate-700 text-xs font-medium"
           >
             ✕
           </button>
@@ -371,16 +371,16 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
         {/* Pending Payouts Card */}
         <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 card-shadow space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-amber-900 font-bold">مستحقات معلقة بانتظار الصرف</span>
+            <span className="text-xs text-amber-900 font-medium">مستحقات معلقة بانتظار الصرف</span>
             <Clock className="w-4 h-4 text-amber-600" />
           </div>
-          <div className="text-2xl font-extrabold font-mono text-amber-950">
+          <div className="text-2xl font-bold font-mono text-amber-950">
             {totalPendingAmount.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-amber-800">ر.س</span>
           </div>
-          <div className="text-[11px] text-amber-800 font-bold flex items-center justify-between">
+          <div className="text-2xs text-amber-800 font-medium flex items-center justify-between">
             <span>{pendingEntries.length} مستحق جاهز للصرف الموحد</span>
-            <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px]">
+            <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-2xs">
               {pendingEntries.length > 0 ? 'متاح للإصدار' : 'لا يوجد'}
             </span>
           </div>
@@ -389,14 +389,14 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
         {/* Total Recorded Work Hours */}
         <div className="p-5 rounded-2xl bg-blue-50 border border-blue-200 card-shadow space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-blue-900 font-bold">إجمالي ساعات العمل المحسوبة</span>
+            <span className="text-xs text-blue-900 font-medium">إجمالي ساعات العمل المحسوبة</span>
             <Briefcase className="w-4 h-4 text-blue-600" />
           </div>
-          <div className="text-2xl font-extrabold font-mono text-blue-950">
+          <div className="text-2xl font-bold font-mono text-blue-950">
             {totalRecordedHours}{' '}
             <span className="text-xs font-sans text-blue-800">ساعة عمل</span>
           </div>
-          <div className="text-[11px] text-blue-800 font-medium">
+          <div className="text-2xs text-blue-800 font-medium">
             محتسبة آلياً مع مضاعف الوقت الإضافي (1.5×)
           </div>
         </div>
@@ -404,14 +404,14 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
         {/* Paid Payouts */}
         <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 card-shadow space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-emerald-900 font-bold">إجمالي الأجور المصروفة</span>
+            <span className="text-xs text-emerald-900 font-medium">إجمالي الأجور المصروفة</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-extrabold font-mono text-emerald-950">
+          <div className="text-2xl font-bold font-mono text-emerald-950">
             {totalPaidAmount.toLocaleString('ar-SA')}{' '}
             <span className="text-xs font-sans text-emerald-800">ر.س</span>
           </div>
-          <div className="text-[11px] text-emerald-800 font-medium">
+          <div className="text-2xs text-emerald-800 font-medium">
             {payrollEntries.filter((p) => p.paymentStatus === 'paid').length} مستحق مسدد رسمياً
           </div>
         </div>
@@ -419,14 +419,14 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
         {/* Issued Consolidated Vouchers Count */}
         <div className="p-5 rounded-2xl bg-purple-50 border border-purple-200 card-shadow space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-purple-900 font-bold">سندات الصرف الموحدة الصادرة</span>
+            <span className="text-xs text-purple-900 font-medium">سندات الصرف الموحدة الصادرة</span>
             <Receipt className="w-4 h-4 text-purple-600" />
           </div>
-          <div className="text-2xl font-extrabold font-mono text-purple-950">
+          <div className="text-2xl font-bold font-mono text-purple-950">
             {consolidatedVouchers.length}{' '}
             <span className="text-xs font-sans text-purple-800">سند موحد</span>
           </div>
-          <div className="text-[11px] text-purple-800 font-medium">
+          <div className="text-2xs text-purple-800 font-medium">
             مؤرشفة ومعتمدة في قائمة الدخل
           </div>
         </div>
@@ -438,11 +438,11 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            <h4 className="text-xs sm:text-sm font-extrabold text-white">
+            <h4 className="text-xs sm:text-sm font-medium text-white">
               محرك حساب الأجور الذكي بالساعة (Hourly Rates Matrix)
             </h4>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
+          <div className="flex flex-wrap items-center gap-2 text-2xs text-slate-300">
             <span className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700">
               مشرف ضيافة: <strong className="text-amber-400 font-mono">70 ر.س/س</strong>
             </span>
@@ -464,7 +464,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
 
         <button
           onClick={handleRunAutomation}
-          className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 shrink-0 transition-colors"
+          className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-medium flex items-center gap-1.5 shrink-0 transition-colors"
         >
           <span>تحديث الحساب بالساعات</span>
           <ArrowRight className="w-3.5 h-3.5 rotate-180" />
@@ -476,7 +476,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActivePayrollTab('entries')}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-colors ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
               activePayrollTab === 'entries'
                 ? 'bg-slate-900 text-white shadow-xs'
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -488,7 +488,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
 
           <button
             onClick={() => setActivePayrollTab('vouchers_archive')}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-colors ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
               activePayrollTab === 'vouchers_archive'
                 ? 'bg-slate-900 text-white shadow-xs'
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -502,13 +502,13 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
         {/* Unified Voucher Action Button (When Entries selected) */}
         {activePayrollTab === 'entries' && selectedPendingEntries.length > 0 && (
           <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-300 px-3.5 py-1.5 rounded-xl animate-fadeIn">
-            <span className="text-xs font-bold text-emerald-900">
+            <span className="text-xs font-medium text-emerald-900">
               تم تحديد <strong>{selectedPendingEntries.length}</strong> مستحق (
               <span className="font-mono">{selectedTotalAmount.toLocaleString('ar-SA')} ر.س</span>)
             </span>
             <button
               onClick={handleOpenVoucherModalForSelected}
-              className="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-xs transition-colors"
+              className="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-medium flex items-center gap-1.5 shadow-xs transition-colors"
             >
               <Receipt className="w-3.5 h-3.5" />
               <span>إصدار سند صرف موحد 📄</span>
@@ -572,7 +572,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
               {pendingEntries.length > 0 && (
                 <button
                   onClick={handleSelectAllPending}
-                  className="px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors ml-2"
+                  className="px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-medium transition-colors ml-2"
                 >
                   {selectedEntryIds.length === pendingEntries.length
                     ? 'إلغاء تحديد الكل'
@@ -606,7 +606,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                     <th className="py-3.5 px-3 text-center">ساعات العمل والأجر</th>
                     <th className="py-3.5 px-3">الأجر المحسوب</th>
                     <th className="py-3.5 px-3">مكافآت / حسم</th>
-                    <th className="py-3.5 px-3 text-slate-900 font-extrabold">صافي المستحق</th>
+                    <th className="py-3.5 px-3 text-slate-900 font-bold">صافي المستحق</th>
                     <th className="py-3.5 px-3">حالة الصرف والسند</th>
                     <th className="py-3.5 px-3 text-center">إجراء الصرف</th>
                   </tr>
@@ -659,9 +659,9 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                           {/* Crew Info */}
                           <td className="py-3.5 px-3">
                             <div className="font-bold text-slate-900">{entry.crewName}</div>
-                            <div className="text-[11px] text-blue-700 font-semibold">{entry.role}</div>
+                            <div className="text-2xs text-blue-700 font-semibold">{entry.role}</div>
                             {(entry.bankIban || crew?.bankIban) && (
-                              <div className="text-[9px] font-mono text-slate-400">
+                              <div className="text-2xs font-mono text-slate-400">
                                 {entry.bankIban || crew?.bankIban}
                               </div>
                             )}
@@ -672,20 +672,20 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                             <div className="font-bold text-slate-800 max-w-[200px] truncate">
                               {entry.eventTitle}
                             </div>
-                            <div className="text-[10px] text-slate-400 font-mono">{entry.eventDate}</div>
+                            <div className="text-2xs text-slate-400 font-mono">{entry.eventDate}</div>
                           </td>
 
                           {/* Hours & Rate Breakdown */}
                           <td className="py-3.5 px-3 text-center">
                             <div className="font-mono font-bold text-slate-800">
-                              {regH} س <span className="text-[10px] text-slate-400">(@ {rate} ر.س)</span>
+                              {regH} س <span className="text-2xs text-slate-400">(@ {rate} ر.س)</span>
                             </div>
                             {otH > 0 ? (
-                              <div className="text-[10px] font-mono text-amber-700 font-bold">
+                              <div className="text-2xs font-mono text-amber-700 font-medium">
                                 + {otH} س إضافي (1.5×)
                               </div>
                             ) : (
-                              <div className="text-[9px] text-slate-400">بدون إضافي</div>
+                              <div className="text-2xs text-slate-400">بدون إضافي</div>
                             )}
                           </td>
 
@@ -695,7 +695,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                           </td>
 
                           {/* Bonus / Deduction */}
-                          <td className="py-3.5 px-3 font-mono text-[11px]">
+                          <td className="py-3.5 px-3 font-mono text-2xs">
                             {entry.bonusAmount ? (
                               <span className="text-emerald-700 font-bold">+{entry.bonusAmount} ر.س</span>
                             ) : entry.deductionAmount ? (
@@ -706,20 +706,20 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                           </td>
 
                           {/* Net Payout */}
-                          <td className="py-3.5 px-3 font-mono font-extrabold text-slate-950 text-sm">
+                          <td className="py-3.5 px-3 font-mono font-bold text-slate-950 text-sm">
                             {entry.netPayout.toLocaleString('ar-SA')} ر.س
                           </td>
 
                           {/* Status & Linked Voucher Badge */}
                           <td className="py-3.5 px-3">
                             {isPending ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 text-2xs font-medium">
                                 <Clock className="w-3 h-3 text-amber-600" />
                                 بانتظار الصرف
                               </span>
                             ) : (
                               <div className="space-y-1">
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-2xs font-medium">
                                   <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                                   مسدد ({entry.paymentMethod === 'cash' ? 'كاش' : 'تحويل'})
                                 </span>
@@ -732,7 +732,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                                           handleOpenExistingVoucher(linkedVoucher);
                                         }
                                       }}
-                                      className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-md transition-colors"
+                                      className="inline-flex items-center gap-1 text-2xs font-mono font-medium text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-md transition-colors"
                                       title="معاينة سند الصرف الموحد"
                                     >
                                       <Receipt className="w-2.5 h-2.5" />
@@ -750,14 +750,14 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                               <div className="flex items-center justify-center gap-1">
                                 <button
                                   onClick={() => onMarkPayrollAsPaid(entry.id, 'bank_transfer')}
-                                  className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] shadow-xs transition-colors"
+                                  className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-2xs shadow-xs transition-colors"
                                   title="تسجيل كحوالة بنكية فردية"
                                 >
                                   تحويل
                                 </button>
                                 <button
                                   onClick={() => onMarkPayrollAsPaid(entry.id, 'cash')}
-                                  className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[10px] transition-colors"
+                                  className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-2xs transition-colors"
                                   title="تسجيل كتسليم نقدي كاش"
                                 >
                                   كاش
@@ -772,7 +772,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                                     window.print();
                                   }
                                 }}
-                                className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] inline-flex items-center gap-1 transition-colors"
+                                className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-2xs inline-flex items-center gap-1 transition-colors"
                               >
                                 <Printer className="w-3 h-3" />
                                 <span>{entry.consolidatedVoucherNumber ? 'السند الموحد' : 'إشعار'}</span>
@@ -795,7 +795,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
         <div className="space-y-4">
           <div className="p-4 rounded-2xl bg-white border border-slate-200 card-shadow flex items-center justify-between">
             <div className="space-y-0.5">
-              <h4 className="text-sm font-extrabold text-slate-900">
+              <h4 className="text-sm font-bold text-slate-900">
                 سجل وأرشيف سندات الصرف المالية الموحدة
               </h4>
               <p className="text-xs text-slate-500">
@@ -810,7 +810,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                   setViewingVoucher(null);
                   setIsVoucherModalOpen(true);
                 }}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1.5 shadow-xs"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>إصدار سند صرف جديد للمستحقات المعلقة</span>
@@ -837,35 +837,35 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-extrabold text-sm text-slate-900">
+                          <span className="font-mono font-bold text-sm text-slate-900">
                             {voucher.voucherNumber}
                           </span>
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-2xs font-medium">
                             معتمد ومسدد
                           </span>
                         </div>
-                        <h4 className="text-xs font-bold text-slate-700 mt-1">{voucher.title}</h4>
+                        <h4 className="text-xs font-medium text-slate-700 mt-1">{voucher.title}</h4>
                       </div>
 
                       <div className="text-left font-mono">
-                        <div className="text-base font-extrabold text-emerald-800">
+                        <div className="text-base font-bold text-emerald-800">
                           {voucher.totalConsolidatedAmount.toLocaleString('ar-SA')} ر.س
                         </div>
-                        <div className="text-[10px] text-slate-400">{voucher.issueDate}</div>
+                        <div className="text-2xs text-slate-400">{voucher.issueDate}</div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl text-xs text-center border border-slate-100">
                       <div>
-                        <span className="text-[10px] text-slate-400 block">المستفيدين</span>
+                        <span className="text-2xs text-slate-400 block">المستفيدين</span>
                         <span className="font-bold text-slate-800">{voucher.totalCrewCount} أفراد</span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 block">إجمالي الساعات</span>
+                        <span className="text-2xs text-slate-400 block">إجمالي الساعات</span>
                         <span className="font-bold text-blue-700">{voucher.totalHours} ساعة</span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 block">طريقة السداد</span>
+                        <span className="text-2xs text-slate-400 block">طريقة السداد</span>
                         <span className="font-bold text-slate-800">
                           {voucher.paymentMethod === 'bank_transfer' ? 'تحويل بنكي' : 'كاش'}
                         </span>
@@ -873,20 +873,20 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                     </div>
 
                     {voucher.notes && (
-                      <p className="text-[11px] text-slate-500 italic bg-slate-50/50 p-2 rounded-lg">
+                      <p className="text-2xs text-slate-500 italic bg-slate-50/50 p-2 rounded-lg">
                         "{voucher.notes}"
                       </p>
                     )}
                   </div>
 
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <span className="text-[10px] text-slate-400 font-medium">
+                    <span className="text-2xs text-slate-400 font-medium">
                       المحاسب: {voucher.preparedBy}
                     </span>
 
                     <button
                       onClick={() => handleOpenExistingVoucher(voucher)}
-                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 transition-colors"
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium flex items-center gap-1.5 transition-colors"
                     >
                       <Printer className="w-3.5 h-3.5 text-emerald-400" />
                       <span>معاينة وطباعة السند</span>
@@ -901,7 +901,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
 
       {/* Add Entry Modal with Hours Automation Calculator */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs text-right">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs text-right usil-modal-scroll">
           <div className="w-full max-w-lg bg-white rounded-3xl p-6 space-y-4 card-shadow max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -909,13 +909,13 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                 <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                   <Calculator className="w-4 h-4" />
                 </div>
-                <h4 className="text-base font-extrabold text-slate-900">
+                <h4 className="text-base font-bold text-slate-900">
                   احتساب وتسجيل مستحق جديد بالساعات
                 </h4>
               </div>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-medium"
               >
                 ✕
               </button>
@@ -961,9 +961,9 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
 
               {/* Work Hours & Hourly Rate Calculation Grid */}
               <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-3">
-                <div className="flex items-center justify-between text-blue-950 font-extrabold text-xs">
+                <div className="flex items-center justify-between text-blue-950 font-medium text-xs">
                   <span>أتمتة ساعات العمل ومعدل الأجر:</span>
-                  <span className="text-[11px] font-mono text-blue-800">
+                  <span className="text-2xs font-mono text-blue-800">
                     مضاعف الإضافي: 1.5×
                   </span>
                 </div>
@@ -1007,9 +1007,9 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-blue-200/80 flex justify-between items-center font-bold text-xs text-blue-900">
+                <div className="pt-2 border-t border-blue-200/80 flex justify-between items-center font-medium text-xs text-blue-900">
                   <span>الأجر المحسوب للساعات:</span>
-                  <span className="font-mono text-sm font-extrabold text-blue-950">
+                  <span className="font-mono text-sm font-bold text-blue-950">
                     {calculatedEarnedAmount.toLocaleString('ar-SA')} ر.س
                   </span>
                 </div>
@@ -1042,7 +1042,7 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
               </div>
 
               {/* Net Payout Summary Banner */}
-              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex justify-between items-center font-extrabold text-emerald-950">
+              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex justify-between items-center font-bold text-emerald-950">
                 <span>صافي المستحق النهائي للصرف:</span>
                 <span className="font-mono text-base text-emerald-800">
                   {calculatedNetPayout.toLocaleString('ar-SA')} ر.س
@@ -1053,14 +1053,14 @@ export const VendorCrewPayroll: React.FC<VendorCrewPayrollProps> = ({
               <div className="flex items-center gap-3 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-xs transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs sm:text-sm shadow-xs transition-colors"
                 >
                   حفظ المستحق في المسير
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                  className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium"
                 >
                   إلغاء
                 </button>

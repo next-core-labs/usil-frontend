@@ -19,9 +19,9 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onBack, onSearch, on
 
   return (
     <article className="container mx-auto px-4 lg:px-8 py-14 max-w-2xl text-right" dir="rtl">
-      <p className="text-[11px] font-mono font-bold text-[#155EEF] mb-2">404</p>
-      <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0A1A33] mb-2">هذه الصفحة غير موجودة</h1>
-      <p className="text-sm text-[#475467] leading-relaxed mb-6">
+      <p className="text-2xs font-mono font-medium text-action mb-2">404</p>
+      <h1 className="text-2xl sm:text-3xl font-bold text-navy mb-2">هذه الصفحة غير موجودة</h1>
+      <p className="text-sm text-ink-2 leading-relaxed mb-6">
         الرابط الذي فتحته ليس صفحة في متجر يوصل. ابحث عن منتج، أو ارجع للسوق، أو اختر قسماً.
       </p>
 
@@ -41,7 +41,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onBack, onSearch, on
           onChange={(e) => setQuery(e.target.value)}
           placeholder="ابحث في المتجر: قهوة، قاعة، تصوير…"
           aria-label="ابحث في المتجر"
-          className="w-full h-12 pr-10 pl-3 rounded-xl bg-white border border-[#E4E7EC] text-sm font-medium focus:outline-none focus:border-[#155EEF]"
+          className="w-full h-12 pr-10 pl-3 rounded-xl bg-white border border-line text-sm font-medium focus:outline-none focus:border-action"
         />
       </form>
 
@@ -51,7 +51,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onBack, onSearch, on
             key={cat.id}
             type="button"
             onClick={() => onSelectCategory?.(cat.id)}
-            className="px-3 h-9 rounded-lg bg-white border border-[#E4E7EC] text-xs font-bold text-[#0A1A33] hover:border-[#155EEF]"
+            className="px-3 h-9 rounded-lg bg-white border border-line text-xs font-medium text-navy hover:border-action"
           >
             {cat.name}
           </button>
@@ -61,7 +61,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onBack, onSearch, on
       <button
         type="button"
         onClick={onBack}
-        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0A1A33] text-white text-sm font-bold"
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-navy text-white text-sm font-bold"
       >
         <Store className="w-4 h-4" />
         العودة لمتجر يوصل

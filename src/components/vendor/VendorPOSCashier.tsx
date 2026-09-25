@@ -438,15 +438,15 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
       )}
 
       {/* Top Banner */}
-      <div className="p-6 rounded-3xl bg-[#0A1A33] text-white card-shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="p-6 rounded-3xl bg-navy text-white card-shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-bold border border-white/10">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-medium border border-white/10">
             <Zap className="w-3.5 h-3.5" />
             <span>كاشير يوصل ونقاط البيع السريعة (POS) • بحث بالـ SKU وإضافات سريعة بنقرة واحدة</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <span>كاشير المنشأة الفوري ونظام الباركود</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-lg bg-[#C0A16B]/20 text-[#C0A16B] border border-[#C0A16B]/30 font-mono font-bold">
+            <span className="text-xs px-2.5 py-0.5 rounded-lg bg-sand/20 text-sand border border-sand/30 font-mono font-medium">
               0% عمولة
             </span>
           </h2>
@@ -456,7 +456,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
-          <div className="px-3.5 py-2 rounded-2xl bg-white/10 border border-white/10 text-xs font-mono font-bold text-[#C0A16B] text-center">
+          <div className="px-3.5 py-2 rounded-2xl bg-white/10 border border-white/10 text-xs font-mono font-medium text-sand text-center">
             {brandSettings.brandName.slice(0, 26)}
           </div>
           <button
@@ -466,7 +466,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                 setSkuToast({ message: 'جاهز لمسح أو إدخال كود الـ SKU ⚡', type: 'info' });
               }
             }}
-            className="px-3.5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
           >
             <Barcode className="w-4 h-4" />
             <span>مسح كود SKU (Ctrl+K)</span>
@@ -482,19 +482,19 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
               <Zap className="w-4 h-4 text-amber-600" />
             </div>
             <div>
-              <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+              <h3 className="text-xs sm:text-sm font-medium text-slate-900 flex items-center gap-1.5">
                 <span>الإضافات والخدمات الشائعة (بنقرة واحدة Quick-Add)</span>
-                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-800 text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-800 text-2xs font-medium">
                   أعلى كفاءة للكاشير ⚡
                 </span>
               </h3>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-2xs text-slate-500">
                 أضف الخدمات الإضافية الأكثر طلباً إلى الفاتورة فوراً بضغطة زر دون الحاجة للبحث
               </p>
             </div>
           </div>
 
-          <div className="text-[11px] text-slate-500 font-mono font-bold self-end sm:self-center">
+          <div className="text-2xs text-slate-500 font-mono font-medium self-end sm:self-center">
             {commonAddOns.length} خدمات شائعة جاهزة
           </div>
         </div>
@@ -512,34 +512,34 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                 onClick={() => handleAddToCart(addon, 1)}
                 className={`relative p-2.5 rounded-2xl border text-right transition-all flex flex-col justify-between gap-2 group cursor-pointer active:scale-95 ${
                   inCartQty > 0
-                    ? 'bg-blue-50/80 border-[#155EEF] shadow-xs'
+                    ? 'bg-blue-50/80 border-action shadow-xs'
                     : 'bg-white border-slate-200 hover:border-amber-400 hover:shadow-xs'
                 }`}
               >
                 {inCartQty > 0 && (
-                  <span className="absolute -top-1.5 -left-1.5 px-2 py-0.5 rounded-full bg-[#155EEF] text-white text-[10px] font-mono font-black shadow-xs">
+                  <span className="absolute -top-1.5 -left-1.5 px-2 py-0.5 rounded-full bg-action text-white text-2xs font-mono font-medium shadow-xs">
                     x{inCartQty}
                   </span>
                 )}
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between gap-1">
-                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 group-hover:bg-amber-100 group-hover:text-amber-900 transition-colors">
+                    <span className="text-2xs font-mono font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 group-hover:bg-amber-100 group-hover:text-amber-900 transition-colors">
                       {addon.sku || 'SKU'}
                     </span>
                     <span className="w-5 h-5 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                       <Plus className="w-3 h-3" />
                     </span>
                   </div>
-                  <h4 className="text-[11px] font-bold text-slate-900 line-clamp-2 leading-tight group-hover:text-[#155EEF] transition-colors">
+                  <h4 className="text-2xs font-medium text-slate-900 line-clamp-2 leading-tight group-hover:text-action transition-colors">
                     {addon.title}
                   </h4>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
-                  <span className="text-[10px] text-slate-500">{addon.unit.split('/')[0]}</span>
-                  <span className="font-mono font-black text-[#155EEF]">
-                    {addon.price.toLocaleString('ar-SA')} <span className="text-[9px] font-sans">ر.س</span>
+                <div className="flex items-center justify-between text-2xs pt-1 border-t border-slate-100">
+                  <span className="text-2xs text-slate-500">{addon.unit.split('/')[0]}</span>
+                  <span className="font-mono font-bold text-action">
+                    {addon.price.toLocaleString('ar-SA')} <span className="text-2xs font-sans">ر.س</span>
                   </span>
                 </div>
               </button>
@@ -558,13 +558,13 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
           <div className="p-4 rounded-3xl bg-white border border-slate-200 card-shadow space-y-3">
             
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                <Barcode className="w-4 h-4 text-[#155EEF]" />
+              <label className="text-xs font-medium text-slate-900 flex items-center gap-1.5">
+                <Barcode className="w-4 h-4 text-action" />
                 <span>إدخال أو مسح كود الصنف (SKU / Barcode)</span>
               </label>
 
               <div className="flex items-center gap-1">
-                <span className="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md font-mono">
+                <span className="text-2xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md font-mono">
                   اضغط Enter للإضافة المباشرة ⚡
                 </span>
               </div>
@@ -585,14 +585,14 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                       }
                     }}
                     placeholder="امسح الباركود أو أدخل الـ SKU (مثال: SKU-DSP-101 أو 101 أو كود الصنف)..."
-                    className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-slate-50 border border-slate-300 text-xs font-mono font-bold text-slate-900 placeholder:text-slate-500 placeholder:font-sans focus:bg-white focus:border-[#155EEF] focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                    className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-slate-50 border border-slate-300 text-xs font-mono font-medium text-slate-900 placeholder:text-slate-500 placeholder:font-sans focus:bg-white focus:border-action focus:ring-2 focus:ring-blue-100 focus:outline-none"
                   />
                   <Barcode className="w-4 h-4 text-slate-600 absolute right-3 top-1/2 -translate-y-1/2" />
                   {skuSearchInput && (
                     <button
                       type="button"
                       onClick={() => setSkuSearchInput('')}
-                      className="text-slate-600 hover:text-slate-800 text-xs font-bold absolute left-3 top-1/2 -translate-y-1/2"
+                      className="text-slate-600 hover:text-slate-800 text-xs font-medium absolute left-3 top-1/2 -translate-y-1/2"
                     >
                       ×
                     </button>
@@ -605,7 +605,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                   disabled={!skuSearchInput.trim()}
                   className={`px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     skuSearchInput.trim()
-                      ? 'bg-[#155EEF] hover:bg-[#0F45B5] text-white shadow-xs'
+                      ? 'bg-action hover:bg-action-hover text-white shadow-xs'
                       : 'bg-slate-100 text-slate-600 cursor-not-allowed'
                   }`}
                 >
@@ -617,7 +617,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
               {/* Instant SKU Autocomplete Dropdown */}
               {skuSuggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1.5 p-2 bg-white rounded-2xl border border-slate-200 dropdown-shadow z-30 space-y-1">
-                  <div className="text-[10px] font-bold text-slate-600 px-2 pb-1 border-b border-slate-100">
+                  <div className="text-2xs font-medium text-slate-600 px-2 pb-1 border-b border-slate-100">
                     أصناف مطابقة للكود (انقر للإضافة الفورية):
                   </div>
                   {skuSuggestions.map((sug) => (
@@ -630,14 +630,14 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                       className="p-2 rounded-xl hover:bg-blue-50 cursor-pointer flex items-center justify-between gap-2 text-xs transition-colors group"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-[#155EEF]">
+                        <span className="font-mono text-2xs font-medium px-2 py-0.5 rounded bg-blue-100 text-action">
                           {sug.sku || 'SKU'}
                         </span>
-                        <span className="font-bold text-slate-900 group-hover:text-[#155EEF] truncate">
+                        <span className="font-bold text-slate-900 group-hover:text-action truncate">
                           {sug.title}
                         </span>
                       </div>
-                      <span className="font-mono font-bold text-[#155EEF] shrink-0">
+                      <span className="font-mono font-bold text-action shrink-0">
                         {sug.price.toLocaleString('ar-SA')} ر.س
                       </span>
                     </div>
@@ -648,7 +648,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
 
             {/* Quick SKU Test Scanner Pills */}
             <div className="flex items-center gap-1.5 flex-wrap pt-1">
-              <span className="text-[10px] font-bold text-slate-600 flex items-center gap-1">
+              <span className="text-2xs font-medium text-slate-600 flex items-center gap-1">
                 <Hash className="w-3 h-3 text-slate-600" />
                 <span>أكواد سريعة للتجربة:</span>
               </span>
@@ -660,7 +660,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                     setSkuSearchInput(code);
                     handleSkuSubmit(code);
                   }}
-                  className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-[#155EEF] border border-slate-200 text-[10px] font-mono font-bold text-slate-700 transition-colors cursor-pointer"
+                  className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-action border border-slate-200 text-2xs font-mono font-medium text-slate-700 transition-colors cursor-pointer"
                 >
                   +{code}
                 </button>
@@ -677,7 +677,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ابحث بالاسم، الوصف، أو التصنيف (مثال: قهوجي، بوفيه، عود، كرك، عصائر)..."
-                className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-medium focus:bg-white focus:border-[#155EEF] focus:outline-none"
+                className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-medium focus:bg-white focus:border-action focus:outline-none"
               />
               <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
               {searchQuery && (
@@ -697,7 +697,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                     selectedCategory === cat
-                      ? 'bg-[#0A1A33] text-white shadow-xs'
+                      ? 'bg-navy text-white shadow-xs'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
@@ -712,8 +712,8 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
             {filteredItems.length === 0 ? (
               <div className="sm:col-span-2 p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-2">
                 <Search className="w-8 h-8 text-slate-300 mx-auto" />
-                <div className="text-xs font-bold text-slate-700">لم يتم العثور على أي صنف يطابق البحث</div>
-                <p className="text-[11px] text-slate-400">جرب البحث بكلمة أخرى أو استخدم إدخال كود الـ SKU المباشر أعلاه</p>
+                <div className="text-xs font-medium text-slate-700">لم يتم العثور على أي صنف يطابق البحث</div>
+                <p className="text-2xs text-slate-400">جرب البحث بكلمة أخرى أو استخدم إدخال كود الـ SKU المباشر أعلاه</p>
               </div>
             ) : (
               filteredItems.map((item) => {
@@ -724,8 +724,8 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                     onClick={() => handleAddToCart(item)}
                     className={`p-3.5 rounded-2xl bg-white border transition-all cursor-pointer flex flex-col justify-between space-y-2 group hover:shadow-xs ${
                       inCart
-                        ? 'border-[#155EEF] ring-1 ring-blue-100 bg-blue-50/20'
-                        : 'border-slate-200 hover:border-[#155EEF]'
+                        ? 'border-action ring-1 ring-blue-100 bg-blue-50/20'
+                        : 'border-slate-200 hover:border-action'
                     }`}
                   >
                     <div className="space-y-1.5">
@@ -738,7 +738,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                                 handleCopySku(item.sku!);
                               }}
                               title="انقر لنسخ رمز الـ SKU"
-                              className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-blue-100 hover:text-[#155EEF] transition-colors"
+                              className="inline-flex items-center gap-1 text-2xs font-mono font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-blue-100 hover:text-action transition-colors"
                             >
                               <Hash className="w-2.5 h-2.5" />
                               <span>{item.sku}</span>
@@ -749,41 +749,41 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                               )}
                             </span>
                           )}
-                          <span className="text-[10px] text-slate-500 font-bold px-2 py-0.5 rounded-full bg-slate-100">
+                          <span className="text-2xs text-slate-500 font-medium px-2 py-0.5 rounded-full bg-slate-100">
                             {item.category}
                           </span>
                           {item.isQuickAddOn && (
-                            <span className="text-[9px] text-amber-700 font-bold px-1.5 py-0.2 rounded bg-amber-100">
+                            <span className="text-2xs text-amber-700 font-medium px-1.5 py-0.2 rounded bg-amber-100">
                               إضافة شائعة ⚡
                             </span>
                           )}
                         </div>
 
-                        <div className="w-7 h-7 rounded-xl bg-blue-50 text-[#155EEF] flex items-center justify-center shrink-0 group-hover:bg-[#155EEF] group-hover:text-white transition-colors">
+                        <div className="w-7 h-7 rounded-xl bg-blue-50 text-action flex items-center justify-center shrink-0 group-hover:bg-action group-hover:text-white transition-colors">
                           <Plus className="w-4 h-4" />
                         </div>
                       </div>
 
-                      <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#155EEF] transition-colors leading-snug">
+                      <h4 className="text-xs font-medium text-slate-900 group-hover:text-action transition-colors leading-snug">
                         {item.title}
                       </h4>
 
                       {item.description && (
-                        <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">
+                        <p className="text-2xs text-slate-500 line-clamp-2 leading-relaxed">
                           {item.description}
                         </p>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 font-bold">
-                      <span className="text-slate-500 text-[11px]">{item.unit}</span>
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 font-medium">
+                      <span className="text-slate-500 text-2xs">{item.unit}</span>
                       <div className="flex items-center gap-1.5">
                         {inCart && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-blue-100 text-[#155EEF]">
+                          <span className="text-2xs font-mono px-1.5 py-0.5 rounded-md bg-blue-100 text-action">
                             x{inCart.quantity} في السلة
                           </span>
                         )}
-                        <span className="font-mono text-[#155EEF] text-sm">
+                        <span className="font-mono text-action text-sm">
                           {item.price.toLocaleString('ar-SA')} ر.س
                         </span>
                       </div>
@@ -797,11 +797,11 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
           {/* Add Custom Fast Item Box with Custom SKU */}
           <div className="p-4 rounded-3xl bg-slate-50 border border-slate-200 space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                <Plus className="w-4 h-4 text-[#155EEF]" />
+              <h4 className="text-xs font-medium text-slate-900 flex items-center gap-1.5">
+                <Plus className="w-4 h-4 text-action" />
                 <span>إضافة بند أو خدمة مخصصة سريعة للكاشير</span>
               </h4>
-              <span className="text-[10px] text-slate-500">يتم توليد SKU تلقائياً أو تخصيصه</span>
+              <span className="text-2xs text-slate-500">يتم توليد SKU تلقائياً أو تخصيصه</span>
             </div>
 
             <div className="grid sm:grid-cols-12 gap-2">
@@ -824,14 +824,14 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                   type="number"
                   value={customItemPrice}
                   onChange={(e) => setCustomItemPrice(Number(e.target.value))}
-                  className="w-full py-2 bg-transparent text-xs font-mono font-bold text-slate-900 focus:outline-none text-left"
+                  className="w-full py-2 bg-transparent text-xs font-mono font-medium text-slate-900 focus:outline-none text-left"
                 />
-                <span className="text-[10px] text-slate-400 font-bold mr-1">ر.س</span>
+                <span className="text-2xs text-slate-400 font-medium mr-1">ر.س</span>
               </div>
               <button
                 type="button"
                 onClick={handleAddCustomItem}
-                className="sm:col-span-2 px-3 py-2 rounded-xl bg-[#0A1A33] hover:bg-slate-800 text-white text-xs font-bold transition-colors cursor-pointer"
+                className="sm:col-span-2 px-3 py-2 rounded-xl bg-navy hover:bg-slate-800 text-white text-xs font-medium transition-colors cursor-pointer"
               >
                 إضافة
               </button>
@@ -848,16 +848,16 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
             {/* Register Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-[#155EEF]" />
+                <Receipt className="w-5 h-5 text-action" />
                 <div>
-                  <h3 className="text-sm font-black text-slate-900">سلة الإيصال / الكاشير</h3>
-                  <span className="text-[10px] text-slate-400 font-mono">
+                  <h3 className="text-sm font-bold text-slate-900">سلة الإيصال / الكاشير</h3>
+                  <span className="text-2xs text-slate-400 font-mono">
                     {brandSettings.brandName} • 0% عمولة
                   </span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                <span className="text-xs font-mono font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
                   {cart.length} بنود
                 </span>
                 {cart.length > 0 && (
@@ -875,14 +875,14 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
             {/* Quick Add-ons In-Cart Flyout Bar */}
             <div className="p-2.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-800 flex items-center gap-1">
+                <span className="text-2xs font-medium text-slate-800 flex items-center gap-1">
                   <Zap className="w-3.5 h-3.5 text-amber-500" />
                   <span>إضافات سريعة فورية للسلة:</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsQuickAddonsDrawerOpen(!isQuickAddonsDrawerOpen)}
-                  className="text-[10px] text-[#155EEF] font-bold hover:underline"
+                  className="text-2xs text-action font-medium hover:underline"
                 >
                   {isQuickAddonsDrawerOpen ? 'إخفاء الإضافات ▲' : 'عرض الكل ▼'}
                 </button>
@@ -894,11 +894,11 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                     key={addon.id}
                     type="button"
                     onClick={() => handleAddToCart(addon, 1)}
-                    className="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-[#155EEF] text-[10px] font-bold text-slate-800 whitespace-nowrap flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                    className="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-action text-2xs font-medium text-slate-800 whitespace-nowrap flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                   >
-                    <Plus className="w-3 h-3 text-[#155EEF]" />
+                    <Plus className="w-3 h-3 text-action" />
                     <span>{addon.title.slice(0, 18)}...</span>
-                    <span className="font-mono text-[#155EEF]">+{addon.price} ر.س</span>
+                    <span className="font-mono text-action">+{addon.price} ر.س</span>
                   </button>
                 ))}
               </div>
@@ -910,10 +910,10 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                       key={addon.id}
                       type="button"
                       onClick={() => handleAddToCart(addon, 1)}
-                      className="p-1.5 rounded-xl bg-white border border-slate-200 hover:border-[#155EEF] text-[10px] font-bold text-slate-800 flex items-center justify-between text-right shadow-2xs transition-colors cursor-pointer"
+                      className="p-1.5 rounded-xl bg-white border border-slate-200 hover:border-action text-2xs font-medium text-slate-800 flex items-center justify-between text-right shadow-2xs transition-colors cursor-pointer"
                     >
                       <span className="truncate flex-1 ml-1">{addon.title}</span>
-                      <span className="font-mono text-[#155EEF] shrink-0">+{addon.price}</span>
+                      <span className="font-mono text-action shrink-0">+{addon.price}</span>
                     </button>
                   ))}
                 </div>
@@ -924,39 +924,39 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
             <div className="space-y-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">اسم العميل</label>
+                  <label className="block text-2xs font-medium text-slate-700 mb-0.5">اسم العميل</label>
                   <input
                     type="text"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="أبو تركي (حجز مباشر)"
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-bold focus:outline-none"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-medium focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">رقم الجوال</label>
+                  <label className="block text-2xs font-medium text-slate-700 mb-0.5">رقم الجوال</label>
                   <input
                     type="text"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder="05XXXXXXXX"
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono font-bold text-slate-900 focus:outline-none text-left"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono font-medium text-slate-900 focus:outline-none text-left"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">تاريخ المناسبة</label>
+                  <label className="block text-2xs font-medium text-slate-700 mb-0.5">تاريخ المناسبة</label>
                   <input
                     type="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">موقع الفعالية</label>
+                  <label className="block text-2xs font-medium text-slate-700 mb-0.5">موقع الفعالية</label>
                   <input
                     type="text"
                     value={venueName}
@@ -971,7 +971,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
             {/* Cart Items List with SKU Tag */}
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {cart.length === 0 ? (
-                <div className="text-center py-8 text-xs text-slate-400 font-bold border-2 border-dashed border-slate-200 rounded-2xl">
+                <div className="text-center py-8 text-xs text-slate-400 font-medium border-2 border-dashed border-slate-200 rounded-2xl">
                   السلة فارغة. استخدم البحث بالـ SKU أو أزرار الإضافات السريعة.
                 </div>
               ) : (
@@ -983,13 +983,13 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                     <div className="space-y-0.5 flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         {ci.item.sku && (
-                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-200 text-slate-700">
+                          <span className="text-2xs font-mono font-medium px-1.5 py-0.2 rounded bg-slate-200 text-slate-700">
                             {ci.item.sku}
                           </span>
                         )}
                         <span className="font-bold text-slate-900 truncate">{ci.item.title}</span>
                       </div>
-                      <div className="text-[11px] font-mono text-[#155EEF] font-bold">
+                      <div className="text-2xs font-mono text-action font-medium">
                         {(ci.customPrice ?? ci.item.price).toLocaleString('ar-SA')} ر.س
                       </div>
                     </div>
@@ -1001,7 +1001,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="w-6 text-center font-mono font-bold text-xs">{ci.quantity}</span>
+                      <span className="w-6 text-center font-mono font-medium text-xs">{ci.quantity}</span>
                       <button
                         onClick={() => handleUpdateQuantity(i, 1)}
                         className="w-6 h-6 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-100 cursor-pointer"
@@ -1034,9 +1034,9 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                     type="number"
                     value={discountAmount}
                     onChange={(e) => setDiscountAmount(Number(e.target.value))}
-                    className="w-20 px-2 py-1 rounded bg-white border border-slate-200 text-xs font-mono font-bold text-slate-900 text-left focus:outline-none"
+                    className="w-20 px-2 py-1 rounded bg-white border border-slate-200 text-xs font-mono font-medium text-slate-900 text-left focus:outline-none"
                   />
-                  <span className="text-[10px] text-slate-500">ر.س</span>
+                  <span className="text-2xs text-slate-500">ر.س</span>
                 </div>
               </div>
 
@@ -1047,7 +1047,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
 
               <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-sm font-bold">
                 <span className="text-slate-900">الإجمالي النهائي المطلوب:</span>
-                <span className="font-mono text-base font-extrabold text-[#155EEF]">
+                <span className="font-mono text-base font-bold text-action">
                   {grandTotal.toLocaleString('ar-SA')} ر.س
                 </span>
               </div>
@@ -1056,8 +1056,8 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
             {/* Payment Method Selector */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-slate-800">طريقة الدفع في نقطة البيع</label>
-                <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
+                <label className="block text-xs font-medium text-slate-800">طريقة الدفع في نقطة البيع</label>
+                <span className="text-2xs text-blue-600 font-medium flex items-center gap-1">
                   <Radio className="w-3 h-3 animate-pulse" />
                   <span>يدعم Web NFC</span>
                 </span>
@@ -1073,25 +1073,25 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                   }
                   setIsNfcModalOpen(true);
                 }}
-                className="w-full p-2.5 rounded-2xl bg-gradient-to-l from-[#0A1A33] via-[#0F284D] to-[#155EEF] text-white flex items-center justify-between border border-blue-400/30 shadow-xs hover:shadow-md transition-all cursor-pointer group text-right"
+                className="w-full p-2.5 rounded-2xl bg-gradient-to-l from-navy via-[#0F284D] to-action text-white flex items-center justify-between border border-blue-400/30 shadow-xs hover:shadow-md transition-all cursor-pointer group text-right"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-[#C0A16B] group-hover:scale-110 transition-transform">
+                  <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-sand group-hover:scale-110 transition-transform">
                     <Wifi className="w-4 h-4 rotate-90" />
                   </div>
                   <div>
-                    <div className="text-xs font-black flex items-center gap-1.5">
+                    <div className="text-xs font-medium flex items-center gap-1.5">
                       <span>استقبال الدفع بالتمرير (Tap-to-Pay NFC)</span>
-                      <span className="px-1.5 py-0.2 rounded bg-[#C0A16B]/30 text-[#C0A16B] text-[9px] font-mono">
+                      <span className="px-1.5 py-0.2 rounded bg-sand/30 text-sand text-2xs font-mono">
                         مدى / Apple Pay
                       </span>
                     </div>
-                    <div className="text-[10px] text-slate-300">
+                    <div className="text-2xs text-slate-300">
                       حوّل هاتفك لمحطة POS لتمرير بطاقة العميل مباشرة
                     </div>
                   </div>
                 </div>
-                <div className="text-xs font-black font-mono text-[#C0A16B] bg-white/10 px-2 py-1 rounded-lg border border-white/10 shrink-0 mr-2">
+                <div className="text-xs font-medium font-mono text-sand bg-white/10 px-2 py-1 rounded-lg border border-white/10 shrink-0 mr-2">
                   فتح NFC
                 </div>
               </button>
@@ -1119,12 +1119,12 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                       }}
                       className={`p-2 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-[#0A1A33] text-white border-[#0A1A33] shadow-xs'
+                          ? 'bg-navy text-white border-navy shadow-xs'
                           : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                       }`}
                     >
-                      <Icon className={`w-3.5 h-3.5 ${pm.id === 'tap_to_pay_nfc' ? 'rotate-90 text-[#C0A16B]' : ''}`} />
-                      <span className="text-[10px]">{pm.label}</span>
+                      <Icon className={`w-3.5 h-3.5 ${pm.id === 'tap_to_pay_nfc' ? 'rotate-90 text-sand' : ''}`} />
+                      <span className="text-2xs">{pm.label}</span>
                     </button>
                   );
                 })}
@@ -1132,7 +1132,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
             </div>
 
             {/* Zero Commission Highlight */}
-            <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 flex items-center gap-2 font-bold">
+            <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-2xs text-emerald-900 flex items-center gap-2 font-medium">
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>العمولة 0% — مبيعات الكاشير تذهب مباشرة لحسابك بالكامل</span>
             </div>
@@ -1142,17 +1142,17 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
               type="button"
               onClick={handleCheckoutSubmit}
               disabled={cart.length === 0}
-              className={`w-full py-3.5 px-4 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer ${
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer ${
                 cart.length === 0
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                   : paymentMethod === 'tap_to_pay_nfc'
-                  ? 'bg-gradient-to-r from-[#155EEF] to-[#0A1A33] hover:opacity-95 text-white'
-                  : 'bg-[#155EEF] hover:bg-[#0F45B5] active:bg-[#0A2E78] text-white'
+                  ? 'bg-gradient-to-r from-action to-navy hover:opacity-95 text-white'
+                  : 'bg-action hover:bg-action-hover active:bg-action-pressed text-white'
               }`}
             >
               {paymentMethod === 'tap_to_pay_nfc' ? (
                 <>
-                  <Wifi className="w-4 h-4 rotate-90 text-[#C0A16B]" />
+                  <Wifi className="w-4 h-4 rotate-90 text-sand" />
                   <span>بدء تمرير البطاقة بالهاتف (Tap-to-Pay)</span>
                 </>
               ) : (
@@ -1176,7 +1176,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
             <h3 className="text-sm font-bold text-slate-900">سجل مبيعات الكاشير ونقاط البيع الأخيرة</h3>
             <p className="text-xs text-slate-500">تمت جميعها بعمولة 0% مع إدراجها بالتقويم تلقائياً</p>
           </div>
-          <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+          <span className="text-xs font-mono font-medium px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
             {effectiveSales.length} عمليات مسجلة
           </span>
         </div>
@@ -1200,14 +1200,14 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                   <td className="py-3 px-3 font-mono font-bold text-slate-900">{sale.receiptNumber}</td>
                   <td className="py-3 px-3">
                     <div className="font-bold text-slate-900">{sale.customerName}</div>
-                    <div className="text-[10px] text-slate-500 font-mono">{sale.customerPhone}</div>
+                    <div className="text-2xs text-slate-500 font-mono">{sale.customerPhone}</div>
                   </td>
                   <td className="py-3 px-3 font-bold text-slate-700">{sale.eventDate}</td>
                   <td className="py-3 px-3 text-slate-600 max-w-xs truncate">
                     {sale.items.map((i) => `${i.item.title}${i.item.sku ? ` [${i.item.sku}]` : ''} (x${i.quantity})`).join(', ')}
                   </td>
                   <td className="py-3 px-3">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1 ${
+                    <span className={`px-2 py-0.5 rounded text-2xs font-bold inline-flex items-center gap-1 ${
                       sale.paymentMethod === 'tap_to_pay_nfc'
                         ? 'bg-blue-50 text-blue-800 border border-blue-200'
                         : 'bg-slate-100 text-slate-800'
@@ -1230,7 +1230,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                       )}
                     </span>
                   </td>
-                  <td className="py-3 px-3 font-mono font-extrabold text-[#155EEF]">
+                  <td className="py-3 px-3 font-mono font-bold text-action">
                     {sale.total.toLocaleString('ar-SA')} ر.س
                   </td>
                   <td className="py-3 px-3 text-center">
@@ -1239,7 +1239,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                         setCompletedSale(sale);
                         setShowThermalReceiptModal(true);
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-2xs inline-flex items-center gap-1 cursor-pointer"
                     >
                       <Printer className="w-3 h-3" />
                       <span>طباعة</span>
@@ -1254,20 +1254,20 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
 
       {/* 80mm Thermal Receipt Modal (100% White-Labeled with SKUs) */}
       {showThermalReceiptModal && completedSale && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 usil-modal-scroll">
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" onClick={() => setShowThermalReceiptModal(false)} />
 
           <div className="relative w-full max-w-sm bg-white rounded-3xl border border-slate-200 card-shadow z-10 my-auto text-right overflow-hidden">
             
             {/* Receipt Modal Header Bar */}
             <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
-              <span className="text-xs font-bold flex items-center gap-1.5">
+              <span className="text-xs font-medium flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 <span>تم إتمام البيع بنجاح</span>
               </span>
               <button
                 onClick={() => setShowThermalReceiptModal(false)}
-                className="text-white/70 hover:text-white text-xs font-bold cursor-pointer"
+                className="text-white/70 hover:text-white text-xs font-medium cursor-pointer"
               >
                 إغلاق
               </button>
@@ -1278,9 +1278,9 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
               
               {/* Brand Header */}
               <div className="text-center space-y-1 border-b border-dashed border-slate-300 pb-3">
-                <h3 className="font-extrabold text-sm text-slate-900">{brandSettings.brandName}</h3>
-                <p className="text-[10px] text-slate-600 font-sans">{brandSettings.slogan}</p>
-                <div className="text-[10px] text-slate-500 pt-1 space-y-0.5">
+                <h3 className="font-bold text-sm text-slate-900">{brandSettings.brandName}</h3>
+                <p className="text-2xs text-slate-600 font-sans">{brandSettings.slogan}</p>
+                <div className="text-2xs text-slate-500 pt-1 space-y-0.5">
                   <div>س.ت: {brandSettings.crNumber}</div>
                   <div>الرقم الضريبي: {brandSettings.vatNumber}</div>
                   <div>هاتف: {brandSettings.phone}</div>
@@ -1288,7 +1288,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
               </div>
 
               {/* Receipt Metadata */}
-              <div className="text-[11px] space-y-1 border-b border-dashed border-slate-300 pb-2.5">
+              <div className="text-2xs space-y-1 border-b border-dashed border-slate-300 pb-2.5">
                 <div className="flex justify-between">
                   <span className="text-slate-500">رقم الإيصال:</span>
                   <span className="font-bold">{completedSale.receiptNumber}</span>
@@ -1310,7 +1310,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
               {/* Items with SKU */}
               <div className="space-y-1.5 border-b border-dashed border-slate-300 pb-3">
                 {completedSale.items.map((it, idx) => (
-                  <div key={idx} className="space-y-0.5 text-[11px]">
+                  <div key={idx} className="space-y-0.5 text-2xs">
                     <div className="flex justify-between">
                       <span className="flex-1 truncate">{it.item.title} x{it.quantity}</span>
                       <span className="font-bold shrink-0 mr-2">
@@ -1318,7 +1318,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                       </span>
                     </div>
                     {it.item.sku && (
-                      <div className="text-[9px] text-slate-400">
+                      <div className="text-2xs text-slate-400">
                         كود: {it.item.sku}
                       </div>
                     )}
@@ -1342,7 +1342,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                   <span>ضريبة القيمة المضافة (15%):</span>
                   <span>{completedSale.taxAmount.toLocaleString('ar-SA')} ر.س</span>
                 </div>
-                <div className="flex justify-between font-extrabold text-sm text-slate-900 pt-1">
+                <div className="flex justify-between font-bold text-sm text-slate-900 pt-1">
                   <span>المبلغ المدفوع:</span>
                   <span>{completedSale.total.toLocaleString('ar-SA')} ر.س</span>
                 </div>
@@ -1350,13 +1350,13 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
 
               {/* Tap-to-Pay EMV Contactless Audit Details (if paid via NFC) */}
               {(completedSale.paymentMethod === 'tap_to_pay_nfc' || completedSale.nfcPaymentData) && (
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] space-y-1 border-b border-dashed pb-3">
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-2xs space-y-1 border-b border-dashed pb-3">
                   <div className="font-bold text-slate-900 flex items-center justify-between">
                     <span className="flex items-center gap-1">
                       <Wifi className="w-3 h-3 rotate-90 text-emerald-600" />
                       <span>دفع تلامسي (Tap-to-Pay NFC)</span>
                     </span>
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[9px]">
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-2xs">
                       مقبول APPROVED
                     </span>
                   </div>
@@ -1396,7 +1396,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                       <span className="font-mono">{completedSale.nfcPaymentData.aid}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-slate-500 text-[9px] pt-0.5 border-t border-slate-200">
+                  <div className="flex justify-between text-slate-500 text-2xs pt-0.5 border-t border-slate-200">
                     <span>التحقق:</span>
                     <span>معتمد بدون رقم سري (PINless EMV &lt; 300 SAR)</span>
                   </div>
@@ -1408,10 +1408,10 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                 <div className="w-24 h-24 mx-auto bg-slate-50 border border-slate-300 p-2 rounded-xl flex items-center justify-center">
                   <QrCode className="w-20 h-20 text-slate-900" />
                 </div>
-                <p className="text-[10px] text-slate-500 font-sans">
+                <p className="text-2xs text-slate-500 font-sans">
                   فاتورة ضريبية مبسطة معتمدة من هيئة الزكاة والضريبة والجمارك
                 </p>
-                <div className="text-[9px] text-slate-400">
+                <div className="text-2xs text-slate-400">
                   شكراً لثقتكم بنا • نسعد بخدمتكم دائماً
                 </div>
               </div>
@@ -1422,7 +1422,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
             <div className="p-4 bg-slate-50 border-t border-slate-200 grid grid-cols-2 gap-2">
               <button
                 onClick={() => window.print()}
-                className="py-2.5 px-3 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                className="py-2.5 px-3 rounded-xl bg-slate-900 text-white text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Printer className="w-3.5 h-3.5" />
                 <span>طباعة إيصال حراري</span>
@@ -1434,7 +1434,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="py-2.5 px-3 rounded-xl bg-emerald-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-emerald-700"
+                className="py-2.5 px-3 rounded-xl bg-emerald-600 text-white text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-emerald-700"
               >
                 <Share2 className="w-3.5 h-3.5" />
                 <span>إرسال بالواتساب</span>
