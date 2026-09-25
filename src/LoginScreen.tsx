@@ -103,6 +103,9 @@ export function LoginScreen({
   const [avatarDataUrl, setAvatarDataUrl] = useState('');
   const [verifyEmailSent, setVerifyEmailSent] = useState(true);
   const [onceVerifyCode, setOnceVerifyCode] = useState('');
+  /* Reset runs in two steps: request a mailed code, then code + new password. */
+  const [resetStep, setResetStep] = useState<'request' | 'confirm'>('request');
+  const [resetCode, setResetCode] = useState('');
   /* Per-field errors sit next to the field they describe. The single banner
      told the user something was wrong but not which box to fix. */
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -200,38 +203,54 @@ export function LoginScreen({
     setError(null);
     setSuccessMsg(null);
 
-    if (!email.trim() || !phone.trim()) {
-      setError('أدخل البريد الإلكتروني ورقم الجوال معاً كما سجّلتهما.');
+    if (!email.trim()) {
+      setError('أدخل البريد الإلكتروني الذي سجّلت به.');
       return;
     }
-    if (!password || password.length < 8) {
-      setError('الرقم السري ضعيف. استخدم 8 خانات على الأقل.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('الرقم السري وتأكيده غير متطابقين.');
-      return;
+    if (resetStep === 'confirm') {
+      if (!/^\d{6}$/.test(resetCode.trim())) {
+        setError('أدخل رمز الاستعادة المكوّن من 6 أرقام.');
+        return;
+      }
+      if (!password || password.length < 8) {
+        setError('الرقم السري ضعيف. استخدم 8 خانات على الأقل.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('الرقم السري وتأكيده غير متطابقين.');
+        return;
+      }
     }
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      const requesting = resetStep === 'request';
+      const res = await fetch(requesting ? '/api/auth/forgot-password' : '/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          email: email.trim(),
-          phone: phone.trim(),
-          newPassword: password,
-        }),
+        body: JSON.stringify(
+          requesting
+            ? { email: email.trim() }
+            : { email: email.trim(), code: resetCode.trim(), newPassword: password },
+        ),
       });
       const data = await res.json();
       if (!data.success) {
         setError(data.error || 'تعذر استعادة الحساب. حاول مرة أخرى.');
         return;
       }
+      if (requesting) {
+        // Local runs without SMTP hand the code back once; production never does.
+        setResetCode(data.resetCode ? String(data.resetCode) : '');
+        setResetStep('confirm');
+        setSuccessMsg(data.message || 'إن كان البريد مسجّلاً فسيصلك رمز الاستعادة.');
+        return;
+      }
       setPassword('');
       setConfirmPassword('');
+      setResetCode('');
+      setResetStep('request');
       setMode('login');
       setSuccessMsg(data.message || 'تم تغيير الرقم السري. ادخل الآن.');
     } catch {
@@ -243,6 +262,8 @@ export function LoginScreen({
 
   const openForgot = () => {
     setMode('forgot');
+    setResetStep('request');
+    setResetCode('');
     setError(null);
     setSuccessMsg(null);
     setPassword('');
@@ -289,7 +310,9 @@ export function LoginScreen({
     mode === 'verify'
       ? 'أدخل رمز التأكيد. إن وُجد بريد على الخادم يصلك الرمز هناك، وإلا يظهر مرة واحدة هنا.'
       : mode === 'forgot'
-        ? 'أدخل البريد ورقم الجوال معاً كما سجّلتهما، ثم الرقم السري الجديد.'
+        ? resetStep === 'request'
+          ? 'أدخل بريدك المسجّل ونرسل إليه رمز استعادة من 6 أرقام.'
+          : 'أدخل الرمز الذي وصلك على بريدك، ثم الرقم السري الجديد.'
         : mode === 'register'
           ? 'سجّل كعميل بالبريد والجوال والرقم السري. يمكنك رفع صورة أو نولّد لك شعاراً باسمك.'
           : 'أدخل البريد والجوال والرقم السري. النظام يحوّلك تلقائيًا إلى واجهة العميل أو المورد أو الإدارة حسب حسابك.';
@@ -361,7 +384,9 @@ export function LoginScreen({
             </div>
           ) : (
             <div className="rounded-2xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs text-slate-600 font-medium leading-relaxed">
-              يلزم البريد ورقم الجوال معاً ليطابقا حساباً موجوداً. بعدها تضع الرقم السري الجديد.
+              {resetStep === 'request'
+                ? 'نرسل رمز الاستعادة إلى بريدك المسجّل. الرمز صالح لمدة 15 دقيقة.'
+                : 'الرمز صالح لمدة 15 دقيقة، وبعد 5 محاولات خاطئة يلزم طلب رمز جديد.'}
             </div>
           )}
 
@@ -441,6 +466,28 @@ export function LoginScreen({
             {fieldError('email')}
           </label>
 
+          {mode === 'forgot' && resetStep === 'confirm' ? (
+            <label className="block text-sm">
+              <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
+                <KeyRound className="w-4 h-4 text-action" />
+                رمز الاستعادة {req}
+              </span>
+              <input
+                id="usil-login-reset-code"
+                inputMode="numeric"
+                required
+                maxLength={6}
+                value={resetCode}
+                onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className={`${inputClass} font-mono tracking-widest`}
+                placeholder="000000"
+                autoComplete="one-time-code"
+                dir="ltr"
+              />
+            </label>
+          ) : null}
+
+          {mode !== 'forgot' ? (
           <label className="block text-sm">
             <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
               <Phone className="w-4 h-4 text-action" />
@@ -464,7 +511,9 @@ export function LoginScreen({
             />
             {fieldError('phone')}
           </label>
+          ) : null}
 
+          {mode !== 'forgot' || resetStep === 'confirm' ? (
           <label className="block text-sm">
             <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
               <Lock className="w-4 h-4 text-action" />
@@ -497,6 +546,7 @@ export function LoginScreen({
             </div>
             {fieldError('password')}
           </label>
+          ) : null}
 
           {mode === 'login' ? (
             <button
@@ -528,7 +578,7 @@ export function LoginScreen({
             </label>
           ) : null}
 
-          {mode === 'forgot' ? (
+          {mode === 'forgot' && resetStep === 'confirm' ? (
             <label className="block text-sm">
               <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
                 <Lock className="w-4 h-4 text-action" />
@@ -560,13 +610,17 @@ export function LoginScreen({
             </div>
           ) : null}
 
-          {!email.trim() && !phone.trim() && !password && !error && !successMsg && !loading ? (
-            <p className="text-2xs text-slate-500 leading-relaxed">
-              {mode === 'forgot'
-                ? 'الحقول فارغة — اكتب البريد والجوال معاً ثم الرقم السري الجديد (8 خانات على الأقل).'
-                : 'الحقول فارغة — البريد والجوال والرقم السري مطلوبة كلها.'}
-            </p>
-          ) : null}
+          {mode === 'forgot'
+            ? !email.trim() && !error && !successMsg && !loading ? (
+                <p className="text-2xs text-slate-500 leading-relaxed">
+                  الحقل فارغ — اكتب بريدك المسجّل لنرسل إليه رمز الاستعادة.
+                </p>
+              ) : null
+            : !email.trim() && !phone.trim() && !password && !error && !successMsg && !loading ? (
+                <p className="text-2xs text-slate-500 leading-relaxed">
+                  الحقول فارغة — البريد والجوال والرقم السري مطلوبة كلها.
+                </p>
+              ) : null}
 
           <button
             type="submit"
@@ -576,10 +630,14 @@ export function LoginScreen({
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : mode === 'forgot' ? <KeyRound className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
             {loading
               ? mode === 'forgot'
-                ? 'جارٍ حفظ الرقم السري…'
+                ? resetStep === 'request'
+                  ? 'جارٍ إرسال الرمز…'
+                  : 'جارٍ حفظ الرقم السري…'
                 : 'جارٍ التحقق…'
               : mode === 'forgot'
-                ? 'تغيير الرقم السري'
+                ? resetStep === 'request'
+                  ? 'أرسل رمز الاستعادة'
+                  : 'تغيير الرقم السري'
                 : mode === 'login'
                   ? 'دخول'
                   : 'إنشاء حساب عميل'}
@@ -600,6 +658,8 @@ export function LoginScreen({
               type="button"
               onClick={() => {
                 setMode('login');
+                setResetStep('request');
+                setResetCode('');
                 setError(null);
                 setSuccessMsg(null);
                 setPassword('');

@@ -17,6 +17,8 @@ type FormState = {
   firstName: string;
   familyName: string;
   nationalId: string;
+  email: string;
+  phone: string;
   plateLetters: string;
   plateNumbers: string;
   carType: string;
@@ -29,6 +31,8 @@ const emptyForm = (): FormState => ({
   firstName: '',
   familyName: '',
   nationalId: '',
+  email: '',
+  phone: '',
   plateLetters: '',
   plateNumbers: '',
   carType: '',
@@ -42,6 +46,12 @@ function clientValidate(form: FormState): string {
   if (!form.familyName.trim()) return 'اكتب اسم العائلة';
   if (!/^[12]\d{9}$/.test(form.nationalId.replace(/\s+/g, ''))) {
     return 'رقم الهوية أو الإقامة يجب أن يكون 10 أرقام ويبدأ بـ 1 أو 2';
+  }
+  if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    return 'البريد الإلكتروني غير صحيح';
+  }
+  if (form.phone.trim() && !/^(05\d{8}|5\d{8}|(\+|00)?9665\d{8})$/.test(form.phone.replace(/[\s-]/g, ''))) {
+    return 'رقم الجوال غير صحيح — اكتبه بصيغة 05xxxxxxxx';
   }
   const letters = form.plateLetters.replace(/[^\u0621-\u064A]/g, '');
   if (!letters || letters.length > 3 || [...letters].some((letter) => !(PLATE_LETTERS as readonly string[]).includes(letter))) {
@@ -93,6 +103,8 @@ export function CourierRegisterForm({
           firstName: form.firstName.trim(),
           familyName: form.familyName.trim(),
           nationalId: form.nationalId.replace(/\s+/g, ''),
+          email: form.email.trim() || undefined,
+          phone: form.phone.trim() || undefined,
           plateLetters: form.plateLetters,
           plateNumbers: form.plateNumbers,
           carType: form.carType,
@@ -226,6 +238,34 @@ export function CourierRegisterForm({
                       autoComplete="off"
                     />
                   </label>
+                  <label className="block text-sm">
+                    <span className="text-slate-600 mb-1.5 block font-bold">البريد الإلكتروني</span>
+                    <input
+                      className={inputClass}
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => set('email', e.target.value)}
+                      placeholder="name@example.com"
+                      dir="ltr"
+                      autoComplete="email"
+                    />
+                  </label>
+                  <label className="block text-sm">
+                    <span className="text-slate-600 mb-1.5 block font-bold">رقم الجوال</span>
+                    <input
+                      className={`${inputClass} font-mono`}
+                      type="tel"
+                      value={form.phone}
+                      onChange={(e) => set('phone', e.target.value)}
+                      placeholder="05xxxxxxxx"
+                      inputMode="tel"
+                      dir="ltr"
+                      autoComplete="tel"
+                    />
+                  </label>
+                  <p className="text-2xs text-slate-500 sm:col-span-2 -mt-1">
+                    اكتب بريد أو جوال حسابك في يوصل — نفعّل عليه دور المندوب بعد الاعتماد.
+                  </p>
                   <label className="block text-sm">
                     <span className="text-slate-600 mb-1.5 block font-bold">حروف اللوحة</span>
                     <input

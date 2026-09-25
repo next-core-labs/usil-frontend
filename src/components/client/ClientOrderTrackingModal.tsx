@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ClientOrderTracking, VendorBrandSettings } from '../../types';
+import { MyOrdersPanel } from './MyOrdersPanel';
 import {
   Clock,
   MapPin,
@@ -143,6 +144,8 @@ export const ClientOrderTrackingModal: React.FC<ClientOrderTrackingModalProps> =
 
         {/* Body Content */}
         <div className="overflow-y-auto p-5 sm:p-6 space-y-6 flex-1">
+          {/* Signed-in client's real orders (GET /api/bookings), with cancellation. */}
+          <MyOrdersPanel />
           {selectedTracking ? (
             <>
               {/* Status Header Banner */}

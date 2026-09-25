@@ -191,16 +191,30 @@ export const VoiceAIAssistant: React.FC<VoiceAIAssistantProps> = ({
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || typeof data.spokenResponse !== 'string' || !data.spokenResponse.trim()) {
+        // 503 = no AI provider configured, 502 = provider failed. Show the reason, never a made-up reply.
+        const errorMsg: VoiceAssistantMessage = {
+          id: `ast-${Date.now()}`,
+          sender: 'assistant',
+          text: data.error || 'تعذر الرد الآن. تصفح منتجات السوق أو اترك طلب مدينة.',
+          timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
+          suggestedServiceIds: [],
+          quickOptions: ['عرض منتجات السوق', 'اترك طلب مدينة'],
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+        return;
+      }
 
       const assistantMsg: VoiceAssistantMessage = {
         id: `ast-${Date.now()}`,
         sender: 'assistant',
-        text: data.spokenResponse || 'أبشر، بخدمتك لتجهيز مناسبتك بأعلى درجات الفخامة.',
+        text: data.spokenResponse,
         spokenAudio: data.spokenResponse,
         timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
         action: data.action,
-        suggestedServiceIds: data.suggestedServiceIds,
+        suggestedServiceIds: Array.isArray(data.suggestedServiceIds) ? data.suggestedServiceIds : [],
         estimatedBudget: data.estimatedBudget,
         bundleDiscount: data.bundleDiscount,
         quickOptions: data.quickOptions,

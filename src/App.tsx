@@ -801,9 +801,19 @@ export default function App() {
       createdAt: new Date().toISOString(),
     };
     setVendorBookings((prev) => [newBooking, ...prev]);
-    createVendorBooking(newBooking as unknown as Record<string, unknown>, superviseId).catch(() => {
-      setVendorSync('error');
-    });
+    // The server owns the id, number, remainder and validation (past or blocked
+    // dates, foreign listings), so swap the optimistic row for its answer.
+    createVendorBooking(newBooking as unknown as Record<string, unknown>, superviseId)
+      .then((res) => {
+        const saved = res.booking as Partial<VendorBooking> | undefined;
+        if (!saved?.id) return;
+        setVendorBookings((prev) => prev.map((row) => (row.id === newBooking.id ? { ...row, ...saved } as VendorBooking : row)));
+      })
+      .catch((error: Error) => {
+        setVendorBookings((prev) => prev.filter((row) => row.id !== newBooking.id));
+        triggerAutoSaveToast(error.message || 'تعذر إنشاء الحجز');
+        setVendorSync('error');
+      });
   };
 
   const handleAddBlockedDate = (date: string, reason: string, type: BlockedDate['type']) => {
@@ -814,9 +824,21 @@ export default function App() {
       type,
     };
     setBlockedDates((prev) => [...prev, newBlock]);
-    createBlockedDate(newBlock as unknown as Record<string, unknown>, superviseId).catch(() => {
-      setVendorSync('error');
-    });
+    // The server assigns the id (and returns the existing row for a date that is already closed).
+    createBlockedDate(newBlock as unknown as Record<string, unknown>, superviseId)
+      .then((res) => {
+        const saved = res.blockedDate as BlockedDate | undefined;
+        if (!saved?.id) return;
+        setBlockedDates((prev) => {
+          const others = prev.filter((row) => row.id !== newBlock.id && row.id !== saved.id);
+          return [...others, saved];
+        });
+      })
+      .catch((error: Error) => {
+        setBlockedDates((prev) => prev.filter((row) => row.id !== newBlock.id));
+        triggerAutoSaveToast(error.message || 'تعذر إغلاق التاريخ');
+        setVendorSync('error');
+      });
   };
 
   const handleRemoveBlockedDate = (id: string) => {
@@ -1468,7 +1490,8 @@ export default function App() {
         onOpenCart={() => setIsCartOpen(true)}
         onOpenCalculator={() => setIsCalculatorOpen(true)}
         onOpenCrewPortal={currentUser?.role === 'vendor' ? () => setIsCrewPortalOpen(true) : undefined}
-        onOpenTracker={showEventTracker ? () => setIsTrackerOpen(true) : undefined}
+        // Signed-in clients always reach it: it also lists their orders («طلباتي») with cancellation.
+        onOpenTracker={showEventTracker || currentUser?.role === 'client' ? () => setIsTrackerOpen(true) : undefined}
         onOpenCompare={() => setIsCompareModalOpen(true)}
         compareCount={comparedServices.length}
         viewMode={viewMode}

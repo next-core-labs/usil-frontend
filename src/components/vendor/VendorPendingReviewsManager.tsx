@@ -45,6 +45,7 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
     'تنسيق واستقبال رائع 📍',
   ]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiError, setAiError] = useState('');
   const [remindedIds, setRemindedIds] = useState<Record<string, boolean>>({});
 
   // Filter pending reviews
@@ -84,6 +85,7 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
   // AI Review text generator
   const handleGenerateAIComment = async (clientName: string, serviceTitle: string) => {
     setIsGeneratingAI(true);
+    setAiError('');
     try {
       const res = await fetch('/api/gemini/generate-review', {
         method: 'POST',
@@ -96,15 +98,16 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
           highlights: 'عميل متعاون وموقع المناسبة مجهز وسداد فوري',
         }),
       });
-      const data = await res.json();
-      if (data.review) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && typeof data.review === 'string' && data.review.trim()) {
         setReviewComment(data.review);
-        if (data.tags) setSelectedTags(data.tags);
+        if (Array.isArray(data.tags) && data.tags.length) setSelectedTags(data.tags);
+      } else {
+        // 503 = no AI provider configured, 502 = provider failed; the vendor writes it by hand.
+        setAiError(data.error || 'تعذرت الصياغة بالذكاء الاصطناعي. اكتب تقييمك بنفسك.');
       }
     } catch (err) {
-      setReviewComment(
-        `تشرفنا بخدمة الأستاذ ${clientName} في مناسبته. تواصل راقٍ وسلس وتسهيل كامل لدخول طاقم الضيافة وسداد فوري بدون أي تأخير.`
-      );
+      setAiError('تعذر الاتصال بالخادم. اكتب تقييمك بنفسك.');
     } finally {
       setIsGeneratingAI(false);
     }
@@ -508,6 +511,12 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
                   <span>{isGeneratingAI ? 'جارٍ الصياغة بالذكاء الاصطناعي...' : 'صياغة احترافية بالـ AI'}</span>
                 </button>
               </div>
+
+              {aiError ? (
+                <p role="alert" className="text-2xs font-medium text-rose-600">
+                  {aiError}
+                </p>
+              ) : null}
 
               <textarea
                 rows={3}
