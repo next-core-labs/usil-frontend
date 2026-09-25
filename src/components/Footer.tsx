@@ -12,6 +12,7 @@ import {
 } from '../data/saudiMarket';
 import { UsilLockup } from './UsilLockup';
 import { BrandedImage } from './BrandedImage';
+import { USIL_WHATSAPP_DISPLAY, usilWhatsAppUrl } from '../utils/ownerWhatsApp';
 
 interface FooterProps {
   onSelectCategory: (cat: string) => void;
@@ -296,6 +297,11 @@ export const Footer: React.FC<FooterProps> = ({
                 >
                   راسل الإدارة
                   <ArrowUpRight className="w-3.5 h-3.5" />
+                </a>
+              </li>
+              <li>
+                <a href={usilWhatsAppUrl()} target="_blank" rel="noopener noreferrer" className={linkClass}>
+                  واتساب <span dir="ltr">{USIL_WHATSAPP_DISPLAY}</span>
                 </a>
               </li>
               <li>

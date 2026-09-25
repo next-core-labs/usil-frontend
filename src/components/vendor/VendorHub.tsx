@@ -41,6 +41,7 @@ import { BarcodeScannerModal } from './BarcodeScannerModal';
 import type { VendorListing } from '../../contracts/vendors/vendor-listings';
 import type { VendorOwnProfile } from '../../contracts/vendors/vendor-profile';
 import { calculateInventoryForecasts } from '../../utils/inventoryForecast';
+import { usilWhatsAppUrl } from '../../utils/ownerWhatsApp';
 import {
   Calendar as CalendarIcon,
   MessageCircle,
@@ -429,6 +430,16 @@ export const VendorHub: React.FC<VendorHubProps> = ({
           </div>
 
           <div className="flex items-center gap-1">
+            <a
+              href={usilWhatsAppUrl('السلام عليكم إدارة يوصل، معكم مورّد في يوصل وأحتاج مساعدة بخصوص:')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-control text-[#25D366] hover:bg-line-soft flex items-center justify-center transition-colors"
+              aria-label="تواصل مع إدارة يوصل عبر واتساب"
+              title="تواصل مع إدارة يوصل عبر واتساب"
+            >
+              <MessageCircle className="w-4.5 h-4.5" aria-hidden />
+            </a>
             <button
               type="button"
               onClick={() => setActiveTab('pos')}

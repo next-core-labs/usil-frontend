@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "test": "node --import tsx --test src/auth-ui-contracts.test.ts src/native-origin.test.ts src/data/catalog-shelf.test.ts src/data/fulfillment-lanes.test.ts src/data/saudiPlaces.test.ts src/utils/brandedAvatar.test.ts src/utils/catalogMedia.test.ts src/utils/eventTracking.test.ts src/utils/region-gate.test.ts src/utils/siteRoutes.test.ts src/utils/vendorContracts.test.ts src/utils/vendorWorkspace.test.ts",
+    "test": "node --import tsx --test src/auth-ui-contracts.test.ts src/native-origin.test.ts src/data/catalog-shelf.test.ts src/data/fulfillment-lanes.test.ts src/data/saudiPlaces.test.ts src/utils/brandedAvatar.test.ts src/utils/catalogMedia.test.ts src/utils/eventTracking.test.ts src/utils/ownerWhatsApp.test.ts src/utils/region-gate.test.ts src/utils/siteRoutes.test.ts src/utils/vendorContracts.test.ts src/utils/vendorWorkspace.test.ts",
     "cap:sync": "npm run build && npx cap sync",
     "cap:sync:android": "npx cap sync android",
     "cap:sync:ios": "npx cap sync ios",

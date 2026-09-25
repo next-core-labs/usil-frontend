@@ -18,6 +18,7 @@ import {
   MapPin,
   CreditCard,
   Package,
+  MessageCircle,
 } from 'lucide-react';
 import { CATEGORIES } from '../../data/services';
 import { Tabs } from '../ui/Tabs';
@@ -27,6 +28,8 @@ import type { UserProfile } from '../../types';
 import { BOOKING_PENDING_APPROVAL_STATUS, BOOKING_REJECTED_STATUS } from '../../contracts/vendors/vendor-listings';
 import { SeoSettingsPanel } from './SeoSettingsPanel';
 import { MoyasarSettingsPanel } from './MoyasarSettingsPanel';
+import { OwnerWhatsAppPanel } from './OwnerWhatsAppPanel';
+import { whatsappChatUrl } from '../../utils/ownerWhatsApp';
 import { DEMAND_STATUS_AR, DEMAND_STATUSES, type DemandStatus } from '../../data/cityDemand';
 import {
   COLLECTION_OPTIONS,
@@ -108,7 +111,8 @@ type AdminSection =
   | 'external'
   | 'listings'
   | 'socials'
-  | 'demand';
+  | 'demand'
+  | 'whatsapp';
 
 type CourierApplication = {
   id: string;
@@ -235,6 +239,7 @@ export function AdminDashboard({
   const [cityRequests, setCityRequests] = useState<CityDemandRow[]>([]);
   const [vendorSocials, setVendorSocials] = useState<AdminVendorSocials[]>([]);
   const [externalBookings, setExternalBookings] = useState<ExternalBookingRow[]>([]);
+  const [newSupportCount, setNewSupportCount] = useState(0);
   const [externalCourierFilter, setExternalCourierFilter] = useState('all');
   const [externalStatusFilter, setExternalStatusFilter] = useState('all');
   const [form, setForm] = useState({
@@ -249,7 +254,7 @@ export function AdminDashboard({
     setLoading(true);
     setError(null);
     try {
-      const [usersRes, bookingsRes, appsRes, couriersRes, listingsRes, socialsRes, externalRes, demandRes] = await Promise.all([
+      const [usersRes, bookingsRes, appsRes, couriersRes, listingsRes, socialsRes, externalRes, demandRes, supportRes] = await Promise.all([
         fetch('/api/admin/users', { credentials: 'include' }),
         fetch('/api/bookings', { credentials: 'include' }),
         fetch('/api/admin/vendor-applications', { credentials: 'include' }),
@@ -258,6 +263,7 @@ export function AdminDashboard({
         fetch('/api/admin/vendor-socials', { credentials: 'include' }),
         fetch('/api/external-bookings', { credentials: 'include' }),
         fetch('/api/admin/city-requests', { credentials: 'include' }),
+        fetch('/api/admin/support-messages', { credentials: 'include' }),
       ]);
       const usersData = await usersRes.json();
       const bookingsData = await bookingsRes.json();
@@ -267,6 +273,7 @@ export function AdminDashboard({
       const socialsData = await socialsRes.json();
       const externalData = await externalRes.json();
       const demandData = demandRes.ok ? await demandRes.json() : { data: [] };
+      const supportData = supportRes.ok ? await supportRes.json() : { data: [] };
       if (!usersRes.ok || !usersData.success) {
         setError(usersData.error || 'تعذر تحميل حسابات المنصة.');
         return;
@@ -283,6 +290,9 @@ export function AdminDashboard({
       setVendorSocials(socialsData.data || []);
       setExternalBookings(externalData.data || []);
       setCityRequests(demandData.data || []);
+      setNewSupportCount(
+        ((supportData.data || []) as Array<{ status?: string }>).filter((row) => (row.status || 'new') === 'new').length,
+      );
     } catch {
       setError('تعذر الاتصال بالخادم.');
     } finally {
@@ -583,6 +593,13 @@ export function AdminDashboard({
               icon: MapPin,
               count: cityRequests.filter((row) => row.status === 'new').length,
               countTone: 'action' as const,
+            },
+            {
+              id: 'whatsapp',
+              label: 'واتساب',
+              icon: MessageCircle,
+              count: newSupportCount,
+              countTone: 'warning' as const,
             },
           ]}
         />
@@ -938,6 +955,15 @@ export function AdminDashboard({
         </section>
       ) : null}
 
+      {adminSection === 'whatsapp' ? (
+        <OwnerWhatsAppPanel
+          users={users}
+          applications={applications}
+          vendorSocials={vendorSocials}
+          onNewSupportCount={setNewSupportCount}
+        />
+      ) : null}
+
       {adminSection === 'demand' ? (
         <section className="bg-surface border border-line rounded-panel p-5 shadow-e1 space-y-4">
           <div>
@@ -953,7 +979,7 @@ export function AdminDashboard({
           ) : (
             <div className="space-y-3">
               {cityRequests.map((row) => {
-                const wa = `https://wa.me/966${row.phone.replace(/^0/, '')}`;
+                const wa = whatsappChatUrl(row.phone);
                 return (
                   <article key={row.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4 space-y-2">
                     <div className="flex flex-wrap items-start justify-between gap-2">
@@ -973,14 +999,16 @@ export function AdminDashboard({
                     </p>
                     {row.notes ? <p className="text-xs text-slate-600 leading-relaxed">{row.notes}</p> : null}
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <a
-                        href={wa}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 h-9 rounded-xl bg-action text-white text-2xs font-medium inline-flex items-center"
-                      >
-                        واتساب
-                      </a>
+                      {wa ? (
+                        <a
+                          href={wa}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 h-9 rounded-xl bg-action text-white text-2xs font-medium inline-flex items-center"
+                        >
+                          واتساب
+                        </a>
+                      ) : null}
                       {DEMAND_STATUSES.map((status) => (
                         <button
                           key={status}

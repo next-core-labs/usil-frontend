@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { SAUDI_REGIONS } from '../../data/saudiPlaces';
 import { applySeo } from '../../utils/seo';
+import { USIL_WHATSAPP_DISPLAY, usilWhatsAppUrl } from '../../utils/ownerWhatsApp';
 
 interface SupportPageProps {
   onBack: () => void;
@@ -53,8 +54,19 @@ export const SupportPage: React.FC<SupportPageProps> = ({ onBack, onSelectCity }
       <p className="text-xs text-ink-3 mb-8">يوصل / Usil · وسيط توريد مناسبات · السعودية</p>
       <div className="space-y-5 text-sm text-ink-1 leading-relaxed">
         <p>
-          للاستفسار عن حجز، مطابقة مورّد، أو شكوى تنفيذ: اكتب رسالتك هنا وتُحفظ مباشرة لدى إدارة يوصل. لا نعرض رقم جوال تجريبي.
+          للاستفسار عن حجز، مطابقة مورّد، أو شكوى تنفيذ: راسلنا على واتساب، أو اكتب رسالتك هنا وتُحفظ مباشرة لدى إدارة يوصل.
         </p>
+        <a
+          href={usilWhatsAppUrl('السلام عليكم، أحتاج مساعدة من دعم يوصل بخصوص:')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-[#25D366] text-white hover:brightness-95 transition"
+        >
+          <span className="font-bold">تواصل معنا عبر واتساب</span>
+          <span className="font-mono font-bold" dir="ltr">
+            {USIL_WHATSAPP_DISPLAY}
+          </span>
+        </a>
         <p>
           البريد:{' '}
           <a href="mailto:hello@usil.app" className="text-action font-bold hover:underline">
