@@ -67,13 +67,6 @@ export const SupportPage: React.FC<SupportPageProps> = ({ onBack, onSelectCity }
             {USIL_WHATSAPP_DISPLAY}
           </span>
         </a>
-        <p>
-          البريد:{' '}
-          <a href="mailto:hello@usil.app" className="text-action font-bold hover:underline">
-            hello@usil.app
-          </a>
-        </p>
-
         <form onSubmit={submit} className="p-4 rounded-2xl border border-line bg-white space-y-3">
           <h2 className="text-sm font-bold text-navy">أرسل رسالة للإدارة</h2>
           <input
