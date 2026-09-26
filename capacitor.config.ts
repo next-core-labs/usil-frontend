@@ -12,7 +12,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https',
-    allowNavigation: ['usil.app', 'www.usil.app'],
+    allowNavigation: ['usil-emjc.onrender.com', 'usil.app', 'www.usil.app'],
   },
   ios: {
     contentInset: 'always',
