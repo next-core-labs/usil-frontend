@@ -24,7 +24,6 @@ import {
   VendorBooking,
   BlockedDate,
   WhatsAppThread,
-  WhatsAppMessage,
   CrewMember,
   VendorInvoice,
   FinancialPayout,
@@ -284,7 +283,8 @@ export default function App() {
   // Vendor OS Central Data States
   const [vendorBookings, setVendorBookings] = useState<VendorBooking[]>([]);
   const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([]);
-  const [whatsappThreads, setWhatsappThreads] = useState<WhatsAppThread[]>([]);
+  // Legacy simulated chat threads; still read by the backup export and widget grid.
+  const [whatsappThreads] = useState<WhatsAppThread[]>([]);
   const [crewMembers, setCrewMembers] = useState<CrewMember[]>([]);
   const [invoices, setInvoices] = useState<VendorInvoice[]>([]);
   const [payouts, setPayouts] = useState<FinancialPayout[]>([]);
@@ -846,38 +846,6 @@ export default function App() {
     deleteBlockedDate(id, superviseId).catch(() => {
       setVendorSync('error');
     });
-  };
-
-  const handleSendMessage = (
-    threadId: string,
-    text: string,
-    attachmentType?: WhatsAppMessage['attachmentType'],
-    attachmentData?: any
-  ) => {
-    const newMessage: WhatsAppMessage = {
-      id: `msg-${Date.now()}`,
-      sender: 'vendor',
-      senderName: `${brandSettings.brandName} (أنت)`,
-      text,
-      timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
-      status: 'delivered',
-      attachmentType,
-      attachmentData,
-    };
-
-    setWhatsappThreads((prev) =>
-      prev.map((thread) => {
-        if (thread.id === threadId) {
-          return {
-            ...thread,
-            lastMessage: text,
-            lastMessageTime: newMessage.timestamp,
-            messages: [...thread.messages, newMessage],
-          };
-        }
-        return thread;
-      })
-    );
   };
 
   const handleAddInvoice = (newInvoice: VendorInvoice) => {
@@ -1600,7 +1568,6 @@ export default function App() {
           onAddBooking={handleVendorAddBooking}
           onAddBlockedDate={handleAddBlockedDate}
           onRemoveBlockedDate={handleRemoveBlockedDate}
-          onSendMessage={handleSendMessage}
           onAddInvoice={handleAddInvoice}
           onAddCrewMember={handleAddCrewMember}
           onUpdateCrewStatus={handleUpdateCrewStatus}
