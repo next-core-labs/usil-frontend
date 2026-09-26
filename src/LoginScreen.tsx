@@ -140,8 +140,8 @@ export function LoginScreen({
     if (!phone.trim()) nextFieldErrors.phone = 'اكتب رقم جوالك.';
     if (!password) nextFieldErrors.password = 'اكتب الرقم السري.';
     if (mode === 'register' && !name.trim()) nextFieldErrors.name = 'اكتب اسمك الكامل.';
-    if (mode === 'register' && password && password.length < 6) {
-      nextFieldErrors.password = 'الرقم السري يجب ألا يقل عن 6 خانات.';
+    if (mode === 'register' && password && password.length < 8) {
+      nextFieldErrors.password = 'الرقم السري يجب ألا يقل عن 8 خانات.';
     }
     if (mode === 'register' && confirmPassword && password !== confirmPassword) {
       nextFieldErrors.confirmPassword = 'الرقمان السريان غير متطابقين.';
@@ -153,8 +153,8 @@ export function LoginScreen({
         setError('البريد الإلكتروني ورقم الجوال والرقم السري مطلوبة كلها.');
       } else if (mode === 'register' && !name.trim()) {
         setError('اكتب الاسم لإكمال إنشاء حساب العميل.');
-      } else if (mode === 'register' && password.length < 6) {
-        setError('الرقم السري يجب ألا يقل عن 6 خانات.');
+      } else if (mode === 'register' && password.length < 8) {
+        setError('الرقم السري يجب ألا يقل عن 8 خانات.');
       }
       // Move focus to the first offending field so keyboard and screen-reader
       // users are not left hunting for what failed.

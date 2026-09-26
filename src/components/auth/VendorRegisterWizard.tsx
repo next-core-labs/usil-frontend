@@ -56,7 +56,7 @@ export function VendorRegisterWizard({
     }
     if (!form.email.trim() || !form.email.includes('@')) return 'أدخل بريداً إلكترونياً صحيحاً';
     if (!form.phone.trim()) return 'أدخل رقم الجوال';
-    if (form.password.length < 6) return 'الرقم السري يجب ألا يقل عن 6 خانات';
+    if (form.password.length < 8) return 'الرقم السري يجب ألا يقل عن 8 خانات';
     if (!form.passwordConfirm) return 'أكد الرقم السري';
     if (form.password !== form.passwordConfirm) return 'تأكيد الرقم السري لا يطابق الرقم السري';
     if (!form.projectType) return 'اختر نوع المشروع';

@@ -457,9 +457,11 @@ export function AdminDashboard({
       body: JSON.stringify({ status }),
     });
     const data = await res.json();
-    if (data.success) {
-      setBookings((prev) => prev.map((item) => (item.id === id ? { ...item, status } : item)));
+    if (!data.success) {
+      setError(data.error || 'تعذر تحديث حالة الطلب.');
+      return;
     }
+    setBookings((prev) => prev.map((item) => (item.id === id ? { ...item, status } : item)));
   };
 
   const loadExternalBookings = async () => {
