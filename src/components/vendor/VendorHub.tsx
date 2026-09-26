@@ -3,7 +3,6 @@ import {
   VendorBooking,
   BlockedDate,
   WhatsAppThread,
-  WhatsAppMessage,
   CrewMember,
   VendorInvoice,
   FinancialPayout,
@@ -21,7 +20,7 @@ import {
 } from '../../types';
 import { VendorCalendarView } from './VendorCalendarView';
 import { VendorExternalBookingModal } from './VendorExternalBookingModal';
-import { VendorWhatsAppInbox } from './VendorWhatsAppInbox';
+import { VendorWhatsAppDesk } from './VendorWhatsAppDesk';
 import { VendorInvoiceGenerator } from './VendorInvoiceGenerator';
 import { VendorCrewDispatch } from './VendorCrewDispatch';
 import { VendorFinancialSuite } from './VendorFinancialSuite';
@@ -96,7 +95,6 @@ interface VendorHubProps {
   onAddBooking: (booking: Omit<VendorBooking, 'id' | 'bookingNumber' | 'createdAt'>) => void;
   onAddBlockedDate: (date: string, reason: string, type: BlockedDate['type']) => void;
   onRemoveBlockedDate: (id: string) => void;
-  onSendMessage: (threadId: string, text: string, attachmentType?: WhatsAppMessage['attachmentType'], attachmentData?: any) => void;
   onAddInvoice: (invoice: VendorInvoice) => void;
   onAddCrewMember: (crew: CrewMember) => void;
   onUpdateCrewStatus: (crewId: string, newStatus: CrewMember['status']) => void;
@@ -183,7 +181,6 @@ export const VendorHub: React.FC<VendorHubProps> = ({
   onAddBooking,
   onAddBlockedDate,
   onRemoveBlockedDate,
-  onSendMessage,
   onAddInvoice,
   onAddCrewMember,
   onUpdateCrewStatus,
@@ -232,7 +229,6 @@ export const VendorHub: React.FC<VendorHubProps> = ({
   // Stats calculation
   const totalRevenue = bookings.reduce((sum, b) => sum + b.totalAmount, 0);
   const externalBookingsCount = bookings.filter((b) => b.source !== 'platform').length;
-  const unreadMessagesCount = threads.reduce((sum, t) => sum + t.unreadCount, 0);
   const overdueDebtsCount = receivables.filter((r) => r.status.startsWith('overdue')).length;
 
   // Inventory forecasts calculation
@@ -260,7 +256,7 @@ export const VendorHub: React.FC<VendorHubProps> = ({
     { id: 'ledger', label: 'النظام المحاسبي وقائمة الدخل', icon: TrendingUp, count: overdueDebtsCount || undefined, badgeColor: 'bg-rose-600 text-white' },
     { id: 'reviews', label: 'التقييم المزدوج وتذكير الطلبات', icon: Star, count: 1, badgeColor: 'bg-amber-500 text-white' },
     { id: 'tracking', label: 'تتبع الطلبات المباشر وAPI', icon: Zap, count: trackings.length, badgeColor: 'bg-blue-600 text-white' },
-    { id: 'whatsapp', label: 'محادثات الواتساب API', icon: MessageCircle, count: unreadMessagesCount || undefined, badgeColor: 'bg-emerald-500 text-white' },
+    { id: 'whatsapp', label: 'واتساب العملاء والطاقم', icon: MessageCircle, badgeColor: 'bg-emerald-500 text-white' },
     { id: 'invoices', label: 'الفواتير بهويتك الخاصة', icon: FileText, count: invoices.length },
     { id: 'socials', label: 'حسابات التواصل', icon: Share2 },
     { id: 'brand', label: 'تخصيص الهوية والبراند', icon: Building2 },
@@ -566,9 +562,10 @@ export const VendorHub: React.FC<VendorHubProps> = ({
           )}
 
           {activeTab === 'whatsapp' && (
-            <VendorWhatsAppInbox
-              threads={threads}
-              onSendMessage={onSendMessage}
+            <VendorWhatsAppDesk
+              bookings={bookings}
+              crewMembers={crewMembers}
+              brandName={ownProfile?.projectName || brandSettings.brandName}
             />
           )}
 
@@ -727,7 +724,6 @@ export const VendorHub: React.FC<VendorHubProps> = ({
           {activeTab === 'reviews' && (
             <VendorPendingReviewsManager
               bookings={bookings}
-              onOpenWhatsAppMessage={(phone, text) => onSendMessage('th-1', text)}
             />
           )}
 
