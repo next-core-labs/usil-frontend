@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { DoubleBlindReview, VendorBooking } from '../../types';
 import { INITIAL_DOUBLE_BLIND_REVIEWS } from '../../data/reviewData';
+import { whatsappChatUrl } from '../../utils/ownerWhatsApp';
 
 interface VendorPendingReviewsManagerProps {
   bookings: VendorBooking[];
@@ -124,7 +125,8 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
     if (onOpenWhatsAppMessage) {
       onOpenWhatsAppMessage(phone, msg);
     } else {
-      window.open(`https://wa.me/966${phone.replace(/^0/, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+      const url = whatsappChatUrl(phone, msg);
+      if (url) window.open(url, '_blank', 'noopener');
     }
   };
 
