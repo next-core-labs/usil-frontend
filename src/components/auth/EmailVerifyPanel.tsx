@@ -55,13 +55,15 @@ export function EmailVerifyPanel({
         body: JSON.stringify({ email, phone, code }),
       });
       const data = await res.json();
-      if (!data.success || !data.user) {
+      if (!data.success) {
         setError(data.error || 'رمز التأكيد غير صحيح.');
         return;
       }
       setSuccess(data.message || 'تم تأكيد بريدك.');
       setOnceCode('');
-      onVerified(data.user);
+      // An already-verified email answers without `user` unless this session
+      // owns it, so there is nothing to sign in with — the message is enough.
+      if (data.user) onVerified(data.user);
     } catch {
       setError('تعذر تأكيد البريد. حاول مرة أخرى.');
     } finally {
@@ -91,6 +93,10 @@ export function EmailVerifyPanel({
         setSingle(String(data.verificationCode));
         setUseBoxes(false);
         setSuccess('تعذر إرسال البريد الآن. هذا الرمز يظهر مرة واحدة فقط في هذه الجلسة.');
+      } else if (!data.emailSent) {
+        // Production never shows the code on screen; the mail simply failed.
+        setOnceCode('');
+        setError(data.message || 'تعذر إرسال رمز التأكيد الآن. حاول لاحقاً أو تواصل مع الدعم.');
       } else {
         setOnceCode('');
         setSuccess(data.message || 'أرسلنا رمز تأكيد جديداً إلى بريدك.');
@@ -134,8 +140,10 @@ export function EmailVerifyPanel({
         </p>
         {emailSent ? (
           <p>أرسلنا رمزًا إلى بريدك إن كان البريد مفعّلًا على الخادم. الرمز صالح 30 دقيقة.</p>
-        ) : (
+        ) : onceCode ? (
           <p>البريد غير مفعّل على الخادم الآن، لذلك يظهر الرمز مرة واحدة هنا فقط. انسخه ثم أكّد.</p>
+        ) : (
+          <p>لم يصلك رمز؟ اضغط «إعادة إرسال». إن تعذر الإرسال فحاول لاحقاً أو تواصل مع الدعم.</p>
         )}
         <p className="mt-1 text-slate-500" dir="ltr">
           {email}

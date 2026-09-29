@@ -102,6 +102,7 @@ const CrewFieldPortalModal = lazy(() =>
   import('./components/crew/CrewFieldPortalModal').then((m) => ({ default: m.CrewFieldPortalModal })),
 );
 import { MobileBottomNav } from './components/mobile/MobileBottomNav';
+import { MobileAccountSheet } from './components/mobile/MobileAccountSheet';
 import { PWAInstallBanner } from './components/pwa/PWAInstallBanner';
 import { MessageCircle, RotateCcw, Mic, CheckCircle, PackageSearch } from 'lucide-react';
 import {
@@ -168,6 +169,7 @@ export default function App() {
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [authDefaultMode, setAuthDefaultMode] = useState<'login' | 'register' | 'verify'>('login');
   const [isVendorRegisterOpen, setIsVendorRegisterOpen] = useState(false);
   const [isCourierRegisterOpen, setIsCourierRegisterOpen] = useState(false);
@@ -296,7 +298,19 @@ export default function App() {
   const [orderTrackings, setOrderTrackings] = useState<ClientOrderTracking[]>([]);
   const [vendorOwnProfile, setVendorOwnProfile] = useState<VendorOwnProfile | null>(null);
 
-  const goHome = (opts?: { category?: string; query?: string }) => {
+  const signOutFromStore = async () => {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    setCurrentUser(null);
+    setSupervisingVendor(null);
+    setViewMode('client');
+    try {
+      sessionStorage.removeItem('usil_supervise_vendor');
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const goHome =(opts?: { category?: string; query?: string }) => {
     setSitePage(null);
     setVendorPublicId(null);
     setIsCourierRegisterOpen(false);
@@ -1485,17 +1499,7 @@ export default function App() {
         onOpenPrivacy={() => setSitePage('privacy')}
         onOpenTerms={() => setSitePage('terms')}
         onOpenVoiceAI={() => setIsVoiceAIOpen(true)}
-        onLogout={async () => {
-          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-          setCurrentUser(null);
-          setSupervisingVendor(null);
-          setViewMode('client');
-          try {
-            sessionStorage.removeItem('usil_supervise_vendor');
-          } catch {
-            /* ignore */
-          }
-        }}
+        onLogout={signOutFromStore}
       />
       ) : null}
 
@@ -2058,11 +2062,34 @@ export default function App() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onOpenAuth={() => {
+          if (currentUser) {
+            setIsAccountOpen(true);
+            return;
+          }
           setAuthDefaultMode('login');
           setIsAuthOpen(true);
         }}
         currentUser={currentUser}
       />
+      ) : null}
+
+      {currentUser ? (
+        <MobileAccountSheet
+          open={isAccountOpen}
+          onClose={() => setIsAccountOpen(false)}
+          user={currentUser}
+          onOpenOrders={() => setIsTrackerOpen(true)}
+          onOpenDashboard={
+            dashboardFor(currentUser.role) === 'client'
+              ? undefined
+              : () => setViewMode(dashboardFor(currentUser.role))
+          }
+          onVerifyEmail={() => {
+            setAuthDefaultMode('verify');
+            setIsAuthOpen(true);
+          }}
+          onLogout={() => void signOutFromStore()}
+        />
       ) : null}
 
       {/* Phone/Email OTP Authentication Modal */}

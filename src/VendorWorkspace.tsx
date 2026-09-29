@@ -22,6 +22,7 @@ export function VendorWorkspace({
   onLogout: () => void;
 }) {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const load = () => {
     fetch('/api/bookings', { credentials: 'include' })
@@ -37,12 +38,20 @@ export function VendorWorkspace({
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
-    await fetch(`/api/bookings/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ status }),
-    });
+    setError(null);
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status }),
+      });
+      // Closed or paid orders can refuse a change (409); say why instead of silently reloading.
+      const data = await res.json().catch(() => ({}));
+      if (!data.success) setError(data.error || 'تعذر تحديث حالة الطلب.');
+    } catch {
+      setError('تعذر الاتصال بالخادم.');
+    }
     load();
   };
 
@@ -68,6 +77,11 @@ export function VendorWorkspace({
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        {error ? (
+          <p role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {error}
+          </p>
+        ) : null}
         <div className="grid sm:grid-cols-4 gap-3">
           <Stat label="الطلبات" value={String(bookings.length)} icon={ClipboardList} />
           <Stat
@@ -77,7 +91,7 @@ export function VendorWorkspace({
           />
           <Stat
             label="قيد التنفيذ"
-            value={String(bookings.filter((b) => b.status === 'قيد المعالجة').length)}
+            value={String(bookings.filter((b) => b.status === 'قيد التنفيذ').length)}
             icon={Clock}
           />
           <Stat
@@ -125,7 +139,7 @@ export function VendorWorkspace({
               )}
               <div className="flex flex-wrap gap-2 text-xs">
                 <button
-                  onClick={() => updateStatus(bk.id, 'قيد المعالجة')}
+                  onClick={() => updateStatus(bk.id, 'قيد التنفيذ')}
                   className="px-3 py-1.5 rounded-lg bg-blue-500/15 text-blue-300"
                 >
                   استلام للتنفيذ
