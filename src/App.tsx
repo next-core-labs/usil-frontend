@@ -103,6 +103,11 @@ const CrewFieldPortalModal = lazy(() =>
 );
 import { MobileBottomNav } from './components/mobile/MobileBottomNav';
 import { MobileAccountSheet } from './components/mobile/MobileAccountSheet';
+import { useUnreadChats } from './components/chat/useChat';
+import type { ChatTarget } from './components/chat/ClientChatModal';
+const ClientChatModal = lazy(() =>
+  import('./components/chat/ClientChatModal').then((m) => ({ default: m.ClientChatModal })),
+);
 import { PWAInstallBanner } from './components/pwa/PWAInstallBanner';
 import { MessageCircle, RotateCcw, Mic, CheckCircle, PackageSearch } from 'lucide-react';
 import {
@@ -186,6 +191,14 @@ export default function App() {
   // Authenticated User Profile (Phone/OTP Verified)
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [supervisingVendor, setSupervisingVendor] = useState<VendorHubRow | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatTarget, setChatTarget] = useState<ChatTarget | null>(null);
+  // «راسل المورّد» tapped while signed out; resumed once they sign in as a client.
+  const [pendingChat, setPendingChat] = useState<ChatTarget | null>(null);
+  const isClientAccount = currentUser?.role === 'client';
+  // Guests see the button too: tapping it asks them to sign in first.
+  const canMessageVendors = !currentUser || isClientAccount;
+  const clientChatUnread = useUnreadChats(isClientAccount);
   const [vendorPickerOpen, setVendorPickerOpen] = useState(false);
   const [vendorHubs, setVendorHubs] = useState<VendorHubRow[]>([]);
   const [vendorHubsError, setVendorHubsError] = useState<string | null>(null);
@@ -309,6 +322,36 @@ export default function App() {
       /* ignore */
     }
   };
+
+  const openClientChats = (target: ChatTarget | null = null) => {
+    setChatTarget(target);
+    setIsChatOpen(true);
+  };
+
+  const messageVendor = (target: ChatTarget) => {
+    if (!currentUser) {
+      setPendingChat(target);
+      setAuthDefaultMode('login');
+      setIsAuthOpen(true);
+      toast('سجّل دخولك لتراسل المورّد.', 'info');
+      return;
+    }
+    if (!isClientAccount) return;
+    // One dialog at a time: the product sheet would sit under the chat and share its Escape key.
+    setActiveDetailService(null);
+    openClientChats(target);
+  };
+
+  useEffect(() => {
+    if (!pendingChat || !currentUser) return;
+    setPendingChat(null);
+    if (currentUser.role === 'client') openClientChats(pendingChat);
+  }, [currentUser, pendingChat]);
+
+  // Signing out (or into a non-client account) closes the client's inbox.
+  useEffect(() => {
+    if (!isClientAccount) setIsChatOpen(false);
+  }, [isClientAccount]);
 
   const goHome =(opts?: { category?: string; query?: string }) => {
     setSitePage(null);
@@ -1474,6 +1517,8 @@ export default function App() {
         onOpenCrewPortal={currentUser?.role === 'vendor' ? () => setIsCrewPortalOpen(true) : undefined}
         // Signed-in clients always reach it: it also lists their orders («طلباتي») with cancellation.
         onOpenTracker={showEventTracker || currentUser?.role === 'client' ? () => setIsTrackerOpen(true) : undefined}
+        onOpenChats={isClientAccount ? () => openClientChats() : undefined}
+        chatUnread={clientChatUnread}
         onOpenCompare={() => setIsCompareModalOpen(true)}
         compareCount={comparedServices.length}
         viewMode={viewMode}
@@ -1660,6 +1705,7 @@ export default function App() {
                 onOpenListing={(service) => {
                   setActiveDetailService(service);
                 }}
+                onMessageVendor={canMessageVendors ? (vendor) => messageVendor(vendor) : undefined}
               />
             ) : sitePage === 'payment-success' ? (
               <PaymentSuccessPage onBack={() => goHome()} />
@@ -1905,6 +1951,16 @@ export default function App() {
                 ? cartItems.some((item) => item.service.id === activeDetailService.id)
                 : false
             }
+            onMessageVendor={
+              canMessageVendors
+                ? (service) =>
+                    messageVendor({
+                      vendorId: String(service.provider.id),
+                      vendorName: service.provider.name,
+                      context: { type: 'listing', id: String(service.id), title: service.title },
+                    })
+                : undefined
+            }
             onToggleCompare={handleToggleCompare}
             isCompared={
               activeDetailService
@@ -2070,6 +2126,7 @@ export default function App() {
           setIsAuthOpen(true);
         }}
         currentUser={currentUser}
+        accountBadge={clientChatUnread}
       />
       ) : null}
 
@@ -2079,6 +2136,8 @@ export default function App() {
           onClose={() => setIsAccountOpen(false)}
           user={currentUser}
           onOpenOrders={() => setIsTrackerOpen(true)}
+          onOpenChats={isClientAccount ? () => openClientChats() : undefined}
+          chatUnread={clientChatUnread}
           onOpenDashboard={
             dashboardFor(currentUser.role) === 'client'
               ? undefined
@@ -2103,6 +2162,12 @@ export default function App() {
         />
       ) : null}
 
+      {isChatOpen && isClientAccount ? (
+        <Suspense fallback={null}>
+          <ClientChatModal open onClose={() => setIsChatOpen(false)} target={chatTarget} />
+        </Suspense>
+      ) : null}
+
       {isAuthOpen ? (
         <div className="fixed inset-0 z-[80] overflow-y-auto bg-slate-900/40 backdrop-blur-sm usil-safe-overlay">
           <LoginScreen
@@ -2112,7 +2177,10 @@ export default function App() {
                 ? { email: currentUser.email, phone: currentUser.phone }
                 : undefined
             }
-            onClose={() => setIsAuthOpen(false)}
+            onClose={() => {
+              setIsAuthOpen(false);
+              setPendingChat(null);
+            }}
             onOpenVendorRegister={() => {
               setIsAuthOpen(false);
               setIsVendorRegisterOpen(true);

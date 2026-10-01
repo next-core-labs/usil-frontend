@@ -25,6 +25,8 @@ interface MobileBottomNavProps {
   onOpenVendorHub?: () => void;
   activeVendorTab?: string;
   onSelectVendorTab?: (tab: any) => void;
+  /** Unread chat messages, shown on «حسابي» where «رسائلي» lives. */
+  accountBadge?: number;
 }
 
 type NavItem = {
@@ -36,6 +38,7 @@ type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   onClick: () => void;
   tone?: 'default' | 'accent' | 'crew';
+  badge?: number;
 };
 
 const TONE_CLASS: Record<NonNullable<NavItem['tone']>, string> = {
@@ -51,12 +54,20 @@ const NavSlot: React.FC<{ item: NavItem }> = ({ item }) => {
       type="button"
       whileTap={{ scale: 0.9 }}
       onClick={item.onClick}
-      aria-label={item.label}
-      className={`flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-2xl min-h-[48px] min-w-0 transition-colors cursor-pointer ${
+      aria-label={item.badge ? `${item.label} — ${item.badge} رسائل غير مقروءة` : item.label}
+      className={`relative flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-2xl min-h-[48px] min-w-0 transition-colors cursor-pointer ${
         TONE_CLASS[item.tone || 'default']
       }`}
     >
       <Icon className="w-5 h-5 shrink-0" />
+      {item.badge ? (
+        <span
+          className="absolute top-0.5 start-1/2 ms-1.5 min-w-4 h-4 px-1 rounded-full bg-action text-white text-2xs font-bold leading-4 tabular-nums"
+          aria-hidden
+        >
+          {item.badge > 9 ? '9+' : item.badge}
+        </span>
+      ) : null}
       <span className="text-2xs font-medium leading-tight truncate max-w-full">{item.short}</span>
     </motion.button>
   );
@@ -70,6 +81,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onOpenTracker,
   onOpenCrewPortal,
   onOpenAuth,
+  accountBadge,
   onGoHome,
   currentUser,
   onOpenVendorHub,
@@ -107,6 +119,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       short: currentUser ? 'حسابي' : 'دخول',
       icon: User,
       onClick: onOpenAuth,
+      badge: currentUser ? accountBadge : undefined,
     },
   ];
 

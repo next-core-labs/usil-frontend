@@ -1,6 +1,6 @@
 import React from 'react';
-import { ClipboardList, LayoutDashboard, LogOut, MailCheck } from 'lucide-react';
-import { Button, Modal } from '../ui';
+import { ClipboardList, LayoutDashboard, LogOut, MailCheck, MessagesSquare } from 'lucide-react';
+import { Button, CountBadge, Modal } from '../ui';
 import { roleLabelAr } from '../../contracts/auth/roles';
 import { UserProfile } from '../../types';
 
@@ -9,6 +9,9 @@ interface MobileAccountSheetProps {
   onClose: () => void;
   user: UserProfile;
   onOpenOrders: () => void;
+  /** Clients only: their chats with vendors. */
+  onOpenChats?: () => void;
+  chatUnread?: number;
   /** Omitted for clients, who have no dashboard to go to. */
   onOpenDashboard?: () => void;
   onVerifyEmail: () => void;
@@ -25,6 +28,8 @@ export const MobileAccountSheet: React.FC<MobileAccountSheetProps> = ({
   onClose,
   user,
   onOpenOrders,
+  onOpenChats,
+  chatUnread = 0,
   onOpenDashboard,
   onVerifyEmail,
   onLogout,
@@ -78,6 +83,12 @@ export const MobileAccountSheet: React.FC<MobileAccountSheetProps> = ({
           <Button icon={ClipboardList} onClick={then(onOpenOrders)}>
             طلباتي ومتابعتها
           </Button>
+          {onOpenChats ? (
+            <Button icon={MessagesSquare} onClick={then(onOpenChats)}>
+              رسائلي
+              <CountBadge count={chatUnread} tone="action" label="رسائل غير مقروءة" />
+            </Button>
+          ) : null}
           {onOpenDashboard ? (
             <Button variant="navy" icon={LayoutDashboard} onClick={then(onOpenDashboard)}>
               لوحة التحكم

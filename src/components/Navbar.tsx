@@ -17,6 +17,7 @@ import {
   FileText,
   MapPin,
   ChevronDown,
+  MessagesSquare,
 } from 'lucide-react';
 import { ALL_CITIES_LABEL } from '../data/saudiPlaces';
 import { CategoryIconRail } from './CategoryIconRail';
@@ -44,6 +45,9 @@ interface NavbarProps {
   onOpenCart: () => void;
   onOpenCalculator: () => void;
   onOpenTracker?: () => void;
+  /** Signed-in clients: open «رسائلي». */
+  onOpenChats?: () => void;
+  chatUnread?: number;
   onOpenCrewPortal?: () => void;
   onOpenCompare?: () => void;
   compareCount?: number;
@@ -76,6 +80,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   cartCount,
   onOpenCart,
   onOpenTracker,
+  onOpenChats,
+  chatUnread = 0,
   onOpenCrewPortal,
   onOpenCompare,
   compareCount = 0,
@@ -318,6 +324,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="hidden xl:inline-flex"
             >
               {t('liveTrack', 'تتبع')}
+            </Button>
+          )}
+
+          {onOpenChats && (
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={MessagesSquare}
+              onClick={onOpenChats}
+              className="hidden md:inline-flex"
+              aria-label={chatUnread ? `رسائلي — ${chatUnread} رسائل غير مقروءة` : 'رسائلي'}
+            >
+              رسائلي
+              <CountBadge count={chatUnread} tone="action" label="رسائل غير مقروءة" />
             </Button>
           )}
 
