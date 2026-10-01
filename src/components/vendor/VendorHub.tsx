@@ -21,6 +21,8 @@ import {
 import { VendorCalendarView } from './VendorCalendarView';
 import { VendorExternalBookingModal } from './VendorExternalBookingModal';
 import { VendorWhatsAppDesk } from './VendorWhatsAppDesk';
+import { VendorChatDesk } from './VendorChatDesk';
+import { useUnreadChats } from '../chat/useChat';
 import { VendorInvoiceGenerator } from './VendorInvoiceGenerator';
 import { VendorCrewDispatch } from './VendorCrewDispatch';
 import { VendorFinancialSuite } from './VendorFinancialSuite';
@@ -44,6 +46,7 @@ import { usilWhatsAppUrl } from '../../utils/ownerWhatsApp';
 import {
   Calendar as CalendarIcon,
   MessageCircle,
+  MessagesSquare,
   FileText,
   Users,
   Wallet,
@@ -156,6 +159,7 @@ export type VendorActiveTab =
   | 'reviews'
   | 'tracking'
   | 'whatsapp'
+  | 'chats'
   | 'invoices'
   | 'brand'
   | 'crew'
@@ -241,6 +245,10 @@ export const VendorHub: React.FC<VendorHubProps> = ({
     setIsExternalModalOpen(true);
   };
 
+  // Chat is the vendor's own inbox; a supervising admin's session would read the owner side instead.
+  const canChat = !supervisorBanner;
+  const unreadChats = useUnreadChats(canChat);
+
   const navTabs = [
     { id: 'listings', label: 'منتجاتي ومسار يوصل', icon: Package, count: listings.length, badgeColor: 'bg-action text-white' },
     { id: 'calendar', label: 'التقويم ومنع التعارض', icon: CalendarIcon, count: bookings.length },
@@ -256,6 +264,9 @@ export const VendorHub: React.FC<VendorHubProps> = ({
     { id: 'ledger', label: 'النظام المحاسبي وقائمة الدخل', icon: TrendingUp, count: overdueDebtsCount || undefined, badgeColor: 'bg-rose-600 text-white' },
     { id: 'reviews', label: 'التقييم المزدوج وتذكير الطلبات', icon: Star, count: 1, badgeColor: 'bg-amber-500 text-white' },
     { id: 'tracking', label: 'تتبع الطلبات المباشر وAPI', icon: Zap, count: trackings.length, badgeColor: 'bg-blue-600 text-white' },
+    ...(canChat
+      ? [{ id: 'chats', label: 'المحادثات', icon: MessagesSquare, count: unreadChats || undefined, badgeColor: 'bg-action text-white' }]
+      : []),
     { id: 'whatsapp', label: 'واتساب العملاء والطاقم', icon: MessageCircle, badgeColor: 'bg-emerald-500 text-white' },
     { id: 'invoices', label: 'الفواتير بهويتك الخاصة', icon: FileText, count: invoices.length },
     { id: 'socials', label: 'حسابات التواصل', icon: Share2 },
@@ -560,6 +571,8 @@ export const VendorHub: React.FC<VendorHubProps> = ({
               onUpdateStep={onUpdateTrackingStep}
             />
           )}
+
+          {activeTab === 'chats' && canChat && <VendorChatDesk />}
 
           {activeTab === 'whatsapp' && (
             <VendorWhatsAppDesk

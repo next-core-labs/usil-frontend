@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Store } from 'lucide-react';
+import { MessagesSquare, Store } from 'lucide-react';
+import { Button } from '../ui';
 import type { ServiceItem } from '../../types';
 import type { VendorPublicFile } from '../../contracts/vendors/vendor-profile';
 import { VendorSocialIcons } from './VendorSocialIcons';
@@ -11,9 +12,12 @@ type PublicPayload = VendorPublicFile & { listings?: ServiceItem[] };
 export function VendorPublicPage({
   vendorId,
   onOpenListing,
+  onMessageVendor,
 }: {
   vendorId: string;
   onOpenListing: (service: ServiceItem) => void;
+  /** Omitted when the viewer cannot message vendors (vendor and staff accounts). */
+  onMessageVendor?: (vendor: { vendorId: string; vendorName: string }) => void;
 }) {
   const [status, setStatus] = useState<'loading' | 'ready' | 'missing'>('loading');
   const [file, setFile] = useState<PublicPayload | null>(null);
@@ -88,6 +92,16 @@ export function VendorPublicPage({
             <div className="mt-3">
               <VendorSocialIcons links={file.socials} />
             </div>
+          ) : null}
+          {onMessageVendor ? (
+            <Button
+              variant="primary"
+              icon={MessagesSquare}
+              onClick={() => onMessageVendor({ vendorId, vendorName: file.projectName })}
+              className="mt-4"
+            >
+              راسل المورّد
+            </Button>
           ) : null}
         </div>
       </header>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ServiceItem } from '../types';
-import { X, Star, CheckCircle2, ShieldCheck, MapPin, Clock, MessageCircle, ShoppingBag, Check, AlertTriangle, Calendar, Scale, ChefHat } from 'lucide-react';
+import { X, Star, CheckCircle2, ShieldCheck, MapPin, Clock, MessageCircle, MessagesSquare, ShoppingBag, Check, AlertTriangle, Calendar, Scale, ChefHat } from 'lucide-react';
+import { Button } from './ui';
 import { BookingTrustBox } from './BookingTrustBox';
 import { AUDIENCE_LABEL, FULFILLMENT_LANE_BY_ID } from '../data/saudiMarket';
 import { listingPhotoUrls } from '../utils/catalogMedia';
@@ -15,6 +16,8 @@ interface ServiceDetailModalProps {
   isInCart: boolean;
   onToggleCompare?: (service: ServiceItem) => void;
   isCompared?: boolean;
+  /** Omitted when the viewer cannot message vendors (vendor and staff accounts). */
+  onMessageVendor?: (service: ServiceItem) => void;
 }
 
 export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
@@ -24,6 +27,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
   isInCart,
   onToggleCompare,
   isCompared = false,
+  onMessageVendor,
 }) => {
   if (!service) return null;
 
@@ -184,6 +188,17 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                   <div className="mt-2">
                     <VendorSocialIcons links={service.provider.socials} />
                   </div>
+                  {onMessageVendor && service.provider.id ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      icon={MessagesSquare}
+                      onClick={() => onMessageVendor(service)}
+                      className="mt-3"
+                    >
+                      راسل المورّد
+                    </Button>
+                  ) : null}
                 </div>
               </div>
               <div className="text-left">
