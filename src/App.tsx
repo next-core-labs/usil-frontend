@@ -3,13 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
-import { CATEGORIES } from './data/services';
-import { FilterChips } from './components/ui/FilterChips';
-import { Button } from './components/ui/Button';
-import { CardGridSkeleton, EmptyState, ErrorState } from './components/ui/States';
+import React, { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { isPublicMarketplaceListing } from './utils/catalogMedia';
-import { cityFilterMatches, ALL_CITIES_LABEL } from './data/saudiPlaces';
+import { ALL_CITIES_LABEL } from './data/saudiPlaces';
 import {
   saveCartToStorage,
   loadCartFromStorage,
@@ -45,43 +41,27 @@ import {
   DEFAULT_VENDOR_BRAND_SETTINGS,
 } from './data/vendorData';
 import { Navbar } from './components/Navbar';
-import { CategoryFilterBar } from './components/CategoryFilterBar';
-import { ServiceCard } from './components/ServiceCard';
-import { ServiceDetailModal } from './components/ServiceDetailModal';
+import { Storefront } from './storefront/Storefront';
 const QuickEventCalculator = lazy(() =>
   import('./components/QuickEventCalculator').then((m) => ({ default: m.QuickEventCalculator })),
 );
-import { BookingDrawer } from './components/BookingDrawer';
-import { Footer } from './components/Footer';
-import { PrivacyPolicy } from './components/legal/PrivacyPolicy';
-import { TermsOfUse } from './components/legal/TermsOfUse';
-import { RefundPolicy } from './components/legal/RefundPolicy';
-import { SupportPage } from './components/legal/SupportPage';
-import { AboutPage } from './components/legal/AboutPage';
-import { PaymentCancelledPage, PaymentSuccessPage } from './components/PaymentStatusPage';
-import { NotFoundPage } from './components/legal/NotFoundPage';
-import { StoreDealsRail } from './components/market/StoreDealsRail';
-import { HowUsilWorks } from './components/market/HowUsilWorks';
 import { RegionGate } from './components/RegionGate';
 import { loadSelectedRegion, saveSelectedRegion } from './utils/regionPreference';
 import { applySeo, applySeoFromPath, loadRemoteSeo } from './utils/seo';
-import { parseLocation, type SitePage } from './utils/siteRoutes';
+import { parseLocation, pathForProduct, type SitePage } from './utils/siteRoutes';
 const VendorHub = lazy(() =>
   import('./components/vendor/VendorHub').then((m) => ({ default: m.VendorHub })),
 );
-import { VendorOwnFileCard } from './components/vendor/VendorOwnFileCard';
-import { VendorPublicPage } from './components/vendor/VendorPublicPage';
 const VendorRegisterWizard = lazy(() =>
   import('./components/auth/VendorRegisterWizard').then((m) => ({ default: m.VendorRegisterWizard })),
 );
 const CourierRegisterForm = lazy(() =>
   import('./components/auth/CourierRegisterForm').then((m) => ({ default: m.CourierRegisterForm })),
 );
-import { LoginScreen, type SessionUser } from './LoginScreen';
+import { type SessionUser } from './LoginScreen';
 import { DashboardErrorBoundary } from './components/AppErrorBoundary';
 import { DashboardChunkFallback } from './components/ui/DashboardChunkFallback';
 import { useToast } from './components/ui/Toast';
-import { CityDemandForm } from './components/CityDemandForm';
 import { VendorHubPicker } from './components/admin/VendorHubPicker';
 const AdminDashboard = lazy(() =>
   import('./components/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })),
@@ -91,36 +71,13 @@ import { pickDefaultVendorHub, type VendorHubRow } from './contracts/vendors/ven
 const VoiceAIAssistant = lazy(() =>
   import('./components/voice/VoiceAIAssistant').then((m) => ({ default: m.VoiceAIAssistant })),
 );
-const ClientOrderTrackingModal = lazy(() =>
-  import('./components/client/ClientOrderTrackingModal').then((m) => ({ default: m.ClientOrderTrackingModal })),
-);
-const ServiceComparisonModal = lazy(() =>
-  import('./components/client/ServiceComparisonModal').then((m) => ({ default: m.ServiceComparisonModal })),
-);
-import { ServiceComparisonFloatingBar } from './components/client/ServiceComparisonFloatingBar';
 const CrewFieldPortalModal = lazy(() =>
   import('./components/crew/CrewFieldPortalModal').then((m) => ({ default: m.CrewFieldPortalModal })),
 );
 import { MobileBottomNav } from './components/mobile/MobileBottomNav';
-import { MobileAccountSheet } from './components/mobile/MobileAccountSheet';
 import { useUnreadChats } from './components/chat/useChat';
-import type { ChatTarget } from './components/chat/ClientChatModal';
-const ClientChatModal = lazy(() =>
-  import('./components/chat/ClientChatModal').then((m) => ({ default: m.ClientChatModal })),
-);
 import { PWAInstallBanner } from './components/pwa/PWAInstallBanner';
-import { MessageCircle, RotateCcw, Mic, CheckCircle, PackageSearch } from 'lucide-react';
-import {
-  categoryForSearchQuery,
-  isHospitalitySearchQuery,
-  serviceMatchesSearch,
-  serviceMatchesPriceRange,
-  serviceMatchesFulfillment,
-  FulfillmentFilter,
-  AUDIENCE_OPTIONS,
-  PRICE_RANGES,
-  FULFILLMENT_FILTER_CHIPS,
-} from './data/saudiMarket';
+import { CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserProfile } from './types';
 import {
@@ -137,30 +94,29 @@ import {
   fetchVendorHubs,
   fetchMyVendorFile,
 } from './utils/vendorWorkspace';
-import { clientHasLiveEvent } from './utils/eventTracking';
+import { fetchTrending, type TrendingService } from './utils/trendingApi';
 
 export default function App() {
   // Mode View State: 'client' (Marketplace) or 'vendor' (Vendor Operating System Hub)
   const { toast } = useToast();
   const [viewMode, setViewMode] = useState<'client' | 'vendor' | 'admin'>('client');
 
-  // Client Marketplace States
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // Client storefront: region, routing, catalog status. Filters live inside <Storefront />.
   const [selectedCity, setSelectedCityState] = useState(() => loadSelectedRegion() || ALL_CITIES_LABEL);
   const [hasPickedRegion, setHasPickedRegion] = useState(() => Boolean(loadSelectedRegion()));
   const [regionPickerOpen, setRegionPickerOpen] = useState(() => !loadSelectedRegion());
-  const [selectedAudience, setSelectedAudience] = useState('all');
   const [sitePage, setSitePage] = useState<SitePage>(
     () => parseLocation(window.location.pathname, window.location.hash).sitePage,
   );
   const [vendorPublicId, setVendorPublicId] = useState<string | null>(
     () => parseLocation(window.location.pathname, window.location.hash).vendorPublicId,
   );
+  const [productId, setProductId] = useState<string | null>(
+    () => parseLocation(window.location.pathname, window.location.hash).productId,
+  );
+  const [locationKey, setLocationKey] = useState(0);
   const [catalogStatus, setCatalogStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('popular');
-  const [priceRange, setPriceRange] = useState('all');
-  const [selectedFulfillment, setSelectedFulfillment] = useState<FulfillmentFilter>('all');
+  const [trendingServices, setTrendingServices] = useState<TrendingService[]>([]);
   const [showPaidBanner, setShowPaidBanner] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     for (const [key, value] of params.entries()) {
@@ -170,34 +126,20 @@ export default function App() {
     return false;
   });
 
-  const [activeDetailService, setActiveDetailService] = useState<ServiceItem | null>(null);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [authDefaultMode, setAuthDefaultMode] = useState<'login' | 'register' | 'verify'>('login');
   const [isVendorRegisterOpen, setIsVendorRegisterOpen] = useState(false);
   const [isCourierRegisterOpen, setIsCourierRegisterOpen] = useState(false);
   const [courierModalTab, setCourierModalTab] = useState<'apply' | 'external'>('apply');
   const [isVoiceAIOpen, setIsVoiceAIOpen] = useState(false);
-  const [isTrackerOpen, setIsTrackerOpen] = useState(false);
   const [isCrewPortalOpen, setIsCrewPortalOpen] = useState(false);
-  const [activeTrackingCode, setActiveTrackingCode] = useState<string>('');
 
-  // Service Comparison state
+  // Service comparison: two products side by side, as in the design.
   const [comparedServices, setComparedServices] = useState<ServiceItem[]>([]);
-  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
   // Authenticated User Profile (Phone/OTP Verified)
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [supervisingVendor, setSupervisingVendor] = useState<VendorHubRow | null>(null);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatTarget, setChatTarget] = useState<ChatTarget | null>(null);
-  // «راسل المورّد» tapped while signed out; resumed once they sign in as a client.
-  const [pendingChat, setPendingChat] = useState<ChatTarget | null>(null);
   const isClientAccount = currentUser?.role === 'client';
-  // Guests see the button too: tapping it asks them to sign in first.
-  const canMessageVendors = !currentUser || isClientAccount;
   const clientChatUnread = useUnreadChats(isClientAccount);
   const [vendorPickerOpen, setVendorPickerOpen] = useState(false);
   const [vendorHubs, setVendorHubs] = useState<VendorHubRow[]>([]);
@@ -323,67 +265,56 @@ export default function App() {
     }
   };
 
-  const openClientChats = (target: ChatTarget | null = null) => {
-    setChatTarget(target);
-    setIsChatOpen(true);
-  };
+  /** Apply a location to state. The storefront reads the query string itself. */
+  const applyIntent = useCallback((pathname: string, hash: string) => {
+    const intent = parseLocation(pathname, hash);
+    setSitePage(intent.sitePage);
+    setVendorPublicId(intent.vendorPublicId);
+    setProductId(intent.productId);
+    if (intent.courier) setIsCourierRegisterOpen(true);
+    setLocationKey((k) => k + 1);
+  }, []);
 
-  const messageVendor = (target: ChatTarget) => {
-    if (!currentUser) {
-      setPendingChat(target);
-      setAuthDefaultMode('login');
-      setIsAuthOpen(true);
-      toast('سجّل دخولك لتراسل المورّد.', 'info');
-      return;
-    }
-    if (!isClientAccount) return;
-    // One dialog at a time: the product sheet would sit under the chat and share its Escape key.
-    setActiveDetailService(null);
-    openClientChats(target);
-  };
+  /** SPA navigation for the storefront: push (or replace) the URL, then route. */
+  const navigate = useCallback(
+    (path: string, opts?: { replace?: boolean; scroll?: boolean }) => {
+      const url = new URL(path, window.location.origin);
+      const target = url.pathname + url.search + url.hash;
+      const current = window.location.pathname + window.location.search + window.location.hash;
+      if (target !== current) {
+        if (opts?.replace) window.history.replaceState({}, '', target);
+        else window.history.pushState({}, '', target);
+      }
+      applyIntent(url.pathname, url.hash);
+      if (opts?.scroll !== false) window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+    [applyIntent],
+  );
 
-  useEffect(() => {
-    if (!pendingChat || !currentUser) return;
-    setPendingChat(null);
-    if (currentUser.role === 'client') openClientChats(pendingChat);
-  }, [currentUser, pendingChat]);
-
-  // Signing out (or into a non-client account) closes the client's inbox.
-  useEffect(() => {
-    if (!isClientAccount) setIsChatOpen(false);
-  }, [isClientAccount]);
-
-  const goHome =(opts?: { category?: string; query?: string }) => {
-    setSitePage(null);
-    setVendorPublicId(null);
+  const goHome = () => {
     setIsCourierRegisterOpen(false);
-    if (opts?.category) setSelectedCategory(opts.category);
-    else if (!opts) setSelectedCategory('all');
-    if (opts?.query !== undefined) setSearchQuery(opts.query);
-    else if (!opts) setSearchQuery('');
-    const next = opts?.category === 'hospitality' ? '/hospitality' : '/';
-    if (window.location.pathname !== next) {
-      window.history.pushState({}, '', next);
-    }
-    applySeo(opts?.category === 'hospitality' ? 'hospitality' : 'home');
+    navigate('/');
   };
 
   const setSelectedCity = (city: string) => {
     const next = String(city || '').trim() || ALL_CITIES_LABEL;
+    const changed = next !== selectedCity || !hasPickedRegion;
     setSelectedCityState(next);
     saveSelectedRegion(next);
     setHasPickedRegion(true);
     setRegionPickerOpen(false);
+    if (changed) {
+      toast(
+        next === ALL_CITIES_LABEL
+          ? 'تم اختيار كل مناطق المملكة — السوق يعرض المورّدين في كل المناطق.'
+          : `تم اختيار ${next} — السوق يعرض المورّدين اللي يغطون هذه المنطقة.`,
+        'success',
+      );
+    }
   };
 
   useEffect(() => {
-    const applyFromLocation = () => {
-      const intent = parseLocation(window.location.pathname, window.location.hash);
-      setSitePage(intent.sitePage);
-      setVendorPublicId(intent.vendorPublicId);
-      if (intent.hospitality) setSelectedCategory('hospitality');
-      if (intent.courier) setIsCourierRegisterOpen(true);
-    };
+    const applyFromLocation = () => applyIntent(window.location.pathname, window.location.hash);
     applyFromLocation();
     window.addEventListener('popstate', applyFromLocation);
     window.addEventListener('hashchange', applyFromLocation);
@@ -391,48 +322,30 @@ export default function App() {
       window.removeEventListener('popstate', applyFromLocation);
       window.removeEventListener('hashchange', applyFromLocation);
     };
-  }, []);
+  }, [applyIntent]);
 
+  // The courier form is a modal over the storefront, but it owns `/courier`.
   useEffect(() => {
     const path = (window.location.pathname.replace(/\/$/, '') || '/').toLowerCase();
-    if (sitePage === 'privacy' && path !== '/privacy') {
-      window.history.replaceState({}, '', '/privacy');
-    } else if (sitePage === 'terms' && path !== '/terms') {
-      window.history.replaceState({}, '', '/terms');
-    } else if (sitePage === 'refund' && path !== '/refund' && path !== '/cancellation') {
-      window.history.replaceState({}, '', '/refund');
-    } else if (sitePage === 'support' && path !== '/support') {
-      window.history.replaceState({}, '', '/support');
-    } else if (sitePage === 'about' && path !== '/about') {
-      window.history.replaceState({}, '', '/about');
-    } else if (sitePage === 'payment-success' && path !== '/payment/success') {
-      window.history.replaceState({}, '', '/payment/success' + window.location.search);
-    } else if (sitePage === 'payment-cancelled' && path !== '/payment/cancelled') {
-      window.history.replaceState({}, '', '/payment/cancelled');
-    } else if (sitePage === 'vendor-file') {
-      applySeo('home');
-      return;
-    } else if (sitePage === 'notfound') {
-      applySeo('home');
-      return;
-    } else if (!sitePage && selectedCategory === 'hospitality' && path !== '/hospitality') {
-      window.history.replaceState({}, '', '/hospitality');
-    } else if (!sitePage && selectedCategory !== 'hospitality' && path === '/hospitality') {
-      window.history.replaceState({}, '', '/');
-    } else if (isCourierRegisterOpen && path !== '/courier') {
+    if (isCourierRegisterOpen && path !== '/courier') {
       window.history.replaceState({}, '', '/courier');
+      applySeo('courier');
     } else if (!isCourierRegisterOpen && !sitePage && path === '/courier') {
       window.history.replaceState({}, '', '/');
+      applySeo('home');
     }
-    if (isCourierRegisterOpen) applySeo('courier');
-    else applySeo(sitePage || (selectedCategory === 'hospitality' ? 'hospitality' : 'home'));
-  }, [sitePage, selectedCategory, isCourierRegisterOpen]);
+  }, [isCourierRegisterOpen, sitePage]);
 
   useEffect(() => {
     void loadRemoteSeo().then(() => applySeoFromPath());
   }, []);
 
-  useEffect(() => {
+  const loadCatalog = useCallback(() => {
+    setCatalogStatus('loading');
+    // The shelf is optional: when it fails the home page pads itself from the catalog.
+    fetchTrending()
+      .then(setTrendingServices)
+      .catch(() => setTrendingServices([]));
     fetchCatalogListings()
       .then((res) => {
         if (Array.isArray(res.data)) {
@@ -445,16 +358,9 @@ export default function App() {
       });
   }, []);
 
-  const showEventTracker = useMemo(
-    () =>
-      clientHasLiveEvent({
-        role: currentUser?.role,
-        phone: currentUser?.phone,
-        trackings: orderTrackings,
-        bookings: vendorBookings,
-      }),
-    [currentUser, orderTrackings, vendorBookings],
-  );
+  useEffect(() => {
+    loadCatalog();
+  }, [loadCatalog]);
 
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
   const [receivables, setReceivables] = useState<ReceivableDebt[]>([]);
@@ -668,8 +574,7 @@ export default function App() {
   const openVendorHub = async (preferred?: VendorHubRow | null) => {
     if (!currentUser || !isVendorSupervisor(currentUser.role)) {
       if (!currentUser || currentUser.role === 'client') {
-        setAuthDefaultMode('login');
-        setIsAuthOpen(true);
+        navigate('/login');
         return;
       }
       setViewMode('vendor');
@@ -709,7 +614,9 @@ export default function App() {
         const updated = [...prev];
         updated[existingIndex] = {
           ...updated[existingIndex],
-          quantity: updated[existingIndex].quantity + 1,
+          quantity: updated[existingIndex].quantity + Math.max(1, quantity),
+          date: date || updated[existingIndex].date,
+          time: time || updated[existingIndex].time,
         };
         return updated;
       }
@@ -747,106 +654,6 @@ export default function App() {
 
   const handleClearCart = () => {
     setCartItems([]);
-  };
-
-  // Service Comparison Action Handlers
-  const COMPARE_LIMIT = 4;
-
-  /* The limit check reads current state rather than living inside the updater:
-     a state updater must stay pure, and under StrictMode it runs twice, which
-     fired the old alert() twice. */
-  /* Everything currently narrowing the grid, in one place, so the chips row
-     and the filter panel's counter always agree. */
-  const activeFilters = useMemo(() => {
-    const list: { key: string; label: string; value: string; onClear: () => void }[] = [];
-    if (selectedCategory !== 'all') {
-      list.push({
-        key: 'category',
-        label: 'القسم',
-        value: CATEGORIES.find((c) => c.id === selectedCategory)?.name || selectedCategory,
-        onClear: () => setSelectedCategory('all'),
-      });
-    }
-    if (selectedCity && selectedCity !== ALL_CITIES_LABEL) {
-      list.push({
-        key: 'city',
-        label: 'المدينة',
-        value: selectedCity,
-        onClear: () => setSelectedCity(ALL_CITIES_LABEL),
-      });
-    }
-    if (selectedAudience !== 'all') {
-      list.push({
-        key: 'audience',
-        label: 'الجمهور',
-        value: AUDIENCE_OPTIONS.find((o) => o.id === selectedAudience)?.label || selectedAudience,
-        onClear: () => setSelectedAudience('all'),
-      });
-    }
-    if (priceRange !== 'all') {
-      list.push({
-        key: 'price',
-        label: 'السعر',
-        value: PRICE_RANGES.find((r) => r.id === priceRange)?.label || priceRange,
-        onClear: () => setPriceRange('all'),
-      });
-    }
-    if (selectedFulfillment !== 'all') {
-      list.push({
-        key: 'lane',
-        label: 'مسار التوريد',
-        value:
-          FULFILLMENT_FILTER_CHIPS.find((c) => c.id === selectedFulfillment)?.chip ||
-          selectedFulfillment,
-        onClear: () => setSelectedFulfillment('all'),
-      });
-    }
-    if (searchQuery.trim()) {
-      list.push({
-        key: 'query',
-        label: 'البحث',
-        value: searchQuery.trim(),
-        onClear: () => setSearchQuery(''),
-      });
-    }
-    return list;
-  }, [
-    selectedCategory,
-    selectedCity,
-    selectedAudience,
-    priceRange,
-    selectedFulfillment,
-    searchQuery,
-  ]);
-
-  const clearAllFilters = () => {
-    setSelectedCategory('all');
-    setSelectedCity(ALL_CITIES_LABEL);
-    setSelectedAudience('all');
-    setPriceRange('all');
-    setSelectedFulfillment('all');
-    setSearchQuery('');
-  };
-
-  const handleToggleCompare = (service: ServiceItem) => {
-    const exists = comparedServices.some((s) => s.id === service.id);
-    if (exists) {
-      setComparedServices((prev) => prev.filter((s) => s.id !== service.id));
-      return;
-    }
-    if (comparedServices.length >= COMPARE_LIMIT) {
-      toast(`تقدر تقارن ${COMPARE_LIMIT} منتجات كحد أقصى. احذف واحداً لإضافة غيره.`, 'warning');
-      return;
-    }
-    setComparedServices((prev) => [...prev, service]);
-  };
-
-  const handleRemoveFromCompare = (serviceId: string) => {
-    setComparedServices((prev) => prev.filter((s) => s.id !== serviceId));
-  };
-
-  const handleClearAllCompare = () => {
-    setComparedServices([]);
   };
 
   // Vendor OS Action Handlers
@@ -1332,155 +1139,31 @@ export default function App() {
     triggerAutoSaveToast(`تم تحديث رصيد ${item.nameAr} وقيد مصروف شراء بمبلغ ${totalCost} ر.س`);
   };
 
-  // Handle Instant Online Booking & Auto-generate Tracking & ZATCA Invoice
-  const handleCompleteOnlineBooking = (bookingDetails: {
-    customerName: string;
-    customerPhone: string;
-    eventDate: string;
-    eventCity: string;
-    notes: string;
-    paymentMethod: 'moyasar';
-    totalAmount: number;
-  }) => {
-    const bookingCode = `BK-${Math.floor(1000 + Math.random() * 9000)}`;
-    const trackingCode = `TRK-${Math.floor(100000 + Math.random() * 900000)}`;
-
-    const newBooking: VendorBooking = {
-      id: `bk-${Date.now()}`,
-      bookingNumber: bookingCode,
-      serviceId: cartItems[0]?.service.id || 'srv-custom',
-      serviceTitle: cartItems[0]?.service.title || 'باقة ضيافة متكاملة',
-      customerName: bookingDetails.customerName,
-      customerPhone: bookingDetails.customerPhone,
-      date: bookingDetails.eventDate,
-      startTime: '18:00',
-      endTime: '23:30',
-      city: bookingDetails.eventCity,
-      venueName: `مقر المناسبة - ${bookingDetails.eventCity}`,
-      guestCount: 50,
-      totalAmount: bookingDetails.totalAmount,
-      depositAmount: bookingDetails.totalAmount,
-      remainingAmount: 0,
-      status: 'confirmed',
-      source: 'platform',
-      notes: bookingDetails.notes || 'طلب مثبّت في يوصل — دفع إلكتروني عبر ميسر',
-      createdAt: new Date().toISOString(),
-    };
-
-    const newTracking: ClientOrderTracking = {
-      id: `trk-${Date.now()}`,
-      trackingCode,
-      bookingNumber: bookingCode,
-      clientName: bookingDetails.customerName,
-      clientPhone: bookingDetails.customerPhone,
-      serviceTitle: newBooking.serviceTitle,
-      eventDate: bookingDetails.eventDate,
-      eventTime: '18:00',
-      venueName: `مقر المناسبة - ${bookingDetails.eventCity}`,
-      city: bookingDetails.eventCity,
-      guestCount: 50,
-      totalAmount: bookingDetails.totalAmount,
-      depositPaid: bookingDetails.totalAmount,
-      remainingBalance: 0,
-      status: 'preparing',
-      source: 'mithyaf',
-      isWhiteLabel: false,
-      timeline: [
-        {
-          id: 'step-1',
-          title: 'تأكيد الطلب — دفع إلكتروني',
-          timestamp: 'الآن',
-          isCompleted: true,
-          isCurrent: false,
-          description: 'الدفع عبر ميسر (مدى / آبل باي / STC Pay). ما نعتبره مدفوع إلا بعد تأكيد ميسر.',
-        },
-        {
-          id: 'step-2',
-          title: 'تجهيز مؤن القهوة والدلال والعتاد',
-          timestamp: 'قبل المناسبة بساعتين',
-          isCompleted: false,
-          isCurrent: true,
-          description: 'جاري فرز دلال الرسلان وفناجيل السيراميك وتجهيز البن الخولاني الفاخر.',
-        },
-        {
-          id: 'step-3',
-          title: 'انطلاق الطاقم بالزي السعودي الموحد',
-          timestamp: 'قبل الموعد بـ 60 دقيقة',
-          isCompleted: false,
-          isCurrent: false,
-          description: 'سيصل المباشرون والمشرف الميداني لتنسيق طاولات الضيافة وتجهيز المباخر.',
-        },
-        {
-          id: 'step-4',
-          title: 'بدء استقبال الضيوف والتقديم الملكي',
-          timestamp: '18:00',
-          isCompleted: false,
-          isCurrent: false,
-          description: 'بدء صب القهوة والبخور وتوزيع التمور الفاخرة طوال فترة المناسبة.',
-        },
-      ],
-      assignedSupervisor: {
-        name: 'مشرف يوصل',
-        phone: '',
-        role: 'مشرف ضيافة',
-        avatar: '/uploads/avatar-supervisor.svg',
-      },
-    };
-
-    setVendorBookings((prev) => [newBooking, ...prev]);
-    setOrderTrackings((prev) => [newTracking, ...prev]);
-    setActiveTrackingCode(trackingCode);
-  };
-
   // Filter and Sort Services for Client View
   const marketplaceServices = useMemo(
     () => vendorCatalogServices.filter(isPublicMarketplaceListing),
     [vendorCatalogServices],
   );
 
-  const filteredServices = useMemo(() => {
-    return marketplaceServices.filter((item) => {
-      // Category filter
-      if (selectedCategory !== 'all' && item.category !== selectedCategory) {
-        return false;
-      }
-      // City filter: region covers its governorates/villages, plus exact names and aliases
-      if (!cityFilterMatches(item.cities, selectedCity)) {
-        return false;
-      }
-      // Audience: رجال / نساء / عائلي / شركات
-      if (selectedAudience !== 'all') {
-        const a = item.audience || 'family';
-        const matchesExact = a === selectedAudience;
-        const familyFitsMenWomen =
-          a === 'family' && (selectedAudience === 'women' || selectedAudience === 'men');
-        if (!matchesExact && !familyFitsMenWomen) {
-          return false;
-        }
-      }
-      // Search query: title, category, tags, occasions, description, aliases
-      if (searchQuery.trim() !== '' && !serviceMatchesSearch(item, searchQuery)) {
-        return false;
-      }
-      if (!serviceMatchesPriceRange(item.price, priceRange)) {
-        return false;
-      }
-      if (!serviceMatchesFulfillment(item, selectedFulfillment)) {
-        return false;
-      }
-      return true;
-    }).sort((a, b) => {
-      if (sortBy === 'rating') return b.rating - a.rating;
-      if (sortBy === 'price-asc') return a.price - b.price;
-      if (sortBy === 'price-desc') return b.price - a.price;
-      // Default: popular
-      return b.reviewsCount - a.reviewsCount;
-    });
-  }, [marketplaceServices, selectedCategory, selectedCity, selectedAudience, searchQuery, sortBy, priceRange, selectedFulfillment]);
+  const openDashboard =
+    currentUser && dashboardFor(currentUser.role) !== 'client'
+      ? () => setViewMode(dashboardFor(currentUser.role))
+      : undefined;
+
+  const handleAuthSuccess = (user: SessionUser) => {
+    setCurrentUser(sessionToProfile(user));
+    void fetchMyVendorFile()
+      .then((file) => {
+        if (file.profile) setVendorOwnProfile(file.profile as VendorOwnProfile);
+      })
+      .catch(() => undefined);
+  };
+
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <div className="min-h-screen flex flex-col antialiased bg-paper text-ink">
-      {viewMode === 'client' && !sitePage ? (
+      {viewMode === 'client' && (sitePage === null || sitePage === 'catalog') ? (
         <RegionGate
           open={regionPickerOpen}
           required={!hasPickedRegion}
@@ -1490,62 +1173,43 @@ export default function App() {
             if (hasPickedRegion) setRegionPickerOpen(false);
           }}
         />
+      ) : viewMode === 'client' && regionPickerOpen && hasPickedRegion ? (
+        <RegionGate open selected={selectedCity} onSelect={setSelectedCity} onClose={() => setRegionPickerOpen(false)} />
       ) : null}
-      {/* Top Universal Navbar — hidden inside Vendor Studio */}
-      {viewMode !== 'vendor' ? (
-      <Navbar
-        selectedCity={selectedCity}
-        onSelectCity={setSelectedCity}
-        onOpenRegionPicker={() => setRegionPickerOpen(true)}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onSearchSubmit={(query) => {
-          goHome({ query });
-          const mapped = categoryForSearchQuery(query);
-          if (mapped) setSelectedCategory(mapped);
-        }}
-        selectedCategory={selectedCategory}
-        onSelectCategory={(catId) => {
-          goHome({ category: catId, query: '' });
-          document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
-        }}
-        onGoHome={() => goHome()}
-        onOpenAbout={() => setSitePage('about')}
-        cartCount={cartItems.length}
-        onOpenCart={() => setIsCartOpen(true)}
-        onOpenCalculator={() => setIsCalculatorOpen(true)}
-        onOpenCrewPortal={currentUser?.role === 'vendor' ? () => setIsCrewPortalOpen(true) : undefined}
-        // Signed-in clients always reach it: it also lists their orders («طلباتي») with cancellation.
-        onOpenTracker={showEventTracker || currentUser?.role === 'client' ? () => setIsTrackerOpen(true) : undefined}
-        onOpenChats={isClientAccount ? () => openClientChats() : undefined}
-        chatUnread={clientChatUnread}
-        onOpenCompare={() => setIsCompareModalOpen(true)}
-        compareCount={comparedServices.length}
-        viewMode={viewMode}
-        onToggleViewMode={() => {
-          if (!currentUser || currentUser.role === 'client') {
-            setAuthDefaultMode('login');
-            setIsAuthOpen(true);
-            return;
-          }
-          const home = dashboardFor(currentUser.role);
-          setViewMode((prev) => (prev === 'client' ? home : 'client'));
-        }}
-        onOpenVendorHub={() => void openVendorHub()}
-        currentUser={currentUser}
-        onOpenAuth={(mode = 'login') => {
-          setAuthDefaultMode(mode);
-          setIsAuthOpen(true);
-        }}
-        onOpenVendorRegister={() => setIsVendorRegisterOpen(true)}
-        selectedFulfillment={selectedFulfillment}
-        onSelectFulfillment={setSelectedFulfillment}
-        onOpenSupport={() => setSitePage('support')}
-        onOpenPrivacy={() => setSitePage('privacy')}
-        onOpenTerms={() => setSitePage('terms')}
-        onOpenVoiceAI={() => setIsVoiceAIOpen(true)}
-        onLogout={signOutFromStore}
-      />
+
+      {/* The admin dashboard keeps the operations app bar; the storefront draws its own header. */}
+      {viewMode === 'admin' ? (
+        <Navbar
+          selectedCity={selectedCity}
+          onSelectCity={setSelectedCity}
+          onOpenRegionPicker={() => setRegionPickerOpen(true)}
+          searchQuery=""
+          onSearchChange={() => undefined}
+          onGoHome={() => {
+            setViewMode('client');
+            goHome();
+          }}
+          cartCount={cartCount}
+          onOpenCart={() => {
+            setViewMode('client');
+            navigate('/cart');
+          }}
+          onOpenCalculator={() => setIsCalculatorOpen(true)}
+          viewMode={viewMode}
+          onToggleViewMode={() => setViewMode('client')}
+          onOpenVendorHub={() => void openVendorHub()}
+          currentUser={currentUser}
+          onOpenAuth={(mode = 'login') => {
+            setViewMode('client');
+            navigate(mode === 'register' ? '/login?mode=register' : '/login');
+          }}
+          onOpenVoiceAI={() => setIsVoiceAIOpen(true)}
+          onLogout={signOutFromStore}
+          onOpenSupport={() => {
+            setViewMode('client');
+            navigate('/support');
+          }}
+        />
       ) : null}
 
       {currentUser?.role === 'courier' ? (
@@ -1567,9 +1231,9 @@ export default function App() {
       ) : null}
 
       {showPaidBanner && viewMode === 'client' ? (
-        <div className="sticky top-0 z-40 bg-emerald-50 border-b border-emerald-200 text-emerald-950 px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
+        <div className="sticky top-0 z-40 bg-success-bg border-b border-success-border text-success px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs sm:text-sm font-medium">
-            تم استلام طلبك. إذا دفعت عبر ميسر، نراجع التحويل ونثبّت الحجز. تقدر تتابع من حسابك.
+            تم استلام طلبك. إذا دفعت عبر ميسر، نراجع التحويل ونثبّت الحجز. تقدر تتابع من «طلباتي».
           </p>
           <button
             type="button"
@@ -1581,7 +1245,7 @@ export default function App() {
               url.searchParams.delete('status');
               window.history.replaceState({}, '', url.pathname + url.search + url.hash);
             }}
-            className="min-h-10 px-3 rounded-lg bg-emerald-700 text-white text-xs font-medium"
+            className="min-h-10 px-3 rounded-lg bg-success text-white text-xs font-medium"
           >
             إغلاق
           </button>
@@ -1679,359 +1343,60 @@ export default function App() {
         />
           </Suspense>
         </DashboardErrorBoundary>
-      ) : sitePage ? (
-        <>
-          <main className="usil-main-pad flex-1 pb-32 md:pb-8">
-            {sitePage === 'privacy' ? (
-              <PrivacyPolicy onBack={() => goHome()} />
-            ) : sitePage === 'terms' ? (
-              <TermsOfUse onBack={() => goHome()} />
-            ) : sitePage === 'refund' ? (
-              <RefundPolicy onBack={() => goHome()} />
-            ) : sitePage === 'support' ? (
-              <SupportPage
-                onBack={() => goHome()}
-                onSelectCity={(city) => {
-                  setSelectedCity(city);
-                  goHome();
-                  document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              />
-            ) : sitePage === 'about' ? (
-              <AboutPage onBack={() => goHome()} />
-            ) : sitePage === 'vendor-file' && vendorPublicId ? (
-              <VendorPublicPage
-                vendorId={vendorPublicId}
-                onOpenListing={(service) => {
-                  setActiveDetailService(service);
-                }}
-                onMessageVendor={canMessageVendors ? (vendor) => messageVendor(vendor) : undefined}
-              />
-            ) : sitePage === 'payment-success' ? (
-              <PaymentSuccessPage onBack={() => goHome()} />
-            ) : sitePage === 'payment-cancelled' ? (
-              <PaymentCancelledPage onBack={() => goHome()} />
-            ) : (
-              <NotFoundPage
-                onBack={() => goHome()}
-                onSearch={(query) => {
-                  goHome({ query });
-                  const mapped = categoryForSearchQuery(query);
-                  if (mapped) setSelectedCategory(mapped);
-                }}
-                onSelectCategory={(catId) => goHome({ category: catId, query: '' })}
-              />
-            )}
-          </main>
-          <Footer
-            onSelectCategory={(catId) => goHome({ category: catId, query: '' })}
-            onSelectCity={(city) => {
-              setSelectedCity(city);
-              goHome();
-            }}
-            onPickPackage={(category, audience, query) => {
-              setSelectedAudience(audience);
-              goHome({ category, query });
-            }}
-            onPickSeason={(query) => {
-              const mapped = categoryForSearchQuery(query);
-              goHome({ category: mapped || 'all', query });
-            }}
-            onSelectFulfillment={(lane) => {
-              setSelectedFulfillment(lane);
-              goHome();
-            }}
-            onAbout={() => setSitePage('about')}
-            onPrivacy={() => setSitePage('privacy')}
-            onTerms={() => setSitePage('terms')}
-            onRefund={() => setSitePage('refund')}
-            onSupport={() => setSitePage('support')}
-          />
-        </>
       ) : (
-        <>
-          <main className="usil-main-pad container mx-auto px-3 sm:px-4 lg:px-8 py-4 lg:py-6 flex-1 pb-32 md:pb-6">
-            <StoreDealsRail
-              onSelectCategory={(catId) => {
-                setSelectedCategory(catId);
-                document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              onPickPackage={(category, audience, query) => {
-                setSelectedCategory(category);
-                setSelectedAudience(audience);
-                setSearchQuery(query);
-                document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            />
-            <div className="mt-4">
-              <HowUsilWorks />
-            </div>
-            <section
-              id="services-section"
-              /* --usil-header-h is published by Navbar; the mobile app bar is
-                 ~270px tall, far past the old 11rem guess, so smooth-scrolling
-                 here used to land the heading underneath it. */
-              className="mt-5 scroll-mt-[calc(var(--usil-header-h,11rem)+0.75rem)]"
-            >
-              <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-              <div className="lg:w-56 xl:w-60 shrink-0">
-              <CategoryFilterBar
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-                selectedCity={selectedCity}
-                onSelectCity={setSelectedCity}
-                sortBy={sortBy}
-                onSortChange={setSortBy}
-                totalServicesCount={filteredServices.length}
-                selectedAudience={selectedAudience}
-                onSelectAudience={setSelectedAudience}
-                selectedPrice={priceRange}
-                onSelectPrice={setPriceRange}
-                selectedFulfillment={selectedFulfillment}
-                onSelectFulfillment={setSelectedFulfillment}
-                activeFilterCount={activeFilters.length}
-              />
-              </div>
-              <div className="flex-1 min-w-0 space-y-4">
-              {vendorOwnProfile && currentUser && viewMode === 'client' ? (
-                <VendorOwnFileCard profile={vendorOwnProfile} compact />
-              ) : null}
-              <div className="space-y-3">
-                <div className="flex items-end justify-between gap-3 text-right">
-                  <div className="min-w-0">
-                    <h1 className="text-xl font-bold text-navy truncate">
-                      {CATEGORIES.find((c) => c.id === selectedCategory)?.name || 'كل المنتجات'}
-                    </h1>
-                    <p className="text-xs text-ink-3 mt-1">
-                      <span className="tnum font-semibold text-ink-2">
-                        {filteredServices.length}
-                      </span>{' '}
-                      نتيجة · السعر والصورة من المورّد
-                    </p>
-                  </div>
-                </div>
-                <FilterChips
-                  filters={activeFilters}
-                  onClearAll={clearAllFilters}
-                  resultCount={filteredServices.length}
-                />
-              </div>
-
-              {/* Service Cards Grid */}
-              {catalogStatus === 'loading' ? (
-                <CardGridSkeleton count={9} />
-              ) : catalogStatus === 'error' ? (
-                <ErrorState
-                  title="تعذر تحميل كتالوج المورّدين"
-                  description="حدّث الصفحة أو تواصل مع الدعم إن استمر الانقطاع. لم نختلق مورّدين وهميين لتعبئة السوق."
-                  onRetry={() => window.location.reload()}
-                />
-              ) : filteredServices.length === 0 ? (
-                <EmptyState
-                  icon={PackageSearch}
-                  title={
-                    marketplaceServices.length === 0
-                      ? 'ما فيه منتج في السوق بعد'
-                      : activeFilters.length > 0
-                        ? 'ما لقينا منتجاً بهذي الفلاتر'
-                        : 'ما لقينا منتجاً مطابقاً'
-                  }
-                  description={
-                    marketplaceServices.length === 0
-                      ? 'السوق يعرض منتجات المورّدين المعتمدين فقط — ما نعرض صوراً ولا أسعاراً وهمية. اترك طلبك وبنوصلك أول ما يتوفر مورّد في منطقتك.'
-                      : 'جرّب توسيع نطاق البحث، أو اترك طلبك وبنجهّز لك مورّداً مناسباً.'
-                  }
-                  action={
-                    activeFilters.length > 0 ? (
-                      <Button variant="primary" icon={RotateCcw} onClick={clearAllFilters}>
-                        مسح كل الفلاتر
-                      </Button>
-                    ) : undefined
-                  }
-                  secondaryAction={
-                    <Button
-                      variant="secondary"
-                      onClick={() => setSitePage('support')}
-                    >
-                      راسل الدعم
-                    </Button>
-                  }
-                >
-                  <div className="max-w-md mx-auto text-right">
-                    <CityDemandForm
-                      city={selectedCity}
-                      onCityChange={setSelectedCity}
-                      defaultOccasion={
-                        selectedCategory === 'hospitality'
-                          ? 'ضيافة وقهوة'
-                          : selectedCategory === 'buffet'
-                            ? 'بوفيه ومأكولات'
-                            : selectedCategory === 'photography'
-                              ? 'تصوير وتوثيق'
-                              : selectedCategory === 'halls'
-                                ? 'قاعة أو استراحة'
-                                : selectedCategory === 'condolence'
-                                  ? 'عزاء'
-                                  : 'عرس'
-                      }
-                    />
-                  </div>
-                </EmptyState>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-                  {filteredServices.map((service) => (
-                    <ServiceCard
-                      key={service.id}
-                      service={service}
-                      onOpenDetails={(s) => setActiveDetailService(s)}
-                      onAddToCart={(s) => handleAddToCart(s)}
-                      isInCart={cartItems.some((item) => item.service.id === service.id)}
-                      onToggleCompare={handleToggleCompare}
-                      isCompared={comparedServices.some((s) => s.id === service.id)}
-                    />
-                  ))}
-                </div>
-              )}
-              </div>
-              </div>
-            </section>
-          </main>
-
-          {/* Service Comparison Floating Dock Bar (Client Mode) */}
-          <ServiceComparisonFloatingBar
-            comparedServices={comparedServices}
-            onOpenCompareModal={() => setIsCompareModalOpen(true)}
-            onRemoveService={handleRemoveFromCompare}
-            onClearAll={handleClearAllCompare}
-          />
-
-          {/* Footer */}
-          <Footer
-            onSelectCategory={(catId) => {
-              setSelectedCategory(catId);
-              setSearchQuery('');
-              document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onSelectCity={(city) => {
-              setSelectedCity(city);
-              document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onPickPackage={(category, audience, query) => {
-              setSelectedCategory(category);
-              setSelectedAudience(audience);
-              setSearchQuery(query);
-              document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onPickSeason={(query) => {
-              setSearchQuery(query);
-              const mapped = categoryForSearchQuery(query);
-              if (mapped) setSelectedCategory(mapped);
-              document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onSelectFulfillment={(lane) => {
-              setSelectedFulfillment(lane);
-              document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onPrivacy={() => setSitePage('privacy')}
-            onTerms={() => setSitePage('terms')}
-            onRefund={() => setSitePage('refund')}
-            onSupport={() => setSitePage('support')}
-            onAbout={() => setSitePage('about')}
-          />
-
-          {/* Service Detail Modal */}
-          <ServiceDetailModal
-            service={activeDetailService}
-            onClose={() => setActiveDetailService(null)}
-            onAddToCart={(service, qty, date, time, city, notes) => {
-              handleAddToCart(service, qty, date, time, city, notes);
-            }}
-            isInCart={
-              activeDetailService
-                ? cartItems.some((item) => item.service.id === activeDetailService.id)
-                : false
-            }
-            onMessageVendor={
-              canMessageVendors
-                ? (service) =>
-                    messageVendor({
-                      vendorId: String(service.provider.id),
-                      vendorName: service.provider.name,
-                      context: { type: 'listing', id: String(service.id), title: service.title },
-                    })
-                : undefined
-            }
-            onToggleCompare={handleToggleCompare}
-            isCompared={
-              activeDetailService
-                ? comparedServices.some((s) => s.id === activeDetailService.id)
-                : false
-            }
-          />
-
-          {/* Event Quote Calculator Modal */}
-          {isCalculatorOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 usil-modal-scroll">
-              <div
-                className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
-                onClick={() => setIsCalculatorOpen(false)}
-              />
-              <div className="relative w-full max-w-4xl z-10 my-auto">
-                <Suspense fallback={null}>
-                <QuickEventCalculator
-                  services={marketplaceServices}
-                  onClose={() => setIsCalculatorOpen(false)}
-                />
-                </Suspense>
-              </div>
-            </div>
-          )}
-
-          {/* Booking / Cart Drawer */}
-          <BookingDrawer
-            isOpen={isCartOpen}
-            onClose={() => setIsCartOpen(false)}
-            items={cartItems}
-            onUpdateQuantity={handleUpdateQuantity}
-            onRemoveItem={handleRemoveItem}
-            onClearCart={handleClearCart}
-            onCompleteOnlineBooking={(details) => {
-              handleCompleteOnlineBooking(details);
-              setIsCartOpen(false);
-              setIsTrackerOpen(true);
-            }}
-          />
-
-          <div className="hidden md:flex fixed bottom-6 left-6 z-30 items-center gap-3">
-            <a
-              href="/support"
-              onClick={(e) => {
-                e.preventDefault();
-                setSitePage('support');
-              }}
-              className="h-12 px-4 rounded-full bg-action hover:bg-action-hover text-white flex items-center gap-2.5 shadow-lg transition-transform active:scale-95"
-              title="دعم يوصل"
-            >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <MessageCircle className="w-4 h-4 text-sand" />
-              <span className="text-xs font-medium">دعم يوصل</span>
-            </a>
-          </div>
-        </>
+        <Storefront
+          sitePage={sitePage}
+          productId={productId}
+          vendorPublicId={vendorPublicId}
+          locationKey={locationKey}
+          navigate={navigate}
+          services={marketplaceServices}
+          catalogStatus={catalogStatus}
+          retryCatalog={loadCatalog}
+          trending={trendingServices}
+          selectedCity={selectedCity}
+          setSelectedCity={setSelectedCity}
+          openRegionPicker={() => setRegionPickerOpen(true)}
+          cart={cartItems}
+          addToCart={handleAddToCart}
+          updateQuantity={handleUpdateQuantity}
+          removeFromCart={handleRemoveItem}
+          clearCart={handleClearCart}
+          compared={comparedServices}
+          setCompared={setComparedServices}
+          user={currentUser}
+          chatUnread={clientChatUnread}
+          onAuthSuccess={handleAuthSuccess}
+          logout={signOutFromStore}
+          openDashboard={openDashboard}
+          openCrewPortal={currentUser?.role === 'vendor' ? () => setIsCrewPortalOpen(true) : undefined}
+          openVoiceAI={() => setIsVoiceAIOpen(true)}
+          openVendorRegister={() => setIsVendorRegisterOpen(true)}
+          openCourierRegister={() => {
+            setCourierModalTab('apply');
+            setIsCourierRegisterOpen(true);
+          }}
+          vendorOwnProfile={vendorOwnProfile}
+        />
       )}
 
-      {/* Client Order Live Tracking Modal */}
-      {isTrackerOpen ? (
-        <Suspense fallback={null}>
-          <ClientOrderTrackingModal
-          isOpen={isTrackerOpen}
-          onClose={() => setIsTrackerOpen(false)}
-          trackings={orderTrackings}
-          brandSettings={brandSettings}
-          initialTrackingCode={activeTrackingCode}
-        />
-        </Suspense>
-      ) : null}
+      {/* Event Quote Calculator Modal (reached from the voice assistant) */}
+      {isCalculatorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 usil-modal-scroll">
+          <div
+            className="fixed inset-0 bg-navy/60 backdrop-blur-xs"
+            onClick={() => setIsCalculatorOpen(false)}
+          />
+          <div className="relative w-full max-w-4xl z-10 my-auto">
+            <Suspense fallback={null}>
+            <QuickEventCalculator
+              services={marketplaceServices}
+              onClose={() => setIsCalculatorOpen(false)}
+            />
+            </Suspense>
+          </div>
+        </div>
+      )}
 
       {/* Crew Field Portal & GPS Attendance Modal */}
       {isCrewPortalOpen ? (
@@ -2049,109 +1414,57 @@ export default function App() {
 
       {/* Auto-Save Notification Toast (LocalForage Engine) */}
       <AnimatePresence>
-        {autoSaveNotification && (
+        {autoSaveNotification && viewMode !== 'client' && (
           <motion.div
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-navy/95 backdrop-blur-md text-white border border-sand/40 shadow-2xl pointer-events-none"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-navy/95 backdrop-blur-md text-white border border-white/15 shadow-2xl pointer-events-none"
           >
-            <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+            <div className="w-6 h-6 rounded-full bg-success/20 text-success flex items-center justify-center shrink-0 border border-success/30">
               <CheckCircle className="w-3.5 h-3.5" />
             </div>
             <div className="flex items-center gap-1.5 text-right font-sans">
-              <span className="text-xs font-medium text-slate-100">{autoSaveNotification.message}</span>
-              <span className="text-2xs text-sand font-semibold bg-sand/10 px-1.5 py-0.5 rounded-md border border-sand/20">
-                IndexedDB
-              </span>
+              <span className="text-xs font-medium text-white">{autoSaveNotification.message}</span>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Floating Voice AI Concierge Button (Desktop only) */}
-      <div className="hidden md:block fixed bottom-6 right-6 z-30">
-        <button
-          onClick={() => setIsVoiceAIOpen(true)}
-          className="h-13 px-4 sm:px-5 rounded-full bg-gradient-to-r from-navy via-[#0F284D] to-action text-white flex items-center gap-3 shadow-xl hover:shadow-2xl transition-all active:scale-95 border-2 border-white/20 group cursor-pointer"
-          title="تحدث صوتياً مع وكيل يوصل الذكي"
-        >
-          <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sand">
-              <Mic className="w-4 h-4 text-sand group-hover:scale-110 transition-transform" />
-            </div>
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-navy absolute -top-0.5 -right-0.5 animate-ping" />
-          </div>
-          <div className="text-right">
-            <span className="text-xs font-medium block leading-tight">الوكيل الصوتي الذكي</span>
-            <span className="text-2xs text-sand font-medium">تحدث لتجهيز مناسبتك ⚡</span>
-          </div>
-        </button>
-      </div>
-
       {/* PWA Mobile Add to Home Screen Prompt & iOS Instructions */}
       <PWAInstallBanner />
 
-      {/* Modern Mobile Bottom App Navigation Bar (PWA & Mobile Native Experience) */}
-      {viewMode !== 'vendor' ? (
+      {/* The admin dashboard keeps the operations bottom bar on phones. */}
+      {viewMode === 'admin' ? (
       <MobileBottomNav
         viewMode={viewMode}
-        onToggleViewMode={() => {
-          if (!currentUser || currentUser.role === 'client') {
-            setIsAuthOpen(true);
-            return;
-          }
-          const home = dashboardFor(currentUser.role);
-          setViewMode((prev) => (prev === 'client' ? home : 'client'));
-        }}
+        onToggleViewMode={() => setViewMode('client')}
         onOpenVendorHub={() => void openVendorHub()}
-        cartCount={cartItems.length}
-        onOpenCart={() => setIsCartOpen(true)}
+        cartCount={cartCount}
+        onOpenCart={() => {
+          setViewMode('client');
+          navigate('/cart');
+        }}
         onOpenVoiceAI={() => setIsVoiceAIOpen(true)}
-        // Always reachable from the bar: the modal takes a tracking code, so it
-        // is useful even before this device has a live event of its own.
-        onOpenTracker={() => setIsTrackerOpen(true)}
+        onOpenTracker={() => {
+          setViewMode('client');
+          navigate('/orders');
+        }}
         onOpenCrewPortal={() => setIsCrewPortalOpen(true)}
         onGoHome={() => {
+          setViewMode('client');
           goHome();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onOpenAuth={() => {
-          if (currentUser) {
-            setIsAccountOpen(true);
-            return;
-          }
-          setAuthDefaultMode('login');
-          setIsAuthOpen(true);
+          setViewMode('client');
+          navigate(currentUser ? '/account' : '/login');
         }}
         currentUser={currentUser}
         accountBadge={clientChatUnread}
       />
       ) : null}
 
-      {currentUser ? (
-        <MobileAccountSheet
-          open={isAccountOpen}
-          onClose={() => setIsAccountOpen(false)}
-          user={currentUser}
-          onOpenOrders={() => setIsTrackerOpen(true)}
-          onOpenChats={isClientAccount ? () => openClientChats() : undefined}
-          chatUnread={clientChatUnread}
-          onOpenDashboard={
-            dashboardFor(currentUser.role) === 'client'
-              ? undefined
-              : () => setViewMode(dashboardFor(currentUser.role))
-          }
-          onVerifyEmail={() => {
-            setAuthDefaultMode('verify');
-            setIsAuthOpen(true);
-          }}
-          onLogout={() => void signOutFromStore()}
-        />
-      ) : null}
-
-      {/* Phone/Email OTP Authentication Modal */}
       {vendorPickerOpen ? (
         <VendorHubPicker
           hubs={vendorHubs}
@@ -2162,58 +1475,11 @@ export default function App() {
         />
       ) : null}
 
-      {isChatOpen && isClientAccount ? (
-        <Suspense fallback={null}>
-          <ClientChatModal open onClose={() => setIsChatOpen(false)} target={chatTarget} />
-        </Suspense>
-      ) : null}
-
-      {isAuthOpen ? (
-        <div className="fixed inset-0 z-[80] overflow-y-auto bg-slate-900/40 backdrop-blur-sm usil-safe-overlay">
-          <LoginScreen
-            defaultMode={authDefaultMode}
-            verifyPrefill={
-              currentUser
-                ? { email: currentUser.email, phone: currentUser.phone }
-                : undefined
-            }
-            onClose={() => {
-              setIsAuthOpen(false);
-              setPendingChat(null);
-            }}
-            onOpenVendorRegister={() => {
-              setIsAuthOpen(false);
-              setIsVendorRegisterOpen(true);
-            }}
-            onOpenCourierRegister={() => {
-              setIsAuthOpen(false);
-              setIsCourierRegisterOpen(true);
-            }}
-            onSuccess={(user) => {
-              setCurrentUser(sessionToProfile(user));
-              void fetchMyVendorFile()
-                .then((file) => {
-                  if (file.profile) setVendorOwnProfile(file.profile as VendorOwnProfile);
-                })
-                .catch(() => undefined);
-              setIsAuthOpen(false);
-            }}
-          />
-        </div>
-      ) : null}
-
       {isVendorRegisterOpen ? (
         <Suspense fallback={null}>
         <VendorRegisterWizard
           onClose={() => setIsVendorRegisterOpen(false)}
-          onLoggedIn={(user) => {
-            setCurrentUser(sessionToProfile(user));
-            void fetchMyVendorFile()
-              .then((file) => {
-                if (file.profile) setVendorOwnProfile(file.profile as VendorOwnProfile);
-              })
-              .catch(() => undefined);
-          }}
+          onLoggedIn={(user) => handleAuthSuccess(user)}
           onOpenCourierRegister={() => {
             setIsVendorRegisterOpen(false);
             setIsCourierRegisterOpen(true);
@@ -2243,39 +1509,19 @@ export default function App() {
           onClose={() => setIsVoiceAIOpen(false)}
           onAddToCart={(srv) => {
             handleAddToCart(srv);
-            setIsCartOpen(true);
+            setIsVoiceAIOpen(false);
+            navigate('/cart');
           }}
-          onOpenServiceDetails={(srv) => setActiveDetailService(srv)}
+          onOpenServiceDetails={(srv) => {
+            setIsVoiceAIOpen(false);
+            navigate(pathForProduct(srv.id));
+          }}
           onOpenCalculator={() => setIsCalculatorOpen(true)}
           currentCity={selectedCity}
           services={marketplaceServices}
         />
         </Suspense>
       ) : null}
-
-      {/* Hospitality Services Technical Comparison Modal */}
-      {isCompareModalOpen ? (
-        <Suspense fallback={null}>
-          <ServiceComparisonModal
-          isOpen={isCompareModalOpen}
-          onClose={() => setIsCompareModalOpen(false)}
-          comparedServices={comparedServices}
-          allServices={marketplaceServices}
-          onRemoveFromCompare={handleRemoveFromCompare}
-          onAddToCompare={handleToggleCompare}
-          onAddToCart={(service) => {
-            handleAddToCart(service);
-          }}
-          onOpenDetails={(service) => {
-            setIsCompareModalOpen(false);
-            setActiveDetailService(service);
-          }}
-          cartItemIds={cartItems.map((item) => item.service.id)}
-          onClearAll={handleClearAllCompare}
-        />
-        </Suspense>
-      ) : null}
-
     </div>
   );
 }

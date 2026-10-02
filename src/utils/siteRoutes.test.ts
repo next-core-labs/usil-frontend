@@ -37,3 +37,27 @@ describe('siteRoutes', () => {
     assert.equal(isKnownSpaPath('/vendor/usr-abc'), true);
   });
 });
+
+describe('storefront routes (redesign)', () => {
+  it('maps every storefront screen to its path and back', () => {
+    assert.equal(parseLocation('/catalog').sitePage, 'catalog');
+    assert.equal(parseLocation('/services').sitePage, 'catalog');
+    assert.equal(parseLocation('/hospitality').sitePage, 'catalog');
+    assert.equal(parseLocation('/hospitality').hospitality, true);
+    assert.equal(parseLocation('/compare').sitePage, 'compare');
+    assert.equal(parseLocation('/cart').sitePage, 'cart');
+    assert.equal(parseLocation('/checkout').sitePage, 'checkout');
+    assert.equal(parseLocation('/orders').sitePage, 'orders');
+    assert.equal(parseLocation('/account').sitePage, 'account');
+    assert.equal(parseLocation('/chat').sitePage, 'chat');
+    assert.equal(parseLocation('/login').sitePage, 'login');
+    assert.equal(parseLocation('/request').sitePage, 'request');
+    assert.equal(parseLocation('/providers').sitePage, 'providers');
+    assert.equal(parseLocation('/service/Abc-123').sitePage, 'product');
+    assert.equal(parseLocation('/service/Abc-123').productId, 'Abc-123');
+    assert.equal(parseLocation('/service/').sitePage, 'catalog');
+    for (const path of ['/catalog', '/cart', '/checkout', '/orders', '/account', '/chat', '/login', '/request', '/providers', '/compare']) {
+      assert.equal(isKnownSpaPath(path), true, path);
+    }
+  });
+});

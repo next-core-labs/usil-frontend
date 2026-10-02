@@ -88,6 +88,7 @@ Express (server/index.ts — composition root)
   ├── auth/ .................... sessions, roles, email verification, uploads
   ├── vendors/ ................. workspace, listings, applications, hubs, socials
   ├── bookings/ ................ platform bookings + courier-filed external bookings
+  ├── catalog/ ................. «ترند هالأسبوع»: listing view counter + weekly ranking
   ├── payments/ ................ Moyasar invoices, webhook, checkout callback
   ├── couriers/ ................ courier onboarding & approval
   ├── cities/ .................. "we want Usil in my city" demand capture
@@ -265,6 +266,8 @@ Moyasar endpoints, which return bare `{ id, url }` / `{ error }` shapes.
 | `POST /api/auth/{login,register,forgot-password,verify-email,resend-verification}` | throttled |
 | `GET /api/auth/{me,verify-email}` | |
 | `GET /api/catalog/listings` | the storefront's only product source |
+| `GET /api/catalog/trending` | «ترند هالأسبوع»: the catalog ranked by 7 days of bookings + views; 30s cache |
+| `POST /api/catalog/listings/:id/view` | product-page open; 120/min per IP, one count per caller per listing per 30 min |
 | `GET /api/vendors/:id`, `/api/vendors/:id/socials` | public vendor file |
 | `POST /api/bookings` | guest checkout; 10/min per IP |
 | `POST /api/payments/invoice` | guest checkout; 10/min per IP |

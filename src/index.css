@@ -19,94 +19,105 @@
    ========================================================================== */
 
 @theme {
-  /* ---- Brand ---- */
+  /* ---- Brand (from the approved redesign) ---- */
   --color-navy: #0A1A33;
-  --color-navy-800: #142743;
-  --color-navy-700: #20304C;
-  --color-navy-500: #5A6A85;
-  --color-navy-300: #C6CDD9;
-  --color-navy-100: #F1F3F7;
+  --color-navy-800: #0F2446;
+  --color-navy-700: #163A78;
+  --color-navy-500: #3B4A63;
+  --color-navy-300: #C9D3E6;
+  --color-navy-100: #F0F3F9;
 
   --color-action: #155EEF;
-  --color-action-hover: #0F45B5;
+  --color-action-hover: #0B47C4;
   --color-action-pressed: #0A2E78;
-  --color-action-50: #F5F8FF;
-  --color-action-100: #EAF0FE;
-  --color-action-200: #D3E2FD;
+  --color-action-50: #FAFBFE;
+  --color-action-100: #EAF0FF;
+  --color-action-200: #DBE7FF;
 
   --color-sky: #5B8DEF;
+  --color-sky-200: #8FB3FF;
+  --color-sky-100: #BBD0FF;
   --color-sand: #C0A16B;
   --color-sand-100: #F6F0E4;
 
+  /* ---- Pastel tints (occasion and category tiles) ---- */
+  --color-tint-blue: #DBE7FF;
+  --color-tint-peach: #FFE8D6;
+  --color-tint-rose: #FDE2E4;
+  --color-tint-mint: #D6F5E3;
+  --color-tint-butter: #FFF3C4;
+  --color-tint-sky: #D9F0FF;
+  --color-tint-slate: #E9EDF5;
+
   /* ---- Status ---- */
-  --color-success: #067647;
-  --color-success-bg: #ECFDF3;
-  --color-success-border: #ABEFC6;
-  --color-warning: #B54708;
-  --color-warning-bg: #FFFAEB;
-  --color-warning-border: #FEDF89;
-  --color-danger: #B42318;
-  --color-danger-bg: #FEF3F2;
-  --color-danger-border: #FECDCA;
-  --color-info: #175CD3;
-  --color-info-bg: #EFF8FF;
-  --color-info-border: #B2DDFF;
+  --color-success: #1B8A4C;
+  --color-success-bg: #D6F5E3;
+  --color-success-border: #B2E6C6;
+  --color-warning: #B76E00;
+  --color-warning-bg: #FFF3C4;
+  --color-warning-border: #F5DE8A;
+  --color-danger: #E5484D;
+  --color-danger-bg: #FDE2E4;
+  --color-danger-border: #F6B9BE;
+  --color-info: #155EEF;
+  --color-info-bg: #DBE7FF;
+  --color-info-border: #BBD0FF;
 
   /* ---- Text ---- */
-  --color-ink: #101828;
-  --color-ink-1: #344054;
-  --color-ink-2: #475467;
-  --color-ink-3: #667085;
-  --color-muted: #98A2B3;
+  --color-ink: #0A1A33;
+  --color-ink-1: #3B4A63;
+  --color-ink-2: #3B4A63;
+  --color-ink-3: #6B7A90;
+  --color-muted: #8FA3C2;
+  --color-on-navy-muted: #8FA3C2;
+  --color-on-navy-soft: #B9C6DC;
+  --color-on-navy: #DCE5F5;
 
   /* ---- Surfaces & lines ---- */
-  --color-line: #E4E7EC;
-  --color-line-soft: #F2F4F7;
-  --color-paper: #F7F8FA;
+  --color-line: #E3E8F2;
+  --color-line-soft: #F0F3F9;
+  --color-paper: #F4F6FB;
   --color-surface: #FFFFFF;
-  --color-surface-2: #FCFCFD;
+  --color-surface-2: #FAFBFE;
 
   /* ---- Type scale ----
      Sizes match Tailwind's defaults on purpose: over a thousand existing
-     `text-xs`/`text-sm` usages depend on them, and silently shrinking those
-     would make the app worse, not better. What changes here is (a) a real
-     11px floor to migrate the old 9px/10px text onto, and (b) noticeably
-     looser leading at every step, because Arabic diacritics need the vertical
-     room and this app sets long Arabic sentences at small sizes. */
-  --text-2xs: 0.6875rem;      /* 11px — the floor: counters, timestamps, micro labels */
+     `text-xs`/`text-sm` usages depend on them. Arabic needs looser leading
+     at every step. */
+  --text-2xs: 0.6875rem;      /* 11px */
   --text-2xs--line-height: 1.5;
-  --text-xs: 0.75rem;         /* 12px — helper text, dense table cells */
+  --text-xs: 0.75rem;         /* 12px */
   --text-xs--line-height: 1.6;
-  --text-sm: 0.875rem;        /* 14px — secondary body */
+  --text-sm: 0.875rem;        /* 14px */
   --text-sm--line-height: 1.65;
-  --text-base: 1rem;          /* 16px — body default */
+  --text-base: 1rem;          /* 16px */
   --text-base--line-height: 1.7;
-  --text-lg: 1.125rem;        /* 18px — card titles */
+  --text-lg: 1.125rem;        /* 18px */
   --text-lg--line-height: 1.55;
-  --text-xl: 1.25rem;         /* 20px — section headings */
+  --text-xl: 1.25rem;         /* 20px */
   --text-xl--line-height: 1.45;
-  --text-2xl: 1.5rem;         /* 24px — page titles */
+  --text-2xl: 1.5rem;         /* 24px */
   --text-2xl--line-height: 1.35;
-  --text-3xl: 1.875rem;       /* 30px — KPI figures */
+  --text-3xl: 1.875rem;       /* 30px */
   --text-3xl--line-height: 1.25;
   --text-4xl: 2.25rem;
   --text-4xl--line-height: 1.2;
 
   /* ---- Radius ---- */
   --radius-control: 0.625rem; /* 10px — buttons, inputs, selects */
-  --radius-card: 0.875rem;    /* 14px — cards, list rows */
+  --radius-card: 1rem;        /* 16px — cards, list rows */
   --radius-panel: 1.25rem;    /* 20px — page-level panels, modals */
 
-  /* ---- Elevation — one soft ramp, no coloured glows ---- */
-  --shadow-e1: 0 1px 2px rgba(16, 24, 40, 0.05);
-  --shadow-e2: 0 1px 2px rgba(16, 24, 40, 0.05), 0 8px 24px -18px rgba(10, 26, 51, 0.22);
-  --shadow-e3: 0 1px 3px rgba(16, 24, 40, 0.06), 0 16px 36px -20px rgba(10, 26, 51, 0.26);
-  --shadow-e4: 0 2px 6px rgba(16, 24, 40, 0.06), 0 28px 60px -28px rgba(10, 26, 51, 0.3);
+  /* ---- Elevation ---- */
+  --shadow-e1: 0 1px 2px rgba(10, 26, 51, 0.04);
+  --shadow-e2: 0 6px 16px -10px rgba(10, 26, 51, 0.2);
+  --shadow-e3: 0 28px 50px -24px rgba(10, 26, 51, 0.4);
+  --shadow-e4: 0 24px 60px -20px rgba(0, 0, 0, 0.5);
 
   /* ---- Fonts ---- */
-  --font-sans: "IBM Plex Sans Arabic", "Almarai", sans-serif;
-  --font-display: "Almarai", "IBM Plex Sans Arabic", sans-serif;
-  --font-latin: "Archivo", "IBM Plex Sans Arabic", sans-serif;
+  --font-sans: "IBM Plex Sans Arabic", sans-serif;
+  --font-display: "IBM Plex Sans Arabic", sans-serif;
+  --font-latin: "IBM Plex Sans Arabic", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
@@ -114,27 +125,27 @@
    these names. Kept so the token rename is not a breaking change. */
 :root {
   --navy: #0A1A33;
-  --navy-700: #20304C;
-  --navy-500: #5A6A85;
-  --navy-300: #C6CDD9;
-  --navy-100: #F1F3F7;
+  --navy-700: #163A78;
+  --navy-500: #3B4A63;
+  --navy-300: #C9D3E6;
+  --navy-100: #F0F3F9;
   --action: #155EEF;
-  --action-hover: #0F45B5;
+  --action-hover: #0B47C4;
   --action-pressed: #0A2E78;
-  --action-100: #EAF0FE;
+  --action-100: #EAF0FF;
   --sky: #5B8DEF;
   --sand: #C0A16B;
-  --success: #12B76A;
-  --warning: #F79009;
-  --danger: #D92D20;
-  --ink: #101828;
-  --ink-2: #475467;
-  --ink-3: #667085;
-  --muted: #98A2B3;
-  --line: #E4E7EC;
-  --paper: #F7F8FA;
+  --success: #1B8A4C;
+  --warning: #B76E00;
+  --danger: #E5484D;
+  --ink: #0A1A33;
+  --ink-2: #3B4A63;
+  --ink-3: #6B7A90;
+  --muted: #8FA3C2;
+  --line: #E3E8F2;
+  --paper: #F4F6FB;
   --surface: #FFFFFF;
-  --dark-surface: #131A26;
+  --dark-surface: #0F2446;
 }
 
 html, body {
@@ -158,24 +169,37 @@ html.usil-native body {
 }
 
 body {
-  font-family: "IBM Plex Sans Arabic", "Almarai", sans-serif;
+  font-family: "IBM Plex Sans Arabic", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
+button, input, textarea, select {
+  font-family: inherit;
+}
+
 h1, h2, .font-display {
-  font-family: "Almarai", "IBM Plex Sans Arabic", sans-serif;
-  letter-spacing: -0.02em;
+  font-family: "IBM Plex Sans Arabic", sans-serif;
+  letter-spacing: -0.03em;
 }
 
 h3 {
-  font-family: "IBM Plex Sans Arabic", "Almarai", sans-serif;
+  font-family: "IBM Plex Sans Arabic", sans-serif;
   font-weight: 600;
 }
 
 .font-latin {
-  font-family: "Archivo", "IBM Plex Sans Arabic", sans-serif;
-  letter-spacing: 0.02em;
+  font-family: "IBM Plex Sans Arabic", sans-serif;
+}
+
+/* Layered so Tailwind utilities (text-white, text-ink-1 …) still win on anchors. */
+@layer base {
+  a {
+    color: var(--action);
+  }
+  a:hover {
+    color: var(--action-hover);
+  }
 }
 
 .font-mono, .font-kicker {
@@ -233,6 +257,61 @@ h3 {
 .btn-action:active {
   background: var(--action-pressed);
 }
+
+/* ===== Storefront motion (from the approved redesign) ===== */
+@keyframes lm-float {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-14px) rotate(var(--r, 0deg)); }
+}
+@keyframes lm-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -30px) scale(1.1); }
+  66% { transform: translate(-30px, 20px) scale(0.95); }
+}
+@keyframes lm-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes lm-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(21, 94, 239, 0.45); }
+  100% { box-shadow: 0 0 0 18px rgba(21, 94, 239, 0); }
+}
+@keyframes lm-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes lm-typing {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-4px); opacity: 1; }
+}
+@keyframes lm-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes lm-wiggle {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(6deg); }
+}
+
+/* Scroll-reveal: hidden until the storefront's observer flips `data-seen`. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+[data-reveal][data-seen] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Storefront page frame: a 1280px column with fluid gutters, as in the design. */
+.sf-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-inline: clamp(16px, 4vw, 40px);
+}
+.sf-balance { text-wrap: balance; }
+.sf-pretty { text-wrap: pretty; }
 
 @keyframes usil-rise {
   from { opacity: 0; transform: translateY(10px); }

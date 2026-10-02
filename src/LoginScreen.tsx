@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { controlClass } from './components/ui/Field';
 import { Lock, Mail, Phone, LogIn, AlertCircle, Eye, EyeOff, X, Camera, UserPlus, KeyRound, ArrowRight, RefreshCw } from 'lucide-react';
 import { UsilLockup } from './components/UsilLockup';
+import { UsilMark } from './components/UsilMark';
 import { EmailVerifyPanel } from './components/auth/EmailVerifyPanel';
 import type { AccountRole } from './contracts/auth/roles';
 export type { AccountRole };
@@ -59,6 +60,11 @@ type LoginScreenProps = {
   onOpenCourierRegister?: () => void;
   defaultMode?: 'login' | 'register' | 'verify';
   verifyPrefill?: { email?: string; phone?: string };
+  /** Render as the storefront's white card (no full-screen navy backdrop). */
+  embedded?: boolean;
+  /** «أو تابع كضيف» under the form, storefront only. */
+  guestLabel?: string;
+  onContinueAsGuest?: () => void;
 };
 
 function readImageFile(file: File): Promise<string> {
@@ -85,6 +91,9 @@ export function LoginScreen({
   onOpenCourierRegister,
   defaultMode = 'login',
   verifyPrefill,
+  embedded = false,
+  guestLabel,
+  onContinueAsGuest,
 }: LoginScreenProps) {
   const remembered = readRememberedLogin();
   const [email, setEmail] = useState(verifyPrefill?.email || remembered.email);
@@ -296,7 +305,10 @@ export function LoginScreen({
     </span>
   );
 
-  const inputClass = controlClass;
+  const inputClass = embedded
+    ? 'w-full h-[50px] px-3.5 rounded-xl border border-navy-300 bg-surface text-[16px] text-navy outline-none transition-colors placeholder:text-muted focus:border-action focus:ring-4 focus:ring-action/10'
+    : controlClass;
+  const labelClass = 'text-[13px] font-semibold text-navy mb-1.5 flex items-center gap-2';
 
   const title =
     mode === 'verify'
@@ -317,28 +329,10 @@ export function LoginScreen({
           ? 'سجّل كعميل بالبريد والجوال والرقم السري. يمكنك رفع صورة أو نولّد لك شعاراً باسمك.'
           : 'أدخل البريد والجوال والرقم السري. النظام يحوّلك تلقائيًا إلى واجهة العميل أو المورد أو الإدارة حسب حسابك.';
 
-  return (
-    <div dir="rtl" className="min-h-screen bg-navy text-white flex items-center justify-center px-2 py-4 sm:p-4 overflow-x-hidden pattern-navy">
-      <div className="w-full max-w-md mx-2 sm:mx-auto relative">
-        {onClose ? (
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute -top-1 left-0 w-9 h-9 rounded-full bg-white text-ink-2 hover:text-ink flex items-center justify-center"
-            aria-label="إغلاق"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        ) : null}
-
-        <div className="text-center mb-7 flex flex-col items-center">
-          <UsilLockup variant="inverse" />
-          <h1 className="text-2xl font-display font-bold text-white mt-5">{title}</h1>
-          <p className="text-sm text-white/65 mt-2 leading-relaxed max-w-sm">{subtitle}</p>
-        </div>
-
+  const body = (
+    <>
         {mode === 'verify' ? (
-          <div className="bg-white text-ink border border-line rounded-2xl p-5 sm:p-6 space-y-4 overflow-x-hidden">
+          <div className={embedded ? 'space-y-4' : 'bg-white text-ink border border-line rounded-2xl p-5 sm:p-6 space-y-4 overflow-x-hidden'}>
             <EmailVerifyPanel
               email={email.trim()}
               phone={phone.trim()}
@@ -350,10 +344,10 @@ export function LoginScreen({
         ) : (
         <form
           onSubmit={mode === 'forgot' ? submitForgot : submit}
-          className="bg-white text-ink border border-line rounded-2xl p-5 sm:p-6 space-y-4 overflow-x-hidden"
+          className={embedded ? 'space-y-4' : 'bg-white text-ink border border-line rounded-2xl p-5 sm:p-6 space-y-4 overflow-x-hidden'}
         >
           {mode !== 'forgot' ? (
-            <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-2xl">
+            <div className="grid grid-cols-2 gap-1 p-1 bg-paper border border-line rounded-xl mb-1">
               <button
                 type="button"
                 onClick={() => {
@@ -361,8 +355,8 @@ export function LoginScreen({
                   setError(null);
                   setSuccessMsg(null);
                 }}
-                className={`py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 ${
-                  mode === 'register' ? 'bg-action text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                className={`h-10 rounded-[9px] text-[13px] font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                  mode === 'register' ? 'bg-action text-white' : 'text-ink-1 hover:text-navy'
                 }`}
               >
                 <UserPlus className="w-3.5 h-3.5" />
@@ -374,8 +368,8 @@ export function LoginScreen({
                   setMode('login');
                   setError(null);
                 }}
-                className={`py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 ${
-                  mode === 'login' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'
+                className={`h-10 rounded-[9px] text-[13px] font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                  mode === 'login' ? 'bg-navy text-white' : 'text-ink-1 hover:text-navy'
                 }`}
               >
                 <LogIn className="w-3.5 h-3.5" />
@@ -383,7 +377,7 @@ export function LoginScreen({
               </button>
             </div>
           ) : (
-            <div className="rounded-2xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs text-slate-600 font-medium leading-relaxed">
+            <div className="rounded-xl bg-paper border border-line px-3 py-2.5 text-xs text-ink-1 font-medium leading-relaxed">
               {resetStep === 'request'
                 ? 'نرسل رمز الاستعادة إلى بريدك المسجّل. الرمز صالح لمدة 15 دقيقة.'
                 : 'الرمز صالح لمدة 15 دقيقة، وبعد 5 محاولات خاطئة يلزم طلب رمز جديد.'}
@@ -393,7 +387,7 @@ export function LoginScreen({
           {mode === 'register' && (
             <>
               <label className="block text-sm">
-                <span className="text-slate-600 mb-1.5 block font-bold">الاسم {req}</span>
+                <span className={labelClass}>الاسم {req}</span>
                 <input
                   id="usil-login-name"
                   value={name}
@@ -410,14 +404,14 @@ export function LoginScreen({
                 {fieldError('name')}
               </label>
               <label className="block text-sm">
-                <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
+                <span className={labelClass}>
                   <Camera className="w-4 h-4 text-action" />
                   صورة الحساب (اختياري)
                 </span>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  className="w-full text-xs file:ml-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-navy file:text-white file:font-medium"
+                  className="w-full min-h-[50px] px-3 py-2.5 rounded-xl border border-dashed border-navy-300 bg-paper text-xs text-ink-1 cursor-pointer file:me-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-navy file:text-white file:text-xs file:font-semibold"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) {
@@ -433,7 +427,7 @@ export function LoginScreen({
                     }
                   }}
                 />
-                <p className="text-2xs text-slate-500 mt-1">
+                <p className="text-2xs text-ink-3 mt-1.5 leading-relaxed">
                   إن لم ترفع صورة نولّد لك شعاراً باسمك بألوان يوصل. لا نستخدم صوراً تجريبية.
                 </p>
                 {avatarDataUrl ? (
@@ -444,7 +438,7 @@ export function LoginScreen({
           )}
 
           <label className="block text-sm">
-            <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
+            <span className={labelClass}>
               <Mail className="w-4 h-4 text-action" />
               البريد الإلكتروني {req}
             </span>
@@ -468,7 +462,7 @@ export function LoginScreen({
 
           {mode === 'forgot' && resetStep === 'confirm' ? (
             <label className="block text-sm">
-              <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
+              <span className={labelClass}>
                 <KeyRound className="w-4 h-4 text-action" />
                 رمز الاستعادة {req}
               </span>
@@ -489,7 +483,7 @@ export function LoginScreen({
 
           {mode !== 'forgot' ? (
           <label className="block text-sm">
-            <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
+            <span className={labelClass}>
               <Phone className="w-4 h-4 text-action" />
               رقم الجوال {req}
             </span>
@@ -515,7 +509,7 @@ export function LoginScreen({
 
           {mode !== 'forgot' || resetStep === 'confirm' ? (
           <label className="block text-sm">
-            <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
+            <span className={labelClass}>
               <Lock className="w-4 h-4 text-action" />
               {mode === 'forgot' ? 'الرقم السري الجديد' : 'الرقم السري'} {req}
             </span>
@@ -538,7 +532,7 @@ export function LoginScreen({
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3 hover:text-navy min-h-0"
                 aria-label={showPassword ? 'إخفاء' : 'إظهار'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -546,16 +540,6 @@ export function LoginScreen({
             </div>
             {fieldError('password')}
           </label>
-          ) : null}
-
-          {mode === 'login' ? (
-            <button
-              type="button"
-              onClick={openForgot}
-              className="text-xs font-medium text-action hover:underline"
-            >
-              نسيت كلمة المرور؟
-            </button>
           ) : null}
 
           {mode === 'login' ? (
@@ -569,18 +553,18 @@ export function LoginScreen({
                   setRemember(next);
                   if (!next) persistRememberedLogin(false, '');
                 }}
-                className="mt-1 w-5 h-5 shrink-0 rounded border-slate-300 text-action accent-action focus:ring-action focus:ring-offset-0"
+                className="mt-1 w-5 h-5 shrink-0 rounded border-navy-300 accent-action"
               />
               <span className="min-w-0">
-                <span className="block text-sm font-bold text-slate-800">حفظ البيانات</span>
-                <span className="block text-2xs text-slate-500 leading-relaxed">خلّك داخل على هذا الجهاز</span>
+                <span className="block text-sm font-semibold text-navy">حفظ البيانات</span>
+                <span className="block text-2xs text-ink-3 leading-relaxed">خلّك داخل على هذا الجهاز</span>
               </span>
             </label>
           ) : null}
 
           {mode === 'forgot' && resetStep === 'confirm' ? (
             <label className="block text-sm">
-              <span className="text-slate-600 mb-1.5 flex items-center gap-2 font-bold">
+              <span className={labelClass}>
                 <Lock className="w-4 h-4 text-action" />
                 تأكيد الرقم السري
               </span>
@@ -597,14 +581,14 @@ export function LoginScreen({
           ) : null}
 
           {successMsg ? (
-            <div className="flex items-start gap-2 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+            <div className="flex items-start gap-2 text-xs text-success bg-success-bg border border-success-border rounded-xl p-3">
               <KeyRound className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{successMsg}</span>
             </div>
           ) : null}
 
           {error ? (
-            <div className="flex items-start gap-2 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3">
+            <div className="flex items-start gap-2 text-xs text-danger bg-danger-bg border border-danger-border rounded-xl p-3">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -612,12 +596,12 @@ export function LoginScreen({
 
           {mode === 'forgot'
             ? !email.trim() && !error && !successMsg && !loading ? (
-                <p className="text-2xs text-slate-500 leading-relaxed">
+                <p className="text-2xs text-ink-3 leading-relaxed">
                   الحقل فارغ — اكتب بريدك المسجّل لنرسل إليه رمز الاستعادة.
                 </p>
               ) : null
             : !email.trim() && !phone.trim() && !password && !error && !successMsg && !loading ? (
-                <p className="text-2xs text-slate-500 leading-relaxed">
+                <p className="text-2xs text-ink-3 leading-relaxed">
                   الحقول فارغة — البريد والجوال والرقم السري مطلوبة كلها.
                 </p>
               ) : null}
@@ -625,7 +609,7 @@ export function LoginScreen({
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-action hover:bg-action-hover active:bg-action-pressed disabled:opacity-60 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"
+            className="w-full h-[50px] bg-action hover:bg-action-hover active:bg-action-pressed disabled:opacity-60 text-white font-bold text-[15px] rounded-xl flex items-center justify-center gap-2 transition-colors"
           >
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : mode === 'forgot' ? <KeyRound className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
             {loading
@@ -647,7 +631,7 @@ export function LoginScreen({
             <button
               type="button"
               onClick={openForgot}
-              className="w-full text-xs font-medium text-action hover:underline"
+              className="w-full min-h-0 text-[13px] font-semibold text-action hover:underline"
             >
               نسيت كلمة المرور؟
             </button>
@@ -665,33 +649,86 @@ export function LoginScreen({
                 setPassword('');
                 setConfirmPassword('');
               }}
-              className="w-full text-xs font-medium text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1"
+              className="w-full min-h-0 text-[13px] font-medium text-ink-3 hover:text-navy flex items-center justify-center gap-1"
             >
               <ArrowRight className="w-3.5 h-3.5 rotate-180" />
               العودة لتسجيل الدخول
             </button>
           ) : null}
 
-          {mode !== 'forgot' && onOpenVendorRegister ? (
-            <button
-              type="button"
-              onClick={onOpenVendorRegister}
-              className="w-full text-2xs text-slate-400 hover:text-slate-600 font-medium"
-            >
-              مورّد؟ سجّل مشروعك للمراجعة (ثانوي)
-            </button>
-          ) : null}
-          {mode !== 'forgot' && onOpenCourierRegister ? (
-            <button
-              type="button"
-              onClick={onOpenCourierRegister}
-              className="w-full text-2xs text-slate-400 hover:text-slate-600 font-medium"
-            >
-              سجّل معنا مندوب توصيل
-            </button>
+          {mode !== 'forgot' && (onOpenVendorRegister || onOpenCourierRegister) ? (
+            <div className="pt-3 mt-1 border-t border-line-soft grid gap-2">
+              {onOpenVendorRegister ? (
+                <button
+                  type="button"
+                  onClick={onOpenVendorRegister}
+                  className="w-full h-11 px-3.5 rounded-xl border border-line bg-paper text-navy text-[13px] font-semibold flex items-center justify-between gap-2 transition-colors hover:border-action hover:text-action"
+                >
+                  <span>مورّد؟ سجّل مشروعك للمراجعة</span>
+                  <ArrowRight className="w-4 h-4 rotate-180 shrink-0" aria-hidden />
+                </button>
+              ) : null}
+              {onOpenCourierRegister ? (
+                <button
+                  type="button"
+                  onClick={onOpenCourierRegister}
+                  className="w-full h-11 px-3.5 rounded-xl border border-line bg-paper text-navy text-[13px] font-semibold flex items-center justify-between gap-2 transition-colors hover:border-action hover:text-action"
+                >
+                  <span>سجّل معنا مندوب توصيل</span>
+                  <ArrowRight className="w-4 h-4 rotate-180 shrink-0" aria-hidden />
+                </button>
+              ) : null}
+            </div>
           ) : null}
         </form>
         )}
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="w-full max-w-[440px] bg-surface text-ink border border-line rounded-[20px] p-[clamp(24px,4vw,36px)]">
+        <UsilMark className="w-12 h-12" />
+        <h1 className="mt-5 mb-2 text-[28px] font-bold tracking-[-0.03em] text-navy">{title}</h1>
+        <p className="mb-[22px] text-sm leading-[1.7] text-ink-1">{subtitle}</p>
+        {body}
+        {onContinueAsGuest && mode !== 'verify' ? (
+          <button
+            type="button"
+            onClick={onContinueAsGuest}
+            className="block w-full text-center mt-4 text-[13px] text-ink-3 hover:text-action min-h-0"
+          >
+            {guestLabel || 'أو تابع كضيف'}
+          </button>
+        ) : null}
+        <p className="mt-5 text-2xs text-ink-3 text-center leading-relaxed">
+          حسابك محمي بجلسة آمنة. المورّد الجديد يبقى معلّقًا حتى موافقة إدارة يوصل.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div dir="rtl" className="min-h-screen bg-navy text-white flex items-center justify-center px-2 py-4 sm:p-4 overflow-x-hidden pattern-navy">
+      <div className="w-full max-w-md mx-2 sm:mx-auto relative">
+        {onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute -top-1 left-0 w-9 h-9 rounded-full bg-white text-ink-2 hover:text-ink flex items-center justify-center"
+            aria-label="إغلاق"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        ) : null}
+
+        <div className="text-center mb-7 flex flex-col items-center">
+          <UsilLockup variant="inverse" />
+          <h1 className="text-2xl font-display font-bold text-white mt-5">{title}</h1>
+          <p className="text-sm text-white/65 mt-2 leading-relaxed max-w-sm">{subtitle}</p>
+        </div>
+
+        {body}
 
         <p className="mt-5 text-2xs text-white/50 text-center leading-relaxed">
           حسابك محمي بجلسة آمنة. المورّد الجديد يبقى معلّقًا حتى موافقة إدارة يوصل.

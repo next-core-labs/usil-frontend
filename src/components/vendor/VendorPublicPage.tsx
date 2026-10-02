@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { MessagesSquare, Store } from 'lucide-react';
-import { Button } from '../ui';
+import { MessageCircle, Store, ShieldCheck } from 'lucide-react';
 import type { ServiceItem } from '../../types';
 import type { VendorPublicFile } from '../../contracts/vendors/vendor-profile';
 import { VendorSocialIcons } from './VendorSocialIcons';
-import { ServiceCard } from '../ServiceCard';
 import { FULFILLMENT_AR_LABEL } from '../../contracts/vendors/vendor-listings';
+import { ProductCard } from '../../storefront/ProductCard';
+import { useLang } from '../../storefront/lang';
+import { formatCount } from '../../storefront/money';
 
 type PublicPayload = VendorPublicFile & { listings?: ServiceItem[] };
 
+/** `/vendor/:id` — the provider's public file in the storefront's visual language. */
 export function VendorPublicPage({
   vendorId,
   onOpenListing,
@@ -19,6 +21,7 @@ export function VendorPublicPage({
   /** Omitted when the viewer cannot message vendors (vendor and staff accounts). */
   onMessageVendor?: (vendor: { vendorId: string; vendorName: string }) => void;
 }) {
+  const { t, L } = useLang();
   const [status, setStatus] = useState<'loading' | 'ready' | 'missing'>('loading');
   const [file, setFile] = useState<PublicPayload | null>(null);
 
@@ -46,84 +49,86 @@ export function VendorPublicPage({
 
   if (status === 'loading') {
     return (
-      <div className="max-w-3xl mx-auto p-6 animate-pulse space-y-3" dir="rtl">
-        <div className="h-16 w-16 rounded-xl bg-slate-200" />
-        <div className="h-6 w-48 bg-slate-200 rounded" />
-        <div className="h-4 w-32 bg-slate-100 rounded" />
-      </div>
+      <main className="sf-wrap pt-8 pb-16" aria-busy="true">
+        <div className="usil-skeleton h-40 rounded-card" />
+      </main>
     );
   }
 
   if (status === 'missing' || !file) {
     return (
-      <div className="max-w-lg mx-auto p-8 text-center space-y-2" dir="rtl">
-        <Store className="w-10 h-10 mx-auto text-slate-400" />
-        <h1 className="text-xl font-bold text-navy">ما لقينا ملف هذا المورد</h1>
-        <p className="text-sm text-slate-500">إما الحساب غير معتمد بعد، أو الرابط غلط.</p>
-      </div>
+      <main className="sf-wrap pt-8 pb-16">
+        <div className="py-16 px-6 text-center bg-surface border border-dashed border-navy-300 rounded-card max-w-xl mx-auto">
+          <span className="inline-grid place-items-center w-16 h-16 rounded-card bg-tint-blue text-action">
+            <Store className="w-7 h-7" aria-hidden />
+          </span>
+          <div className="text-xl font-bold mt-[18px]">{L('ما لقينا ملف هذا المورد', 'We could not find this provider')}</div>
+          <div className="text-sm text-ink-3 mt-1.5">{L('إما الحساب غير معتمد بعد، أو الرابط غلط.', 'Either the account is not approved yet, or the link is wrong.')}</div>
+        </div>
+      </main>
     );
   }
 
   const listings = file.listings || [];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6" dir="rtl">
-      <header className="flex items-start gap-4">
+    <main className="sf-wrap pt-8 pb-16">
+      <header className="bg-navy text-white rounded-card p-[clamp(20px,3vw,28px)] flex items-start gap-[18px] flex-wrap">
         {file.logoUrl ? (
-          <img src={file.logoUrl} alt={file.projectName} className="w-20 h-20 rounded-2xl object-cover border border-slate-200" />
+          <img src={file.logoUrl} alt={file.projectName} className="w-20 h-20 rounded-card object-cover bg-surface" />
         ) : (
-          <div className="w-20 h-20 rounded-2xl bg-navy text-white flex items-center justify-center">
-            <Store className="w-8 h-8" />
-          </div>
+          <span className="w-20 h-20 rounded-card bg-action grid place-items-center">
+            <Store className="w-8 h-8" aria-hidden />
+          </span>
         )}
-        <div>
-          <p className="text-2xs font-medium text-action">ملف مورّد يوصل</p>
-          <h1 className="text-2xl font-bold text-navy">{file.projectName}</h1>
-          <p className="text-sm text-slate-600">{file.personName}</p>
-          {file.projectType ? <p className="text-xs text-slate-500 mt-1">{file.projectType}</p> : null}
-          <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="flex-1 min-w-[220px]">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-sky-200">
+            <ShieldCheck className="w-3.5 h-3.5" aria-hidden />
+            {t.pendingVendor}
+          </div>
+          <h1 className="text-[clamp(24px,3vw,34px)] font-bold tracking-[-0.03em] mt-1">{file.projectName}</h1>
+          <p className="text-sm text-on-navy-muted">{file.personName}</p>
+          {file.projectType ? <p className="text-xs text-on-navy-muted mt-0.5">{file.projectType}</p> : null}
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
             {file.fulfillment.map((lane) => (
-              <span key={lane} className="px-2 py-0.5 rounded-full bg-action text-white text-2xs font-medium">
+              <span key={lane} className="px-2.5 py-1 rounded-md bg-white/10 text-white text-xs font-semibold">
                 {FULFILLMENT_AR_LABEL[lane as keyof typeof FULFILLMENT_AR_LABEL] || lane}
               </span>
             ))}
+            <span className="px-2.5 py-1 rounded-md bg-white/10 text-white text-xs font-semibold tnum">
+              {formatCount(listings.length)} {t.listingsWord}
+            </span>
           </div>
           {file.socials?.length ? (
             <div className="mt-3">
               <VendorSocialIcons links={file.socials} />
             </div>
           ) : null}
-          {onMessageVendor ? (
-            <Button
-              variant="primary"
-              icon={MessagesSquare}
-              onClick={() => onMessageVendor({ vendorId, vendorName: file.projectName })}
-              className="mt-4"
-            >
-              راسل المورّد
-            </Button>
-          ) : null}
         </div>
+        {onMessageVendor ? (
+          <button
+            type="button"
+            onClick={() => onMessageVendor({ vendorId, vendorName: file.projectName })}
+            className="h-11 px-4 rounded-control bg-surface text-navy text-sm font-semibold inline-flex items-center gap-2 hover:bg-action hover:text-white transition-colors"
+          >
+            <MessageCircle className="w-4 h-4" aria-hidden />
+            {t.chatVendor}
+          </button>
+        ) : null}
       </header>
 
       {listings.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center">
-          <p className="font-bold text-slate-900">هذا المورد ما نشر منتجات بعد</p>
-          <p className="text-xs text-slate-500 mt-1">ما نعرض كتالوج وهمي مكان منتجاته.</p>
+        <div className="mt-6 py-14 px-6 text-center bg-surface border border-dashed border-navy-300 rounded-card">
+          <div className="text-lg font-bold">{L('هذا المورد ما نشر منتجات بعد', 'This provider has not published products yet')}</div>
+          <div className="text-sm text-ink-3 mt-1">{L('ما نعرض كتالوج وهمي مكان منتجاته.', 'We never show a placeholder catalog in their place.')}</div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        <div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-3.5">
           {listings.map((service) => (
-            <ServiceCard
-              key={service.id}
-              service={service}
-              onOpenDetails={onOpenListing}
-              onAddToCart={() => onOpenListing(service)}
-              isInCart={false}
-            />
+            <ProductCard key={service.id} service={service} onOpen={onOpenListing} className="h-full" />
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }
