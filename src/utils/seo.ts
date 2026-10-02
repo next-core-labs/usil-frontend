@@ -1,7 +1,23 @@
 import { PAGE_SEO as FALLBACK, type SeoPage as FallbackPage } from './seoFallbacks';
 import { normalizeSeoPath, seoMetaForPath } from '../contracts/seo/seo-meta';
 
-export type SeoPage = FallbackPage | 'hospitality' | 'about' | 'courier';
+export type SeoPage =
+  | FallbackPage
+  | 'hospitality'
+  | 'about'
+  | 'courier'
+  | 'catalog'
+  | 'compare'
+  | 'cart'
+  | 'checkout'
+  | 'orders'
+  | 'account'
+  | 'chat'
+  | 'login'
+  | 'request'
+  | 'providers'
+  | 'payment-success'
+  | 'payment-cancelled';
 
 export type PublicSeo = {
   title: string;
@@ -33,6 +49,21 @@ export const PAGE_SEO: Record<SeoPage, { title: string; description: string }> =
     description:
       'يوصل (Usil) سوق إلكتروني لتوريد المناسبات في السعودية: مورّدون موثّقون، سعر نهائي شامل الضريبة، ووسيط يتابع التنفيذ.',
   },
+  catalog: {
+    title: 'كل الخدمات | يوصل',
+    description: 'تصفّح خدمات المناسبات من مورّدين موثّقين في 15 فئة و13 منطقة سعودية، بسعر نهائي شامل الضريبة.',
+  },
+  compare: { title: 'قارن بين خدمتين | يوصل', description: 'قارن السعر والتقييم والتغطية وطريقة التأكيد بين خدمتين قبل الحجز.' },
+  cart: { title: 'سلة الحجز | يوصل', description: 'راجع خدمات مناسبتك قبل إتمام الحجز والدفع الآمن عبر ميسر.' },
+  checkout: { title: 'إتمام الحجز | يوصل', description: 'بيانات المناسبة ثم الدفع الآمن عبر ميسر: مدى، Apple Pay، البطاقات، وSTC Pay.' },
+  orders: { title: 'طلباتي | يوصل', description: 'تابع حالة طلباتك والدفع والإلغاء حسب سياسة الاسترجاع.' },
+  account: { title: 'حسابي | يوصل', description: 'حسابك في يوصل: الطلبات، المحادثات، المفضلة، واللغة.' },
+  chat: { title: 'المحادثات | يوصل', description: 'راسل المورّدين قبل الحجز وبعده من مكان واحد.' },
+  login: { title: 'تسجيل الدخول | يوصل', description: 'سجّل دخولك إلى يوصل أو أنشئ حساب عميل جديد.' },
+  request: { title: 'طلب خاص | يوصل', description: 'احكِ لنا عن مناسبتك ونطابق طلبك مع مورّد يغطي مدينتك.' },
+  providers: { title: 'انضم كمزوّد | يوصل', description: 'سجّل كمورّد معتمد في يوصل واستقبل حجوزات مدفوعة عبر ميسر.' },
+  'payment-success': { title: 'تم تأكيد حجزك | يوصل', description: 'ميسر أكّد الدفع. تابع طلبك من حسابك.' },
+  'payment-cancelled': { title: 'أُلغيت عملية الدفع | يوصل', description: 'ما خصمنا شيئاً. ارجع للسلة وادفع متى ما جاهز.' },
 };
 
 let remote: PublicSeo | null = null;
