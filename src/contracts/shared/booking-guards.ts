@@ -68,5 +68,9 @@ export function createSlidingWindowLimiter(limit: number, windowMs: number) {
       hits.set(key, next);
       return true;
     },
+    /** Forgets a key's hits — e.g. after a successful login, so only failures count. */
+    reset(key: string): void {
+      hits.delete(key);
+    },
   };
 }

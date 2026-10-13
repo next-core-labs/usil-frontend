@@ -105,22 +105,29 @@ function resolved(page: string, pathname: string): { title: string; description:
   };
 }
 
-export function applySeo(page: SeoPage | string = 'home', pathname?: string) {
+/** A product or vendor page's own subject — the same title the server injects (`<name> | يوصل`). */
+export type SeoSubject = { title: string; description?: string };
+
+export function applySeo(page: SeoPage | string = 'home', pathname?: string, subject?: SeoSubject | null) {
   if (typeof document === 'undefined') return;
   // المسار الحقيقي لا اسم الصفحة: صفحات الخدمات تسقط كلها على مفتاح home،
   // فبدونه تُكتب عناوين الرئيسية فوق ما حقنه الخادم.
   const path = normalizeSeoPath(pathname ?? window.location.pathname);
-  const seo = resolved(page, path);
+  const base = resolved(page, path);
+  const name = subject?.title?.trim();
+  const seo = name
+    ? { title: `${name} | يوصل`, description: subject?.description?.replace(/\s+/g, ' ').trim().slice(0, 300) || base.description }
+    : base;
   document.title = seo.title;
   upsertMeta('meta[name="description"]', 'name', 'description', seo.description);
   upsertMeta('meta[name="keywords"]', 'name', 'keywords', remote?.keywords || '');
-  upsertMeta('meta[property="og:title"]', 'property', 'og:title', remote?.ogTitle || seo.title);
-  upsertMeta('meta[property="og:description"]', 'property', 'og:description', remote?.ogDescription || seo.description);
+  upsertMeta('meta[property="og:title"]', 'property', 'og:title', (!name && remote?.ogTitle) || seo.title);
+  upsertMeta('meta[property="og:description"]', 'property', 'og:description', (!name && remote?.ogDescription) || seo.description);
   upsertMeta('meta[property="og:image"]', 'property', 'og:image', remote?.ogImage || '');
   upsertMeta('meta[property="og:site_name"]', 'property', 'og:site_name', remote?.ogSiteName || 'يوصل');
   upsertMeta('meta[name="twitter:card"]', 'name', 'twitter:card', remote?.twitterCard || 'summary_large_image');
-  upsertMeta('meta[name="twitter:title"]', 'name', 'twitter:title', remote?.twitterTitle || seo.title);
-  upsertMeta('meta[name="twitter:description"]', 'name', 'twitter:description', remote?.twitterDescription || seo.description);
+  upsertMeta('meta[name="twitter:title"]', 'name', 'twitter:title', (!name && remote?.twitterTitle) || seo.title);
+  upsertMeta('meta[name="twitter:description"]', 'name', 'twitter:description', (!name && remote?.twitterDescription) || seo.description);
   upsertMeta('meta[name="twitter:image"]', 'name', 'twitter:image', remote?.twitterImage || remote?.ogImage || '');
   const canonicalBase = (remote?.canonicalBaseUrl || 'https://usil.app').replace(/\/$/, '');
   upsertMeta('link[rel="canonical"]', 'rel', 'canonical', `${canonicalBase}${path}`, 'link');

@@ -95,11 +95,18 @@ export function CheckoutScreen() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const toLogin = () => sf.navigate(`/login?next=${encodeURIComponent('/checkout')}`);
+
   const placeOrder = async () => {
     const saudi = normalizeSaudiMobile(phone);
     if (!name.trim() || !saudi) {
       setError(t.coErrName);
       setStep(0);
+      return;
+    }
+    // Approval orders are paid later from «طلباتي», so they need an account.
+    if (approval && !sf.user) {
+      toLogin();
       return;
     }
     setBusy(true);
@@ -124,9 +131,20 @@ export function CheckoutScreen() {
           items: items.map((c) => ({ id: c.service.id, title: c.service.title, quantity: c.quantity, price: c.service.price })),
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string; booking?: { id?: string; paymentUrl?: string } };
+      const data = (await res.json().catch(() => ({}))) as {
+        success?: boolean;
+        error?: string;
+        awaitingApproval?: boolean;
+        booking?: { id?: string; paymentUrl?: string };
+      };
       if (!res.ok || !data.success) {
         setError(data.error || t.coErrNet);
+        return;
+      }
+      // Sent to the vendor; nothing to pay until they approve.
+      if (data.awaitingApproval) {
+        sf.clearCart();
+        sf.navigate(`/orders?sent=${encodeURIComponent(String(data.booking?.id || ''))}`);
         return;
       }
       const payUrl = String(data.booking?.paymentUrl || '');
@@ -280,6 +298,7 @@ export function CheckoutScreen() {
               <p className={cn('mt-4 p-3 rounded-control text-xs font-semibold leading-relaxed', approval ? 'bg-warning-bg text-warning' : 'bg-success-bg text-success')}>
                 {approval ? t.coApproval : t.coInstant}
               </p>
+              {approval && !sf.user ? <p className="mt-2 text-xs text-ink-1 leading-relaxed">{t.coApprovalLogin}</p> : null}
               {error ? (
                 <p role="alert" className="mt-3 text-sm text-danger font-medium">
                   {error}
@@ -302,7 +321,7 @@ export function CheckoutScreen() {
                     </>
                   ) : (
                     <>
-                      {t.placeOrder} · <span className="tnum">{money(total, ar)}</span>
+                      {approval ? (sf.user ? t.placeRequest : t.signInToSend) : t.placeOrder} · <span className="tnum">{money(total, ar)}</span>
                     </>
                   )}
                 </button>

@@ -110,7 +110,7 @@ export function LoginScreen({
   );
   const [name, setName] = useState('');
   const [avatarDataUrl, setAvatarDataUrl] = useState('');
-  const [verifyEmailSent, setVerifyEmailSent] = useState(true);
+  const [verifyEmailSent, setVerifyEmailSent] = useState(false);
   const [onceVerifyCode, setOnceVerifyCode] = useState('');
   /* Reset runs in two steps: request a mailed code, then code + new password. */
   const [resetStep, setResetStep] = useState<'request' | 'confirm'>('request');
@@ -320,7 +320,7 @@ export function LoginScreen({
           : 'تسجيل الدخول إلى يوصل';
   const subtitle =
     mode === 'verify'
-      ? 'أدخل رمز التأكيد. إن وُجد بريد على الخادم يصلك الرمز هناك، وإلا يظهر مرة واحدة هنا.'
+      ? 'أدخل رمز التأكيد المكوّن من 6 أرقام المرسل إلى بريدك.'
       : mode === 'forgot'
         ? resetStep === 'request'
           ? 'أدخل بريدك المسجّل ونرسل إليه رمز استعادة من 6 أرقام.'
