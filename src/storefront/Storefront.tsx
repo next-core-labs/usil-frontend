@@ -181,8 +181,18 @@ export function Storefront(props: StorefrontProps) {
           : sitePage === 'vendor-file' || sitePage === 'notfound' || sitePage === 'product'
             ? 'home'
             : sitePage;
-    applySeo(key, pathname);
-  }, [sitePage, pathname, hospitality, locationKey]);
+    // Product and vendor pages keep their own title, matching what the server injected.
+    let subject: { title: string; description?: string } | null = null;
+    if (sitePage === 'product' && props.productId) {
+      const item = props.services.find((s) => String(s.id) === props.productId);
+      if (item) subject = { title: item.title, description: item.shortDesc };
+    } else if (sitePage === 'vendor-file' && props.vendorPublicId) {
+      const item = props.services.find((s) => String(s.provider?.id) === props.vendorPublicId);
+      if (item?.provider?.name) subject = { title: item.provider.name };
+    }
+    applySeo(key, pathname, subject);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sitePage, pathname, hospitality, locationKey, props.productId, props.vendorPublicId, props.services]);
 
   /* ───── chat hand-off ───── */
   const canMessageVendors = !props.user || props.user.role === 'client';

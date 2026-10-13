@@ -72,6 +72,37 @@ export function OrdersScreen() {
 
   useEffect(load, [load]);
 
+  // Back from checkout with an approval order: say where it went.
+  const sentId = sf.search.get('sent') || '';
+  useEffect(() => {
+    if (sentId) setMessage({ tone: 'ok', text: fill(t.orderSent, { id: sentId }) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sentId]);
+
+  /** Approved orders whose invoice was not raised yet (Moyasar was down at approval). */
+  const payNow = async (id: string) => {
+    setBusy(id);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/payments/invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ metadata: { bookingId: id, order_id: id } }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string; url?: string };
+      if (!res.ok || !isMoyasarUrl(data.url)) {
+        setMessage({ tone: 'err', text: data.error || t.coErrPayUrl });
+        return;
+      }
+      window.location.assign(String(data.url));
+    } catch {
+      setMessage({ tone: 'err', text: t.coErrNet });
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const statusLabel = (s: string) => {
     if (!ar) {
       const map: Record<string, string> = {
@@ -274,9 +305,20 @@ export function OrdersScreen() {
                 {o.cancellation?.note ? <p className="mt-3 text-xs text-ink-1">{o.cancellation.note}</p> : null}
 
                 <div className="flex gap-2 mt-4 flex-wrap">
-                  {o.paymentStatus === 'unpaid' && cancellable && isMoyasarUrl(o.paymentUrl) ? (
+                  {o.paymentStatus === 'unpaid' && cancellable && o.status === 'بانتظار موافقة المورّد' ? (
+                    <span className="h-10 inline-flex items-center text-[13px] text-ink-1">{t.payAfterApproval}</span>
+                  ) : o.paymentStatus === 'unpaid' && cancellable && isMoyasarUrl(o.paymentUrl) ? (
                     <button type="button" onClick={() => window.location.assign(String(o.paymentUrl))} className="h-10 px-4 rounded-control bg-action text-white text-[13px] font-semibold min-h-0">
                       {t.resumePay}
+                    </button>
+                  ) : o.paymentStatus === 'unpaid' && cancellable && o.status === 'مؤكد' ? (
+                    <button
+                      type="button"
+                      onClick={() => void payNow(o.id)}
+                      disabled={busy === o.id}
+                      className="h-10 px-4 rounded-control bg-action text-white text-[13px] font-semibold min-h-0 disabled:opacity-70"
+                    >
+                      {t.payNow}
                     </button>
                   ) : null}
                   {past ? (

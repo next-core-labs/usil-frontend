@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ShieldCheck, ClipboardList, MessageCircle, Heart } from 'lucide-react';
 import { LoginScreen } from '../../LoginScreen';
 import { UsilMark } from '../../components/UsilMark';
@@ -15,9 +15,13 @@ export function LoginPage() {
   const mode = (sf.search.get('mode') as 'login' | 'register' | 'verify' | null) || 'login';
   const next = sf.search.get('next') || '';
 
+  // Set just before sign-up signs the user in, so the card can switch to the
+  // code step instead of this page bouncing to /account.
+  const verifying = useRef(false);
+
   // A signed-in user only belongs here to verify their email.
   useEffect(() => {
-    if (sf.user && mode !== 'verify') sf.navigate(next || '/account', { replace: true });
+    if (sf.user && mode !== 'verify' && !verifying.current) sf.navigate(next || '/account', { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sf.user?.id]);
 
@@ -70,6 +74,7 @@ export function LoginPage() {
             defaultMode={mode}
             verifyPrefill={sf.user ? { email: sf.user.email, phone: sf.user.phone } : undefined}
             onSuccess={(user, meta) => {
+              verifying.current = Boolean(meta?.needsEmailVerification);
               sf.onAuthSuccess(user);
               if (meta?.needsEmailVerification) return;
               sf.navigate(next || '/account', { replace: true });
