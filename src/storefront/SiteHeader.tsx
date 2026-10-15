@@ -143,7 +143,7 @@ export function SiteHeader() {
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
-          className="md:hidden w-10 h-10 rounded-control border border-line bg-surface text-navy grid place-items-center cursor-pointer"
+          className="lg:hidden w-10 h-10 rounded-control border border-line bg-surface text-navy grid place-items-center cursor-pointer"
           aria-expanded={menuOpen}
           aria-label={t.menu}
         >
@@ -152,7 +152,7 @@ export function SiteHeader() {
       </div>
 
       {menuOpen ? (
-        <div className="md:hidden border-t border-line bg-surface sf-wrap pt-2 pb-4 flex flex-col gap-0.5 usil-pop-in">
+        <div className="lg:hidden border-t border-line bg-surface sf-wrap pt-2 pb-4 flex flex-col gap-0.5 usil-pop-in">
           {menuItems.map((n) => (
             <a
               key={n.id}

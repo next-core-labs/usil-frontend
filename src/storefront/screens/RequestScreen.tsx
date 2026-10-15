@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { riyadhToday } from '../../utils/riyadhDate';
 import { Headset, Check } from 'lucide-react';
 import { DEMAND_OCCASIONS } from '../../data/cityDemand';
 import { ALL_CITIES_LABEL } from '../../data/saudiPlaces';
@@ -158,7 +159,7 @@ export function RequestScreen() {
               <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] gap-3.5">
                 <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
                   {t.rDate}
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
+                  <input type="date" value={date} min={riyadhToday()} onChange={(e) => setDate(e.target.value)} className={inputCls} />
                 </label>
                 <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
                   {t.rGuests}

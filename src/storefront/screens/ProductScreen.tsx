@@ -13,14 +13,44 @@ import { MiniProductCard, Rating } from '../ProductCard';
 import { recordListingView } from '../../utils/trendingApi';
 import { useFavorites } from '../favorites';
 import { pathForVendor } from '../../utils/siteRoutes';
+import { riyadhToday } from '../../utils/riyadhDate';
+import { customerRefundPercent } from '../../contracts/shared/refund-policy';
 
 const SLOTS = ['10:00 – 14:00', '14:00 – 18:00', '16:00 – 20:00', '19:00 – 23:00'];
+const DAYS_SHOWN = 14;
 
-function isoDate(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+/** `YYYY-MM-DD` plus `days` on the calendar. */
+function addDays(date: string, days: number): string {
+  const d = new Date(`${date}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Same-hour and same-day lanes can serve today; everything else starts tomorrow at the earliest. */
+function firstBookableOffset(service: ServiceItem | null): number {
+  const lanes = service?.fulfillment || [];
+  return lanes.includes('hour') || lanes.includes('same_day') ? 0 : 1;
+}
+
+/** The vendor's closed days (public, dates only). Missing endpoint or offline → nothing blocked here; checkout re-checks. */
+function useVendorBlockedDates(vendorId: string): Set<string> {
+  const [dates, setDates] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    setDates(new Set());
+    if (!vendorId) return;
+    let cancelled = false;
+    fetch(`/api/vendors/${encodeURIComponent(vendorId)}/blocked-dates`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { data?: { dates?: unknown } } | null) => {
+        const list = data?.data?.dates;
+        if (!cancelled && Array.isArray(list)) setDates(new Set(list.map(String)));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [vendorId]);
+  return dates;
 }
 
 export function ProductScreen() {
@@ -30,14 +60,14 @@ export function ProductScreen() {
   const service = useMemo(() => sf.services.find((s) => s.id === sf.productId) || null, [sf.services, sf.productId]);
 
   const [thumb, setThumb] = useState(0);
-  const [day, setDay] = useState(1);
+  const [day, setDay] = useState(0);
   const [slot, setSlot] = useState(1);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
     setThumb(0);
-    setDay(1);
+    setDay(0);
     setSlot(1);
     setQty(service?.minQuantity || 1);
     setAdded(false);
@@ -48,14 +78,20 @@ export function ProductScreen() {
     if (service?.id) recordListingView(service.id);
   }, [service?.id]);
 
+  const blocked = useVendorBlockedDates(String(service?.provider?.id || ''));
+  // Real Saudi calendar days from the first one this listing can serve, minus the vendor's closed days.
   const days = useMemo(() => {
-    const fmt = new Intl.DateTimeFormat(ar ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB', { weekday: 'short' });
-    return [0, 1, 2, 3, 4, 5, 6].map((i) => {
-      const dt = new Date();
-      dt.setDate(dt.getDate() + 1 + i);
-      return { wd: fmt.format(dt), n: dt.getDate(), iso: isoDate(dt) };
-    });
-  }, [ar]);
+    const fmt = new Intl.DateTimeFormat(ar ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB', { weekday: 'short', timeZone: 'UTC' });
+    const start = addDays(riyadhToday(), firstBookableOffset(service));
+    const out: Array<{ wd: string; n: number; iso: string }> = [];
+    for (let i = 0; out.length < 7 && i < DAYS_SHOWN; i++) {
+      const iso = addDays(start, i);
+      if (blocked.has(iso)) continue;
+      const dt = new Date(`${iso}T12:00:00Z`);
+      out.push({ wd: fmt.format(dt), n: dt.getUTCDate(), iso });
+    }
+    return out;
+  }, [ar, service, blocked]);
 
   if (sf.catalogStatus === 'loading') {
     return (
@@ -91,7 +127,8 @@ export function ProductScreen() {
   const approval = service.bookingMode === 'approval';
   const total = service.price * qty;
   const minQty = service.minQuantity || 1;
-  const chosen = days[day] || days[0];
+  const chosen = days[day] || days[0] || { wd: '', n: 0, iso: '' };
+  const refundPct = chosen.iso ? customerRefundPercent(chosen.iso) : 0;
   const chosenTime = SLOTS[slot].split(' ')[0];
   const related = sf.services.filter((s) => s.id !== service.id && s.category === service.category).slice(0, 6);
   const moreRelated = related.length < 4 ? sf.services.filter((s) => s.id !== service.id && !related.includes(s)).slice(0, 4 - related.length) : [];
@@ -105,7 +142,9 @@ export function ProductScreen() {
     setAdded(true);
   };
   const bookNow = () => {
-    if (!inCart) sf.addToCart(service, qty, chosen.iso, chosenTime, service.cities[0] || sf.selectedCity, '');
+    // Book now means *this* date, time and quantity — replace a line already in the cart.
+    if (inCart) sf.removeFromCart(service.id);
+    sf.addToCart(service, qty, chosen.iso, chosenTime, service.cities[0] || sf.selectedCity, '');
     sf.navigate('/checkout');
   };
 
@@ -380,9 +419,14 @@ export function ProductScreen() {
           )}
 
           <div className="mt-3.5 text-xs text-ink-1 leading-relaxed text-center">{approval ? t.bookingModeApproval : t.bookingModeInstant}</div>
-          <div className="flex items-center justify-center gap-2 mt-2 text-xs text-success">
+          {/* The refund the shopper would actually get for the date they picked, not a blanket promise. */}
+          <div className={cn('flex items-center justify-center gap-2 mt-2 text-xs', refundPct === 100 ? 'text-success' : 'text-warning')}>
             <Check className="w-3.5 h-3.5" aria-hidden />
-            {t.freeCancel}
+            {refundPct === 100
+              ? t.freeCancel
+              : refundPct === 50
+                ? L('لهذا التاريخ: استرجاع 50٪ عند الإلغاء', 'For this date: 50% refund if you cancel')
+                : L('لهذا التاريخ: الإلغاء بدون استرجاع (أقل من 3 أيام)', 'For this date: no refund on cancellation (under 3 days)')}
           </div>
           <div className="mt-3.5 grid grid-cols-3 gap-1.5 text-center text-[11px]">
             {[

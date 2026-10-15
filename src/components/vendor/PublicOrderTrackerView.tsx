@@ -16,7 +16,6 @@ import {
   ChevronRight,
   Share2,
   ExternalLink,
-  Code2,
 } from 'lucide-react';
 
 interface PublicOrderTrackerViewProps {
@@ -35,7 +34,8 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
   const [copiedLink, setCopiedLink] = useState(false);
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`https://usil.app/track/${tracking.trackingCode}`);
+    // Only the code is shared — there is no public tracking page to link to yet.
+    void navigator.clipboard?.writeText(tracking.trackingCode).catch(() => undefined);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
@@ -74,7 +74,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
               className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center gap-1.5 border border-white/20 transition-colors"
             >
               <Share2 className="w-3.5 h-3.5" />
-              <span>{copiedLink ? 'تم النسخ!' : 'مشاركة التتبع'}</span>
+              <span>{copiedLink ? 'تم النسخ!' : 'نسخ رمز التتبع'}</span>
             </button>
 
             {onClose && (
@@ -105,6 +105,8 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
                     ? 'الطاقم في الطريق للموقع'
                     : tracking.status === 'setup_ready'
                     ? 'الموقع جاهز وبدء الضيافة'
+                    : tracking.status === 'completed'
+                    ? 'اكتملت المناسبة'
                     : 'حجز مؤكد'}
                 </span>
               </div>
@@ -147,7 +149,6 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
                 <span>الضيوف المعتمدين</span>
               </span>
               <div className="font-bold font-mono text-slate-900">{tracking.guestCount} شخص</div>
-              <span className="text-2xs text-emerald-700 font-semibold">طاقم كافي</span>
             </div>
 
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-0.5">
@@ -158,7 +159,9 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
               <div className="font-bold font-mono text-action">
                 {tracking.remainingBalance === 0 ? 'مدفوع بالكامل' : `متبقي ${tracking.remainingBalance} ر.س`}
               </div>
-              <span className="text-2xs text-slate-500">تم دفع العربون</span>
+              {tracking.depositPaid > 0 && (
+                <span className="text-2xs text-slate-500">تم دفع العربون</span>
+              )}
             </div>
           </div>
         </div>
@@ -174,7 +177,7 @@ export const PublicOrderTrackerView: React.FC<PublicOrderTrackerViewProps> = ({
           </div>
 
           <div className="relative pl-2 pr-4 space-y-6 before:absolute before:right-7 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">
-            {tracking.timeline.map((step, idx) => (
+            {(tracking.timeline ?? []).map((step, idx) => (
               <div key={step.id} className="relative flex items-start gap-4">
                 
                 {/* Step Icon Badge */}

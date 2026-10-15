@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SmartServiceContract, InteractiveQuotationProposal, EventReadinessAudit, HospitalityGiftCard, VendorBooking } from '../../types';
 import { buildSmartContract, contractPrintHtml, whatsappContractUrl } from '../../utils/vendorContracts';
+import { riyadhToday } from '../../utils/riyadhDate';
+
+/** `YYYY-MM-DD` that is `days` after the Riyadh date `from`. */
+function addDays(from: string, days: number): string {
+  const d = new Date(`${from}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
 import { 
   ShieldCheck, 
   FileSignature, 
@@ -56,7 +64,7 @@ export const TrustAndGrowthHub: React.FC<TrustAndGrowthHubProps> = ({
     clientName: '',
     clientPhone: '',
     serviceTitle: '',
-    eventDate: new Date().toISOString().slice(0, 10),
+    eventDate: riyadhToday(),
     eventLocation: 'الرياض',
     totalAmount: 5000,
     depositAmount: 1500,
@@ -157,7 +165,7 @@ export const TrustAndGrowthHub: React.FC<TrustAndGrowthHubProps> = ({
     clientPhone: '',
     companyName: '',
     eventTitle: '',
-    eventDate: new Date().toISOString().slice(0, 10),
+    eventDate: riyadhToday(),
     guestCount: 100,
     itemTitle: '',
     itemPrice: 0,
@@ -213,7 +221,7 @@ export const TrustAndGrowthHub: React.FC<TrustAndGrowthHubProps> = ({
 
     const newQ: InteractiveQuotationProposal = {
       id: `q-${Date.now()}`,
-      quoteNumber: `Q-2026-${Math.floor(100 + Math.random() * 900)}`,
+      quoteNumber: `Q-${riyadhToday().slice(0, 4)}-${Math.floor(100 + Math.random() * 900)}`,
       clientName: newQuoteData.clientName || 'عميل تجاري',
       clientPhone: newQuoteData.clientPhone || '0500000000',
       companyName: newQuoteData.companyName || undefined,
@@ -235,10 +243,10 @@ export const TrustAndGrowthHub: React.FC<TrustAndGrowthHubProps> = ({
       vatAmount: vat,
       grandTotal: grand,
       depositRequired: Math.round(grand * 0.3),
-      validUntil: '2026-09-10',
+      validUntil: addDays(riyadhToday(), 14),
       status: 'sent',
       customNote: newQuoteData.notes,
-      createdAt: '2026-08-21'
+      createdAt: riyadhToday()
     };
 
     setQuotations([newQ, ...quotations]);
@@ -257,10 +265,10 @@ export const TrustAndGrowthHub: React.FC<TrustAndGrowthHubProps> = ({
       message: newCardData.message || 'إهداء خاص بمناسبة كريمة.',
       amount: Number(newCardData.amount),
       balance: Number(newCardData.amount),
-      expiryDate: '2026-12-31',
+      expiryDate: addDays(riyadhToday(), 365),
       status: 'active',
       theme: newCardData.theme,
-      createdAt: '2026-08-21'
+      createdAt: riyadhToday()
     };
 
     setGiftCards([newCard, ...giftCards]);

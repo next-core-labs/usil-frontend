@@ -265,7 +265,7 @@ key is set, AI routes return 503 and never make up results.
 | Mobile bottom bar | ✅ | Store/dashboard toggle, home, a floating cart button, tracking (the crew portal for vendors), and account. |
 | PWA install banner | ✅ / 🧪 | Uses the browser's install prompt on Android and desktop, and a 3-step "Add to Home Screen" guide on iOS. It promises booking notifications, but 🧪 **there are no push notifications**. |
 | Service worker / offline | 🧪 | Registers only on usil.app, but in practice caches nothing: its asset rule targets a Next.js path this Vite app doesn't use. |
-| iOS and Android apps | ✅ | A Capacitor shell (`sa.usil.app`) that ships the built web app and sends API calls to `usil-emjc.onrender.com` through native HTTP. Includes a navy splash screen and status bar, keyboard resizing, and the Android back button. |
+| iOS and Android apps | ✅ | A Capacitor shell (`sa.usil.app`) that ships the built web app and sends API calls to `usil.app` through native HTTP. Includes a navy splash screen and status bar, keyboard resizing, and the Android back button. |
 
 ---
 

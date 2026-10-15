@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { VendorBooking, ExpenseRecord, POSSaleRecord, FinancialPayout } from '../../../types';
-import { exportProfitAndLossToExcel } from '../../../utils/excelExporter';
+import { exportProfitAndLossToExcel } from './profitAndLossExcel';
+import { riyadhMonth } from '../../../utils/riyadhDate';
+import { arabicMonthLabel, toRiyadhDate } from '../../../utils/riyadhCalendar';
 import {
   TrendingUp,
   ArrowDownRight,
@@ -29,13 +31,43 @@ interface VendorProfitAndLossProps {
   brandName: string;
 }
 
+const ALL_PERIODS = 'all';
+
+/** `YYYY-MM` of a record date, or null when it has no parseable date. */
+function monthKeyOf(value: string | undefined | null): string | null {
+  const d = toRiyadhDate(value);
+  return d ? d.slice(0, 7) : null;
+}
+
 export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
-  bookings,
-  expenses,
-  posSales,
+  bookings: allBookings,
+  expenses: allExpenses,
+  posSales: allPosSales,
   payouts,
   brandName,
 }) => {
+  // Period picker: defaults to the current month in Riyadh, plus «كل الفترات».
+  const [period, setPeriod] = useState<string>(() => riyadhMonth());
+  const periodLabel = period === ALL_PERIODS ? 'كل الفترات' : arabicMonthLabel(period);
+
+  const monthOptions = useMemo(() => {
+    const keys = new Set<string>([riyadhMonth()]);
+    (allBookings || []).forEach((b) => { const k = monthKeyOf(b.date); if (k) keys.add(k); });
+    (allExpenses || []).forEach((e) => { const k = monthKeyOf(e.date); if (k) keys.add(k); });
+    (allPosSales || []).forEach((p) => { const k = monthKeyOf(p.eventDate || p.createdAt); if (k) keys.add(k); });
+    return Array.from(keys).sort().reverse();
+  }, [allBookings, allExpenses, allPosSales]);
+
+  const inPeriod = (value: string | undefined | null) =>
+    period === ALL_PERIODS || monthKeyOf(value) === period;
+
+  // Cancelled bookings and refunded POS sales are not revenue.
+  const bookings = (allBookings || []).filter((b) => b.status !== 'cancelled' && inPeriod(b.date));
+  const expenses = (allExpenses || []).filter((e) => inPeriod(e.date));
+  const posSales = (allPosSales || []).filter(
+    (s) => s.status !== 'refunded' && inPeriod(s.eventDate || s.createdAt)
+  );
+
   // 1. REVENUE CALCULATIONS
   const externalBookings = bookings.filter((b) => b.source !== 'platform');
   const platformBookings = bookings.filter((b) => b.source === 'platform');
@@ -56,6 +88,14 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
     .filter((e) => e.category === 'raw_materials')
     .reduce((sum, e) => sum + e.amount, 0);
 
+  const inventorySuppliesExpense = expenses
+    .filter((e) => e.category === 'inventory_supplies')
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  const crewWagesExpense = expenses
+    .filter((e) => e.category === 'crew_wages')
+    .reduce((sum, e) => sum + e.amount, 0);
+
   const directLaborExpense = expenses
     .filter((e) => e.category === 'direct_labor')
     .reduce((sum, e) => sum + e.amount, 0);
@@ -69,7 +109,13 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
     .reduce((sum, e) => sum + e.amount, 0);
 
   const totalDirectCosts =
-    rawMaterialsExpense + directLaborExpense + transportExpense + packagingExpense + platformCommission;
+    rawMaterialsExpense +
+    inventorySuppliesExpense +
+    directLaborExpense +
+    crewWagesExpense +
+    transportExpense +
+    packagingExpense +
+    platformCommission;
 
   // 3. GROSS PROFIT (إجمالي الربح التشغيلي للمناسبات)
   const grossProfit = totalGrossRevenue - totalDirectCosts;
@@ -110,7 +156,7 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
     try {
       exportProfitAndLossToExcel({
         brandName: brandName || 'مؤسسة الضيافة',
-        period: 'أغسطس 2026',
+        period: periodLabel,
         totalGrossRevenue,
         externalBookingsRevenue,
         posSalesRevenue,
@@ -119,13 +165,17 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
         platformNetRevenue,
         totalDirectCosts,
         rawMaterialsExpense,
+        inventorySuppliesExpense,
         directLaborExpense,
+        crewWagesExpense,
         transportExpense,
         packagingExpense,
         grossProfit,
         grossMarginPercent,
         totalOperatingExpenses,
         maintenanceExpense,
+        marketingExpense,
+        rentUtilitiesExpense,
         otherPettyCashExpense,
         netIncome,
         netMarginPercent,
@@ -150,7 +200,7 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-medium border border-white/10">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>قائمة الدخل والربحية الفورية • شهر أغسطس 2026</span>
+            <span>قائمة الدخل والربحية • {periodLabel}</span>
           </div>
           <h3 className="text-xl font-bold text-white">
             بيان الأرباح والخسائر الشامل (P&L Income Statement)
@@ -160,7 +210,26 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <label className="flex flex-col gap-1 text-2xs text-slate-300">
+            <span>الفترة</span>
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-medium focus:outline-none"
+              aria-label="اختر الفترة"
+            >
+              {monthOptions.map((m) => (
+                <option key={m} value={m} className="text-slate-900">
+                  {arabicMonthLabel(m)}
+                </option>
+              ))}
+              <option value={ALL_PERIODS} className="text-slate-900">
+                كل الفترات
+              </option>
+            </select>
+          </label>
+
           {/* Export Report Excel Action Button in Top Banner */}
           <button
             onClick={handleExportExcel}
@@ -187,7 +256,7 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
             <div className="text-2xl font-bold font-mono text-emerald-400">
               %{netMarginPercent.toFixed(1)}
             </div>
-            <span className="text-2xs text-emerald-300/80 font-medium">معدل ممتاز</span>
+            <span className="text-2xs text-slate-400 font-medium">{periodLabel}</span>
           </div>
         </div>
       </div>
@@ -345,6 +414,20 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
           </div>
 
           <div className="px-6 py-3 flex items-center justify-between hover:bg-slate-50/50">
+            <span className="text-slate-600 pr-4">• توريدات ومستلزمات المخزون</span>
+            <span className="font-mono text-amber-800">
+              -{inventorySuppliesExpense.toLocaleString('ar-SA')} ر.س
+            </span>
+          </div>
+
+          <div className="px-6 py-3 flex items-center justify-between hover:bg-slate-50/50">
+            <span className="text-slate-600 pr-4">• مسير أجور الطاقم</span>
+            <span className="font-mono text-amber-800">
+              -{crewWagesExpense.toLocaleString('ar-SA')} ر.س
+            </span>
+          </div>
+
+          <div className="px-6 py-3 flex items-center justify-between hover:bg-slate-50/50">
             <span className="text-slate-600 pr-4">• أجور العمالة المباشرة والمباشرين الإضافيين باليومية</span>
             <span className="font-mono text-amber-800">
               -{directLaborExpense.toLocaleString('ar-SA')} ر.س
@@ -397,6 +480,20 @@ export const VendorProfitAndLoss: React.FC<VendorProfitAndLossProps> = ({
             <span className="text-slate-600 pr-4">• صيانة المعدات والدلال والمغاسل المركزية</span>
             <span className="font-mono text-slate-700">
               -{maintenanceExpense.toLocaleString('ar-SA')} ر.س
+            </span>
+          </div>
+
+          <div className="px-6 py-3 flex items-center justify-between hover:bg-slate-50/50">
+            <span className="text-slate-600 pr-4">• إعلانات وتسويق</span>
+            <span className="font-mono text-slate-700">
+              -{marketingExpense.toLocaleString('ar-SA')} ر.س
+            </span>
+          </div>
+
+          <div className="px-6 py-3 flex items-center justify-between hover:bg-slate-50/50">
+            <span className="text-slate-600 pr-4">• إيجار وكهرباء وإنترنت</span>
+            <span className="font-mono text-slate-700">
+              -{rentUtilitiesExpense.toLocaleString('ar-SA')} ر.س
             </span>
           </div>
 

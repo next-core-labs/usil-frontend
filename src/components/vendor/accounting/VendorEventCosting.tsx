@@ -48,62 +48,60 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
   const costPerGuest = calcGuestCount > 0 ? calcTotalDirectCost / calcGuestCount : 0;
   const pricePerGuest = calcGuestCount > 0 ? suggestedSellingPrice / calcGuestCount : 0;
 
-  // Build Event Costing Breakdown List for Real Bookings
-  const eventsCostingList: EventUnitCosting[] = bookings.map((b) => {
-    // Find expenses explicitly tagged with this booking
-    const linkedExpenses = expenses.filter((e) => e.relatedBookingId === b.id);
-    
-    // Estimate or calculate raw materials & direct labor
-    const rawCost =
-      linkedExpenses
-        .filter((e) => e.category === 'raw_materials')
-        .reduce((sum, e) => sum + e.amount, 0) || Math.round(b.totalAmount * 0.22);
+  // Per-event costing from REAL expenses linked to each booking (relatedBookingId).
+  // Nothing is estimated: a booking with no linked expenses shows «لا توجد تكاليف مسجلة»
+  // and is left out of the average margin.
+  type EventCostingRow = EventUnitCosting & { hasRecordedCosts: boolean };
+  const sumOf = (list: ExpenseRecord[], cats: ExpenseRecord['category'][]) =>
+    list.filter((e) => cats.includes(e.category)).reduce((sum, e) => sum + (e.amount || 0), 0);
 
-    const laborCost =
-      linkedExpenses
-        .filter((e) => e.category === 'direct_labor')
-        .reduce((sum, e) => sum + e.amount, 0) || ((b.assignedCrew?.length || 2) * 250);
+  const eventsCostingList: EventCostingRow[] = (bookings || [])
+    .filter((b) => b.status !== 'cancelled')
+    .map((b) => {
+      const linkedExpenses = (expenses || []).filter((e) => e.relatedBookingId === b.id);
+      const hasRecordedCosts = linkedExpenses.length > 0;
 
-    const transportCost =
-      linkedExpenses
-        .filter((e) => e.category === 'fuel_transport')
-        .reduce((sum, e) => sum + e.amount, 0) || 120;
+      const rawCost = sumOf(linkedExpenses, ['raw_materials', 'inventory_supplies']);
+      const laborCost = sumOf(linkedExpenses, ['direct_labor', 'crew_wages']);
+      const transportCost = sumOf(linkedExpenses, ['fuel_transport']);
+      const consumablesCost = sumOf(linkedExpenses, ['packaging_disposables']);
+      // Usil's 15% commission on platform orders is a real, known cost.
+      const platformFeeCost = b.source === 'platform' ? b.totalAmount * 0.15 : 0;
 
-    const consumablesCost = Math.round(b.totalAmount * 0.05);
-    const platformFeeCost = b.source === 'platform' ? b.totalAmount * 0.15 : 0;
+      const totalDirectCost = rawCost + laborCost + transportCost + consumablesCost + platformFeeCost;
+      const grossProfit = b.totalAmount - totalDirectCost;
+      const profitMarginPercent = b.totalAmount > 0 ? (grossProfit / b.totalAmount) * 100 : 0;
 
-    const totalDirectCost = rawCost + laborCost + transportCost + consumablesCost + platformFeeCost;
-    const grossProfit = b.totalAmount - totalDirectCost;
-    const profitMarginPercent = b.totalAmount > 0 ? (grossProfit / b.totalAmount) * 100 : 0;
+      let status: EventUnitCosting['status'] = 'normal_profit';
+      if (grossProfit < 0) status = 'loss';
+      else if (profitMarginPercent >= 50) status = 'high_profit';
+      else if (profitMarginPercent < 25) status = 'low_margin';
 
-    let status: EventUnitCosting['status'] = 'normal_profit';
-    if (profitMarginPercent >= 50) status = 'high_profit';
-    else if (profitMarginPercent < 25) status = 'low_margin';
-    else if (grossProfit < 0) status = 'loss';
+      return {
+        bookingId: b.id,
+        bookingNumber: b.bookingNumber,
+        clientName: b.customerName,
+        serviceTitle: b.serviceTitle,
+        eventDate: b.date,
+        revenue: b.totalAmount,
+        rawMaterialsCost: rawCost,
+        directLaborCost: laborCost,
+        transportCost,
+        consumablesCost,
+        platformFeeCost,
+        totalDirectCost,
+        grossProfit,
+        profitMarginPercent,
+        status,
+        hasRecordedCosts,
+      };
+    });
 
-    return {
-      bookingId: b.id,
-      bookingNumber: b.bookingNumber,
-      clientName: b.customerName,
-      serviceTitle: b.serviceTitle,
-      eventDate: b.date,
-      revenue: b.totalAmount,
-      rawMaterialsCost: rawCost,
-      directLaborCost: laborCost,
-      transportCost,
-      consumablesCost,
-      platformFeeCost,
-      totalDirectCost,
-      grossProfit,
-      profitMarginPercent,
-      status,
-    };
-  });
-
+  const costedEvents = eventsCostingList.filter((e) => e.hasRecordedCosts);
   const avgMargin =
-    eventsCostingList.length > 0
-      ? eventsCostingList.reduce((sum, e) => sum + e.profitMarginPercent, 0) / eventsCostingList.length
-      : 0;
+    costedEvents.length > 0
+      ? costedEvents.reduce((sum, e) => sum + e.profitMarginPercent, 0) / costedEvents.length
+      : null;
 
   return (
     <div className="space-y-8 text-right">
@@ -125,7 +123,12 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
 
         <div className="p-3 rounded-2xl bg-purple-50 border border-purple-200 text-purple-950 text-left shrink-0">
           <span className="text-2xs text-purple-800 font-medium block">متوسط هامش ربح المناسبات</span>
-          <span className="text-xl font-bold font-mono text-purple-900">%{avgMargin.toFixed(1)}</span>
+          <span className="text-xl font-bold font-mono text-purple-900">
+            {avgMargin === null ? '—' : `%${avgMargin.toFixed(1)}`}
+          </span>
+          {avgMargin === null && (
+            <span className="text-2xs text-purple-700 block">لا توجد تكاليف مسجلة مرتبطة بالمناسبات</span>
+          )}
         </div>
       </div>
 
@@ -312,7 +315,7 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
               جدول ربحية الحجوزات والمناسبات الفعلية
             </h4>
           </div>
-          <span className="text-xs text-slate-500">حساب فوري للأرباح الصافية لكل مناسبة</span>
+          <span className="text-xs text-slate-500">من المصروفات المرتبطة بكل حجز (حقل «ربط بمناسبة» في المصروفات)</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -331,9 +334,38 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
             </thead>
 
             <tbody className="divide-y divide-slate-100">
+              {eventsCostingList.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-8 px-4 text-center text-slate-500">
+                    لا توجد حجوزات بعد.
+                  </td>
+                </tr>
+              )}
               {eventsCostingList.map((item) => {
                 const isHighProfit = item.profitMarginPercent >= 50;
                 const isLowMargin = item.profitMarginPercent < 25;
+
+                if (!item.hasRecordedCosts) {
+                  return (
+                    <tr key={item.bookingId} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-slate-900">{item.clientName}</div>
+                        <div className="text-2xs text-blue-600 font-medium">{item.serviceTitle}</div>
+                        <div className="text-2xs text-slate-400 font-mono">
+                          {item.bookingNumber} • {item.eventDate}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
+                        {item.revenue.toLocaleString('ar-SA')} ر.س
+                      </td>
+                      <td colSpan={6} className="py-3.5 px-4 text-slate-500">
+                        لا توجد تكاليف مسجلة لهذه المناسبة
+                        {item.platformFeeCost > 0 &&
+                          ` (عمولة يوصل: ${item.platformFeeCost.toLocaleString('ar-SA')} ر.س)`}
+                      </td>
+                    </tr>
+                  );
+                }
 
                 return (
                   <tr key={item.bookingId} className="hover:bg-slate-50/70 transition-colors">
@@ -373,8 +405,13 @@ export const VendorEventCosting: React.FC<VendorEventCostingProps> = ({
                     </td>
 
                     {/* Gross Profit */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-emerald-700 text-sm">
-                      +{item.grossProfit.toLocaleString('ar-SA')} ر.س
+                    <td
+                      className={`py-3.5 px-4 font-mono font-bold text-sm ${
+                        item.grossProfit < 0 ? 'text-rose-700' : 'text-emerald-700'
+                      }`}
+                    >
+                      {item.grossProfit >= 0 ? '+' : ''}
+                      {item.grossProfit.toLocaleString('ar-SA')} ر.س
                     </td>
 
                     {/* Margin Badge */}

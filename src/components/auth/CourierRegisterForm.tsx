@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { controlClass } from '../ui/Field';
-import { AlertCircle, Bike, CheckCircle2, ClipboardList, Plus, Trash2, X } from 'lucide-react';
+import { AlertCircle, Bike, CheckCircle2, ClipboardList, ListChecks, Loader2, Plus, RefreshCw, Trash2, X } from 'lucide-react';
 import { UsilLockup } from '../UsilLockup';
-import { ExternalBookingForm } from '../courier/ExternalBookingForm';
+import {
+  COLLECTION_OPTIONS,
+  EXTERNAL_STATUSES,
+  ExternalBookingForm,
+  type ExternalBookingRow,
+} from '../courier/ExternalBookingForm';
+import { requestApi } from '../../utils/adminBookings';
 import { FulfillmentLanePicker } from '../FulfillmentLanePicker';
 import { FulfillmentLane } from '../../types';
 
@@ -66,6 +72,147 @@ function clientValidate(form: FormState): string {
   return '';
 }
 
+type CourierTab = 'apply' | 'external' | 'mine';
+
+const COLLECTION_LABEL: Record<string, string> = Object.fromEntries(
+  COLLECTION_OPTIONS.map((option) => [option.id, option.label]),
+);
+
+/**
+ * «حجوزاتي الخارجية» — the courier's own offline bookings. The server scopes
+ * GET /api/external-bookings to the signed-in courier (supervisors see all),
+ * and lets them PATCH the status of rows they own.
+ */
+function MyExternalBookings() {
+  const [rows, setRows] = useState<ExternalBookingRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError('');
+    const result = await requestApi<{ success?: boolean; error?: string; data?: ExternalBookingRow[] }>(
+      '/api/external-bookings',
+      undefined,
+      'تعذر تحميل حجوزاتك الخارجية.',
+    );
+    if (result.ok) {
+      const list = Array.isArray(result.data?.data) ? result.data.data : [];
+      setRows([...list].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))));
+    } else {
+      setError(result.error);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const updateStatus = async (id: string, status: string) => {
+    setSavingId(id);
+    setError('');
+    const result = await requestApi(
+      `/api/external-bookings/${id}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      },
+      'تعذر تعديل حالة الحجز.',
+    );
+    if (result.ok) {
+      setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status } : row)));
+    } else {
+      setError(result.error);
+    }
+    setSavingId(null);
+  };
+
+  return (
+    <section className="space-y-3" dir="rtl">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-2xs sm:text-xs text-slate-500 leading-relaxed">
+          الحجوزات اللي سجّلتها خارج المنصة. حدّث الحالة أول بأول عشان تبقى متابعة يوصل دقيقة.
+        </p>
+        <button
+          type="button"
+          onClick={() => void load()}
+          disabled={loading}
+          className="shrink-0 w-9 h-9 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 inline-flex items-center justify-center disabled:opacity-50"
+          aria-label="تحديث القائمة"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {error ? (
+        <div className="flex items-start gap-2 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      ) : null}
+
+      {loading && rows.length === 0 ? (
+        <div className="flex items-center gap-2 text-xs text-slate-500 py-6">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          جارٍ تحميل حجوزاتك…
+        </div>
+      ) : !error && rows.length === 0 ? (
+        <p className="text-xs text-slate-500 py-4">ما سجّلت حجوزات خارجية بعد. سجّل أول حجز من تبويب «تسجيل حجز خارجي».</p>
+      ) : (
+        <ul className="space-y-2">
+          {rows.map((row) => (
+            <li key={row.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-3 space-y-2">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-bold text-slate-900 text-sm">{row.customerName}</p>
+                  <p className="text-2xs text-slate-500 mt-0.5">
+                    {[row.serviceType, row.city, row.vendorName ? `مورّد: ${row.vendorName}` : '']
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                </div>
+                <label className="flex items-center gap-1.5 text-2xs font-medium text-slate-600">
+                  الحالة
+                  <select
+                    value={row.status}
+                    disabled={savingId === row.id}
+                    onChange={(e) => void updateStatus(row.id, e.target.value)}
+                    className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium disabled:opacity-60"
+                  >
+                    {[row.status, ...EXTERNAL_STATUSES.filter((status) => status !== row.status)].map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-2xs text-slate-600">
+                <span className="tnum">
+                  المناسبة {row.eventDate}
+                  {row.deliveryTime ? (
+                    <span dir="ltr"> {row.deliveryTime}</span>
+                  ) : null}
+                </span>
+                <span className="tnum">
+                  {row.amount} ر.س · {row.taxIncluded ? 'شامل الضريبة' : 'غير شامل الضريبة'}
+                </span>
+                <span>{COLLECTION_LABEL[row.collection] || row.collection}</span>
+                <span className="font-mono" dir="ltr">
+                  {row.phone}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 export function CourierRegisterForm({
   onClose,
   canFileExternal = false,
@@ -73,13 +220,13 @@ export function CourierRegisterForm({
 }: {
   onClose: () => void;
   canFileExternal?: boolean;
-  defaultTab?: 'apply' | 'external';
+  defaultTab?: CourierTab;
 }) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
-  const [tab, setTab] = useState<'apply' | 'external'>(canFileExternal ? defaultTab : 'apply');
+  const [tab, setTab] = useState<CourierTab>(canFileExternal ? defaultTab : 'apply');
 
   const set = (key: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -149,10 +296,14 @@ export function CourierRegisterForm({
               <UsilLockup compact />
               <div className="min-w-0">
                 <p className="text-2xs font-medium text-action">
-                  {tab === 'external' ? 'حجوزات خارجية — سجّل الحجز اللي جاك بره المنصة' : 'انضمام مندوب توصيل — مراجعة قبل التفعيل'}
+                  {tab === 'external'
+                    ? 'حجوزات خارجية — سجّل الحجز اللي جاك بره المنصة'
+                    : tab === 'mine'
+                      ? 'حجوزات خارجية — تابع حالة حجوزاتك'
+                      : 'انضمام مندوب توصيل — مراجعة قبل التفعيل'}
                 </p>
                 <h2 className="text-xl font-bold text-navy">
-                  {tab === 'external' ? 'تسجيل حجز خارجي' : 'سجّل معنا كمندوب توصيل'}
+                  {tab === 'external' ? 'تسجيل حجز خارجي' : tab === 'mine' ? 'حجوزاتي الخارجية' : 'سجّل معنا كمندوب توصيل'}
                 </h2>
               </div>
             </div>
@@ -179,11 +330,23 @@ export function CourierRegisterForm({
                   <ClipboardList className="w-3.5 h-3.5" />
                   تسجيل حجز خارجي
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setTab('mine')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold border inline-flex items-center gap-1.5 ${
+                    tab === 'mine' ? 'bg-navy text-white border-navy' : 'bg-slate-50 text-slate-700 border-slate-200'
+                  }`}
+                >
+                  <ListChecks className="w-3.5 h-3.5" />
+                  حجوزاتي الخارجية
+                </button>
               </div>
             ) : null}
 
             {tab === 'external' ? (
               <ExternalBookingForm variant="plain" />
+            ) : tab === 'mine' ? (
+              <MyExternalBookings />
             ) : (
             <>
             <p className="mb-5 text-xs text-ink-1 leading-relaxed">

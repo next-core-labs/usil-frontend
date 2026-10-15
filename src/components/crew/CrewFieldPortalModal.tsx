@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { CrewMember, CrewWorkHourLog, VendorBooking, CrewAttendanceRecord } from '../../types';
+import { riyadhToday } from '../../utils/riyadhDate';
+import { riyadhDateTime } from '../../utils/riyadhCalendar';
 import {
   Users,
   MapPin,
@@ -58,6 +60,30 @@ function calculateHaversineDistance(
   return Math.round(R * c);
 }
 
+/** Elapsed hours between two epoch-ms instants, rounded to the nearest quarter hour. */
+export function elapsedQuarterHours(startMs: number, endMs: number): number {
+  const hours = Math.max(0, endMs - startMs) / 3_600_000;
+  return Math.round(hours * 4) / 4;
+}
+
+function formatRiyadhClock(ms: number): string {
+  return new Date(ms).toLocaleTimeString('ar-SA', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Riyadh',
+  });
+}
+
+type DeviceCoords = {
+  lat: number;
+  lng: number;
+  accuracy: number;
+  speed: number | null;
+  heading: number | null;
+  timestamp: number;
+  isSimulated?: boolean;
+};
+
 // Play arrival sound chime using Web Audio API
 function playArrivalChime() {
   try {
@@ -91,110 +117,50 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
   onAddWorkLog,
   onUpdateCrewStatus,
 }) => {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'gps_attendance' | 'checklist' | 'work_logs' | 'audit_records'>('gps_attendance');
   const [selectedCrewId, setSelectedCrewId] = useState<string>(crewMembers[0]?.id || '');
-  const [selectedBookingId, setSelectedBookingId] = useState<string>(bookings[0]?.id || 'vb-101');
+  const [selectedBookingId, setSelectedBookingId] = useState<string>(bookings[0]?.id || '');
   
   // Geolocation State
   const [gpsStatus, setGpsStatus] = useState<'idle' | 'locating' | 'active' | 'error' | 'denied'>('idle');
   const [gpsErrorMsg, setGpsErrorMsg] = useState<string | null>(null);
-  const [isLiveWatching, setIsLiveWatching] = useState<boolean>(true);
+  const [isLiveWatching] = useState<boolean>(true);
+  // Dev/test aid: lets a tester fake a position relative to the venue. Off by default.
+  const [isTestMode, setIsTestMode] = useState<boolean>(false);
   const [autoCheckInEnabled, setAutoCheckInEnabled] = useState<boolean>(true);
-  const [geofenceRadius, setGeofenceRadius] = useState<number>(200); // 200 meters
+  const [geofenceRadius] = useState<number>(200); // 200 meters
 
-  // Current Device / Simulated Location (Default coordinates around Riyadh)
-  const [currentCoords, setCurrentCoords] = useState<{
-    lat: number;
-    lng: number;
-    accuracy: number;
-    speed: number | null;
-    heading: number | null;
-    timestamp: number;
-    isSimulated?: boolean;
-  }>({
-    lat: 24.7335,
-    lng: 46.5922,
-    accuracy: 8,
-    speed: 0,
-    heading: 0,
-    timestamp: Date.now(),
-    isSimulated: true,
-  });
+  // Device position: null until the browser reports a real fix (or test mode fakes one).
+  const [currentCoords, setCurrentCoords] = useState<DeviceCoords | null>(null);
 
-  // Clock in status per crew member
+  // Clock in status per crew member (session only — starts empty).
   const [clockedInState, setClockedInState] = useState<
     Record<
       string,
       {
         isClockedIn: boolean;
+        checkInAt: number;
         checkInTime: string;
-        checkInCoords: { lat: number; lng: number; accuracy: number };
+        checkInStamp: string;
+        checkInCoords: { lat: number; lng: number; accuracy: number } | null;
         bookingId: string;
+        bookingNumber: string;
         bookingTitle: string;
         venueName: string;
         geofenceVerified: boolean;
       }
     >
-  >({
-    'crew-1': {
-      isClockedIn: true,
-      checkInTime: new Date(Date.now() - 3.5 * 3600 * 1000).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
-      checkInCoords: { lat: 24.7336, lng: 46.5921, accuracy: 6 },
-      bookingId: 'vb-101',
-      bookingTitle: 'ركن الضيافة النجدية الملكية',
-      venueName: 'قاعة نيارة - الدرعية',
-      geofenceVerified: true,
-    },
-  });
+  >({});
 
-  // Attendance Records History
-  const [attendanceHistory, setAttendanceHistory] = useState<CrewAttendanceRecord[]>([
-    {
-      id: 'att-101',
-      crewId: 'crew-1',
-      crewName: 'سعد المنصور',
-      bookingId: 'vb-101',
-      bookingNumber: 'BK-2026-0881',
-      eventTitle: 'ركن الضيافة النجدية الملكية (قاعة نيارة)',
-      venueName: 'قاعة نيارة - الدرعية، الرياض',
-      checkInTime: '2026-08-22 16:30:12',
-      checkInCoordinates: { lat: 24.7335, lng: 46.5922, accuracy: 5 },
-      checkOutTime: '2026-08-22 22:30:45',
-      checkOutCoordinates: { lat: 24.7334, lng: 46.5923, accuracy: 6 },
-      geofenceStatus: 'verified_inside',
-      distanceToVenueMeters: 14,
-      durationMinutes: 360,
-      autoTriggered: true,
-      notes: 'تم التحقق الجغرافي التلقائي عند مدخل القاعة الرئيسي',
-    },
-    {
-      id: 'att-102',
-      crewId: 'crew-2',
-      crewName: 'عبدالرحمن العتيبي',
-      bookingId: 'vb-101',
-      bookingNumber: 'BK-2026-0881',
-      eventTitle: 'ركن الضيافة النجدية الملكية (قاعة نيارة)',
-      venueName: 'قاعة نيارة - الدرعية، الرياض',
-      checkInTime: '2026-08-22 16:45:00',
-      checkInCoordinates: { lat: 24.7337, lng: 46.5920, accuracy: 8 },
-      checkOutTime: '2026-08-22 22:45:00',
-      checkOutCoordinates: { lat: 24.7336, lng: 46.5921, accuracy: 7 },
-      geofenceStatus: 'verified_inside',
-      distanceToVenueMeters: 38,
-      durationMinutes: 360,
-      autoTriggered: true,
-      notes: 'حضور مباشر بالزي التراثي والدلال الذهبية',
-    },
-  ]);
+  // Attendance records captured in this session.
+  const [attendanceHistory, setAttendanceHistory] = useState<CrewAttendanceRecord[]>([]);
 
   // Checklists
   const [checklists, setChecklists] = useState<Record<string, boolean>>({
-    uniform: true,
-    equipment: true,
-    hygiene: true,
-    timing: true,
+    uniform: false,
+    equipment: false,
+    hygiene: false,
+    timing: false,
   });
 
   // Manual Log Hours Modal
@@ -202,7 +168,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
   const [regHours, setRegHours] = useState(5);
   const [otHours, setOtHours] = useState(1);
   const [eventTitle, setEventTitle] = useState('');
-  const [eventDate, setEventDate] = useState(new Date().toISOString().split('T')[0]);
+  const [eventDate, setEventDate] = useState(() => riyadhToday());
   const [logNotes, setLogNotes] = useState('');
   const [showSuccessToast, setShowSuccessToast] = useState<{ show: boolean; msg: string }>({ show: false, msg: '' });
 
@@ -233,25 +199,25 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
     );
   }, [bookings, selectedBookingId]);
 
-  const targetCoords = targetBooking.venueCoordinates || {
-    lat: 0,
-    lng: 0,
-    addressText: '',
-    geofenceRadiusMeters: 200,
-  };
+  const venueCoords = targetBooking.venueCoordinates;
+  // A venue without real coordinates (missing or 0,0) cannot be geofenced.
+  const hasVenueCoords = !!venueCoords && !(venueCoords.lat === 0 && venueCoords.lng === 0);
+  const targetCoords = hasVenueCoords && venueCoords ? venueCoords : null;
 
-  // Calculate distance between current crew GPS position and target booking venue
+  // Distance between the current device position and the booking venue (null when unknown).
   const distanceToVenue = useMemo(() => {
+    if (!currentCoords || !targetCoords) return null;
     return calculateHaversineDistance(
       currentCoords.lat,
       currentCoords.lng,
       targetCoords.lat,
       targetCoords.lng
     );
-  }, [currentCoords.lat, currentCoords.lng, targetCoords.lat, targetCoords.lng]);
+  }, [currentCoords?.lat, currentCoords?.lng, targetCoords?.lat, targetCoords?.lng]);
 
-  const isInsideGeofence = distanceToVenue <= geofenceRadius;
-  const isApproaching = distanceToVenue > geofenceRadius && distanceToVenue <= 800;
+  const isInsideGeofence = distanceToVenue !== null && distanceToVenue <= geofenceRadius;
+  const isApproaching =
+    distanceToVenue !== null && distanceToVenue > geofenceRadius && distanceToVenue <= 800;
 
   // Real Browser GeoLocation Fetcher
   const acquireRealGPS = () => {
@@ -282,8 +248,8 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
         setGpsStatus(err.code === err.PERMISSION_DENIED ? 'denied' : 'error');
         setGpsErrorMsg(
           err.code === err.PERMISSION_DENIED
-            ? 'تم رفض إذن الوصول للموقع في المتصفح. يمكنك تفعيل الإذن من إعدادات المتصفح أو استخدام المحاكاة الميدانية للتجربة.'
-            : 'تعذر الاتصال بأقمار الـ GPS، تم التبديل لوضع المحاكاة الميدانية.'
+            ? 'تم رفض إذن الوصول للموقع. فعّل الإذن من إعدادات المتصفح ثم أعد المحاولة.'
+            : 'تعذر تحديد الموقع حالياً. تأكد من تفعيل GPS ثم أعد المحاولة.'
         );
       },
       {
@@ -296,7 +262,8 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
 
   // Start / Stop Live GPS Tracking watcher
   useEffect(() => {
-    if (!isLiveWatching || !navigator.geolocation) return;
+    if (!isOpen || !isLiveWatching || typeof navigator === 'undefined' || !navigator.geolocation) return;
+    setGpsStatus((prev) => (prev === 'active' ? prev : 'locating'));
 
     try {
       const id = navigator.geolocation.watchPosition(
@@ -314,9 +281,12 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
           setGpsErrorMsg(null);
         },
         (err) => {
-          // If error in watch, fallback gracefully without blocking UI
-          if (gpsStatus !== 'denied') {
-            setGpsStatus('active');
+          // Report the failure honestly instead of pretending a fix exists.
+          if (err.code === err.PERMISSION_DENIED) {
+            setGpsStatus('denied');
+            setGpsErrorMsg('تم رفض إذن الوصول للموقع. فعّل الإذن من إعدادات المتصفح ثم أعد المحاولة.');
+          } else {
+            setGpsStatus((prev) => (prev === 'active' ? prev : 'error'));
           }
         },
         {
@@ -333,13 +303,14 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
     return () => {
       if (watchIdRef.current !== null && navigator.geolocation) {
         navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
       }
     };
-  }, [isLiveWatching]);
+  }, [isOpen, isLiveWatching]);
 
   // Automatic Check-In detection when entering Geofence
   useEffect(() => {
-    if (!autoCheckInEnabled || !currentMember || !targetBooking) return;
+    if (!isOpen || !autoCheckInEnabled || !currentMember || !targetBooking.id) return;
 
     const memberClockState = clockedInState[currentMember.id];
     const isClocked = memberClockState?.isClockedIn;
@@ -352,23 +323,26 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
 
   // Handle Clock In (Manual or Auto)
   const handleClockIn = (crewId: string, isAuto: boolean = false) => {
-    const timeString = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-    const fullIso = new Date().toISOString();
+    const member = crewMembers.find((c) => c.id === crewId);
+    if (!member) return;
+    const now = Date.now();
 
     setClockedInState((prev) => ({
       ...prev,
       [crewId]: {
         isClockedIn: true,
-        checkInTime: timeString,
-        checkInCoords: {
-          lat: currentCoords.lat,
-          lng: currentCoords.lng,
-          accuracy: currentCoords.accuracy,
-        },
+        checkInAt: now,
+        checkInTime: formatRiyadhClock(now),
+        checkInStamp: riyadhDateTime(new Date(now)),
+        checkInCoords: currentCoords
+          ? { lat: currentCoords.lat, lng: currentCoords.lng, accuracy: currentCoords.accuracy }
+          : null,
         bookingId: targetBooking.id,
-        bookingTitle: targetBooking.serviceTitle,
-        venueName: targetBooking.venueName,
-        geofenceVerified: isInsideGeofence,
+        bookingNumber: targetBooking.bookingNumber || '',
+        bookingTitle: targetBooking.serviceTitle || 'مناوبة ميدانية',
+        venueName: targetBooking.venueName || '—',
+        // A test-mode (fake) position never counts as a verified arrival.
+        geofenceVerified: isInsideGeofence && !currentCoords?.isSimulated,
       },
     }));
 
@@ -383,68 +357,73 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
     setShowSuccessToast({
       show: true,
       msg: isAuto
-        ? `📍 تم تسجيل حضورك التلقائي عبر السياج الجغرافي في: ${targetBooking.venueName}`
-        : `✅ تم تسجيل الحضور الموثق بالـ GPS للمباشر: ${currentMember.name}`,
+        ? `📍 تم تسجيل الحضور تلقائياً عند الوصول إلى: ${targetBooking.venueName}`
+        : isInsideGeofence
+        ? `✅ تم تسجيل حضور ${member.name} داخل موقع المناسبة`
+        : `✅ تم تسجيل حضور ${member.name} (يدوي — بدون تحقق جغرافي)`,
     });
     setTimeout(() => setShowSuccessToast({ show: false, msg: '' }), 4500);
   };
 
-  // Handle Clock Out
+  // Handle Clock Out — records the real elapsed time since clock-in.
   const handleClockOut = (crewId: string) => {
     const clockData = clockedInState[crewId];
-    if (!clockData) return;
+    const member = crewMembers.find((c) => c.id === crewId);
+    if (!clockData || !member) return;
 
-    const timeString = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-    const fullDate = new Date().toISOString().split('T')[0];
-
-    // Compute duration (estimate 5 hours or based on session)
-    const estimatedHours = 5;
-    const rate = currentMember.hourlyRate || 65;
-    const totalPay = estimatedHours * rate;
+    const now = Date.now();
+    const fullDate = riyadhToday(new Date(clockData.checkInAt));
+    const workedHours = elapsedQuarterHours(clockData.checkInAt, now);
+    const durationMinutes = Math.max(0, Math.round((now - clockData.checkInAt) / 60000));
+    const rate = member.hourlyRate || 0;
+    const totalPay = Math.round(workedHours * rate * 100) / 100;
 
     // Create Attendance Record
     const newRecord: CrewAttendanceRecord = {
-      id: `att-${Date.now()}`,
+      id: `att-${now}`,
       crewId,
-      crewName: currentMember.name,
+      crewName: member.name,
       bookingId: clockData.bookingId,
-      bookingNumber: targetBooking.bookingNumber || 'BK-2026-AUTO',
+      bookingNumber: clockData.bookingNumber,
       eventTitle: clockData.bookingTitle,
       venueName: clockData.venueName,
-      checkInTime: `${fullDate} ${clockData.checkInTime}`,
-      checkInCoordinates: clockData.checkInCoords,
-      checkOutTime: `${fullDate} ${timeString}`,
-      checkOutCoordinates: {
-        lat: currentCoords.lat,
-        lng: currentCoords.lng,
-        accuracy: currentCoords.accuracy,
-      },
+      checkInTime: clockData.checkInStamp,
+      checkInCoordinates: clockData.checkInCoords ?? { lat: 0, lng: 0, accuracy: 0 },
+      checkOutTime: riyadhDateTime(new Date(now)),
+      checkOutCoordinates: currentCoords
+        ? { lat: currentCoords.lat, lng: currentCoords.lng, accuracy: currentCoords.accuracy }
+        : undefined,
       geofenceStatus: clockData.geofenceVerified ? 'verified_inside' : 'manual_override',
-      distanceToVenueMeters: distanceToVenue,
-      durationMinutes: estimatedHours * 60,
-      autoTriggered: autoCheckInEnabled,
-      notes: `انصراف موثق بنظام السياج الجغرافي GPS (${distanceToVenue}م من الموقع)`,
+      distanceToVenueMeters: distanceToVenue ?? 0,
+      durationMinutes,
+      autoTriggered: autoCheckInEnabled && clockData.geofenceVerified,
+      notes:
+        distanceToVenue !== null
+          ? `انصراف على بعد ${distanceToVenue}م من موقع المناسبة`
+          : 'انصراف بدون تحقق جغرافي (الموقع غير متاح)',
     };
 
     setAttendanceHistory((prev) => [newRecord, ...prev]);
 
-    // Also auto-sync with Work Log for payroll!
+    // Also sync with Work Log for payroll.
     if (onAddWorkLog) {
       const newWorkLog: CrewWorkHourLog = {
-        id: `log-${Date.now()}`,
+        id: `log-${now}`,
         crewId,
-        crewName: currentMember.name,
-        bookingId: clockData.bookingId,
+        crewName: member.name,
+        bookingId: clockData.bookingId || undefined,
         eventTitle: `${clockData.bookingTitle} - ${clockData.venueName}`,
         eventDate: fullDate,
-        regularHours: estimatedHours,
+        regularHours: workedHours,
         overtimeHours: 0,
         hourlyRate: rate,
         overtimeRate: rate * 1.5,
         totalEarned: totalPay,
         status: 'unprocessed',
-        notes: `حضور معتمد جغرافياً بالـ GPS (سياج ${geofenceRadius}م) - يوصل الميداني`,
-        recordedAt: new Date().toISOString(),
+        notes: clockData.geofenceVerified
+          ? `حضور داخل نطاق ${geofenceRadius}م من موقع المناسبة`
+          : 'حضور يدوي بدون تحقق جغرافي',
+        recordedAt: new Date(now).toISOString(),
       };
       onAddWorkLog(crewId, newWorkLog);
     }
@@ -463,13 +442,14 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
 
     setShowSuccessToast({
       show: true,
-      msg: `🏁 تم توثيق انصراف ${currentMember.name} وترحيل ساعات المناوبة (${estimatedHours} ساعات) لمسير الأجور!`,
+      msg: `🏁 تم تسجيل انصراف ${member.name} — مدة المناوبة ${workedHours} ساعة${onAddWorkLog ? ' وأُضيفت لمسير الأجور' : ''}`,
     });
     setTimeout(() => setShowSuccessToast({ show: false, msg: '' }), 4500);
   };
 
   // Location Simulator Presets for testing
   const setSimulatedLocation = (preset: 'inside' | 'approaching' | 'outside') => {
+    if (!targetCoords) return;
     if (preset === 'inside') {
       // 45 meters from venue
       setCurrentCoords({
@@ -514,7 +494,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
     e.preventDefault();
     if (!currentMember || !onAddWorkLog) return;
 
-    const rate = currentMember.hourlyRate || 65;
+    const rate = currentMember.hourlyRate || 0;
     const newLog: CrewWorkHourLog = {
       id: `log-${Date.now()}`,
       crewId: currentMember.id,
@@ -542,6 +522,33 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
 
   const currentMemberClock = clockedInState[currentMember?.id || ''];
   const isMemberClockedIn = !!currentMemberClock?.isClockedIn;
+
+  if (!isOpen) return null;
+
+  if (!currentMember) {
+    return (
+      <div
+        id="crew-field-portal-modal"
+        className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 text-right font-sans usil-modal-scroll"
+      >
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md p-6 space-y-4 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto">
+            <Users className="w-7 h-7 text-slate-400" />
+          </div>
+          <h2 className="text-base font-bold text-slate-900">لا يوجد أفراد طاقم بعد</h2>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            أضف أفراد الطاقم من تبويب الطاقم في لوحة المورّد أولاً
+          </p>
+          <button
+            onClick={onClose}
+            className="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold transition-colors cursor-pointer"
+          >
+            إغلاق
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -689,7 +696,9 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                       المناسبة الميدانية المخصصة
                     </span>
                     <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-1">
-                      {targetBooking.serviceTitle} ({targetBooking.bookingNumber})
+                      {targetBooking.id
+                        ? `${targetBooking.serviceTitle}${targetBooking.bookingNumber ? ` (${targetBooking.bookingNumber})` : ''}`
+                        : 'لا توجد مناسبة مرتبطة — الحضور سيُسجَّل يدوياً'}
                     </h3>
                   </div>
 
@@ -716,7 +725,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
                     <div>
                       <span className="text-2xs text-slate-400 block font-medium">موقع الفعالية:</span>
-                      <span className="font-bold text-slate-900">{targetBooking.venueName}</span>
+                      <span className="font-bold text-slate-900">{targetBooking.venueName || '—'}</span>
                     </div>
                   </div>
 
@@ -725,7 +734,9 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     <div>
                       <span className="text-2xs text-slate-400 block font-medium">الموعد والتوقيت:</span>
                       <span className="font-bold text-slate-900">
-                        {targetBooking.date} ({targetBooking.startTime || '17:00'} - {targetBooking.endTime || '22:00'})
+                        {targetBooking.date
+                          ? `${targetBooking.date}${targetBooking.startTime ? ` (${targetBooking.startTime}${targetBooking.endTime ? ` - ${targetBooking.endTime}` : ''})` : ''}`
+                          : '—'}
                       </span>
                     </div>
                   </div>
@@ -821,7 +832,11 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                       <span className="text-2xs font-medium text-white/70">المسافة الحالية عن الفعالية:</span>
                       <div className="text-base font-bold text-white font-mono flex items-center justify-center gap-1.5">
                         <span className={isInsideGeofence ? 'text-emerald-400' : isApproaching ? 'text-amber-400' : 'text-rose-400'}>
-                          {distanceToVenue < 1000 ? `${distanceToVenue} متر` : `${(distanceToVenue / 1000).toFixed(1)} كم`}
+                          {distanceToVenue === null
+                            ? '—'
+                            : distanceToVenue < 1000
+                            ? `${distanceToVenue} متر`
+                            : `${(distanceToVenue / 1000).toFixed(1)} كم`}
                         </span>
                       </div>
                     </div>
@@ -856,14 +871,20 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
 
                       <div className="space-y-0.5">
                         <div className="text-xs font-medium">
-                          {isInsideGeofence
+                          {distanceToVenue === null
+                            ? !targetCoords
+                              ? '⚪ لا توجد إحداثيات لموقع هذه المناسبة'
+                              : '⚪ موقع الجهاز غير متاح بعد'
+                            : isInsideGeofence
                             ? '🟢 أنت الآن داخل موقع المناسبة (السياج الجغرافي نشط)'
                             : isApproaching
                             ? '🟡 أنت تقترب من موقع المناسبة (أقل من 800 متر)'
                             : '🔴 أنت خارج النطاق الجغرافي المخصص للمناسبة'}
                         </div>
                         <p className="text-2xs opacity-80 leading-relaxed">
-                          {isInsideGeofence
+                          {distanceToVenue === null
+                            ? 'لا يمكن التحقق الجغرافي الآن. يمكنك تسجيل الحضور يدوياً وسيُسجَّل كحضور بدون تحقق جغرافي.'
+                            : isInsideGeofence
                             ? 'تم التحقق من إحداثيات تواجدك بنجاح. يمكنك تسجيل الحضور الفوري أو الاعتماد على الحضور التلقائي.'
                             : isApproaching
                             ? 'يرجى متابعة التوجه لمقر القاعة لتأكيد وصول المباشرين وتجهيز الدلال والضيافة.'
@@ -876,20 +897,26 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-mono">
                       <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
                         <span className="text-2xs text-white/50 block font-sans">خط العرض (Lat)</span>
-                        <span className="font-medium text-white text-2xs">{currentCoords.lat.toFixed(5)}</span>
+                        <span className="font-medium text-white text-2xs">{currentCoords ? currentCoords.lat.toFixed(5) : '—'}</span>
                       </div>
                       <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
                         <span className="text-2xs text-white/50 block font-sans">خط الطول (Lng)</span>
-                        <span className="font-medium text-white text-2xs">{currentCoords.lng.toFixed(5)}</span>
+                        <span className="font-medium text-white text-2xs">{currentCoords ? currentCoords.lng.toFixed(5) : '—'}</span>
                       </div>
                       <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
                         <span className="text-2xs text-white/50 block font-sans">دقة الإشارة</span>
-                        <span className="font-medium text-emerald-400 text-2xs">±{currentCoords.accuracy}م</span>
+                        <span className="font-medium text-emerald-400 text-2xs">{currentCoords ? `±${currentCoords.accuracy}م` : '—'}</span>
                       </div>
                       <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
                         <span className="text-2xs text-white/50 block font-sans">مصدر الإشارة</span>
                         <span className="font-medium text-sand text-2xs">
-                          {currentCoords.isSimulated ? 'محاكاة GPS' : 'موقع المتصفح الحي'}
+                          {!currentCoords
+                            ? gpsStatus === 'locating'
+                              ? 'جاري تحديد الموقع…'
+                              : 'غير متاح'
+                            : currentCoords.isSimulated
+                            ? 'وضع الاختبار (موقع وهمي)'
+                            : 'GPS الجهاز'}
                         </span>
                       </div>
                     </div>
@@ -963,28 +990,42 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                     )}
                   </div>
 
-                  {/* Simulator buttons for testing all 3 states */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-2xs text-white/60 font-medium">محاكاة التجربة:</span>
-                    <button
-                      onClick={() => setSimulatedLocation('inside')}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-medium text-2xs border border-emerald-500/30 transition-colors cursor-pointer"
-                    >
-                      📍 وصول للموقع (داخل 45م)
-                    </button>
-                    <button
-                      onClick={() => setSimulatedLocation('approaching')}
-                      className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-medium text-2xs border border-amber-500/30 transition-colors cursor-pointer"
-                    >
-                      🚕 في الطريق (480م)
-                    </button>
-                    <button
-                      onClick={() => setSimulatedLocation('outside')}
-                      className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-medium text-2xs border border-rose-500/30 transition-colors cursor-pointer"
-                    >
-                      🏢 خارج النطاق (4.2 كم)
-                    </button>
-                  </div>
+                  {/* Test mode: fake a position relative to the venue (clearly labelled, off by default) */}
+                  {targetCoords && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <label className="flex items-center gap-1.5 text-2xs text-white/70 font-medium cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={isTestMode}
+                          onChange={(e) => setIsTestMode(e.target.checked)}
+                          className="w-3.5 h-3.5 rounded focus:ring-0"
+                        />
+                        <span>وضع الاختبار (موقع وهمي — للتجربة فقط)</span>
+                      </label>
+                      {isTestMode && (
+                        <>
+                          <button
+                            onClick={() => setSimulatedLocation('inside')}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-medium text-2xs border border-emerald-500/30 transition-colors cursor-pointer"
+                          >
+                            اختبار: داخل الموقع (45م)
+                          </button>
+                          <button
+                            onClick={() => setSimulatedLocation('approaching')}
+                            className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-medium text-2xs border border-amber-500/30 transition-colors cursor-pointer"
+                          >
+                            اختبار: في الطريق (480م)
+                          </button>
+                          <button
+                            onClick={() => setSimulatedLocation('outside')}
+                            className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-medium text-2xs border border-rose-500/30 transition-colors cursor-pointer"
+                          >
+                            اختبار: خارج النطاق (4.2 كم)
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1012,7 +1053,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                       )}
                     </div>
                     <p className="text-xs text-slate-500 font-mono">
-                      الأجر بالساعة: <strong className="text-slate-900">{currentMember.hourlyRate || 65} ر.س/س</strong> | إجمالي الساعات المعتمدة: {currentMember.totalLoggedHours || 0} ساعة
+                      الأجر بالساعة: <strong className="text-slate-900">{currentMember.hourlyRate ? `${currentMember.hourlyRate} ر.س/س` : 'غير محدد'}</strong> | إجمالي الساعات المعتمدة: {currentMember.totalLoggedHours || 0} ساعة
                     </p>
                   </div>
                 </div>
@@ -1024,7 +1065,7 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                       <span>حضور موثق في: {currentMemberClock.venueName}</span>
                     </div>
                     <div className="text-2xs text-emerald-700 font-mono">
-                      وقت تسجيل الحضور: {currentMemberClock.checkInTime} • السياج الجغرافي: معتمد
+                      وقت تسجيل الحضور: {currentMemberClock.checkInTime} • {currentMemberClock.geofenceVerified ? 'داخل نطاق الموقع' : 'بدون تحقق جغرافي'}
                     </div>
                   </div>
                 )}
@@ -1220,8 +1261,8 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                       <span className="text-xs font-medium text-blue-900">
                         الإجمالي المستحق:{' '}
                         {(
-                          regHours * (currentMember.hourlyRate || 65) +
-                          otHours * (currentMember.hourlyRate || 65) * 1.5
+                          regHours * (currentMember.hourlyRate || 0) +
+                          otHours * (currentMember.hourlyRate || 0) * 1.5
                         ).toLocaleString('ar-SA')}{' '}
                         ر.س
                       </span>
@@ -1293,11 +1334,16 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                   </p>
                 </div>
                 <span className="text-xs text-slate-600 font-medium font-mono">
-                  {attendanceHistory.length} سجلات موثقة
+                  {attendanceHistory.length} سجل
                 </span>
               </div>
 
               <div className="space-y-3">
+                {attendanceHistory.length === 0 && (
+                  <div className="p-6 rounded-2xl bg-white border border-dashed border-slate-300 text-center text-xs text-slate-500">
+                    لا توجد سجلات حضور في هذه الجلسة بعد. سجّل الحضور ثم الانصراف ليظهر السجل هنا.
+                  </div>
+                )}
                 {attendanceHistory.map((att) => (
                   <div
                     key={att.id}
@@ -1307,26 +1353,34 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-slate-900">{att.eventTitle}</span>
-                          <span className="text-2xs font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                            <span>معتمد بالسياج الجغرافي ({att.distanceToVenueMeters}م)</span>
-                          </span>
+                          {att.geofenceStatus === 'verified_inside' ? (
+                            <span className="text-2xs font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                              <span>داخل نطاق الموقع ({att.distanceToVenueMeters}م)</span>
+                            </span>
+                          ) : (
+                            <span className="text-2xs font-medium px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
+                              حضور يدوي بدون تحقق جغرافي
+                            </span>
+                          )}
                         </div>
                         <p className="text-2xs text-slate-500 mt-0.5">
                           المباشر: <strong className="text-slate-800">{att.crewName}</strong> • {att.venueName}
                         </p>
                       </div>
 
-                      <span className="text-2xs text-slate-400 font-mono">{att.bookingNumber}</span>
+                      <span className="text-2xs text-slate-400 font-mono">{att.bookingNumber || ''}</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
                       <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                         <span className="text-2xs text-slate-400 block font-medium">تسجيل الحضور (Check-In)</span>
                         <span className="font-bold text-slate-900 font-mono">{att.checkInTime}</span>
-                        <span className="text-2xs text-slate-400 block font-mono">
-                          {att.checkInCoordinates.lat.toFixed(4)}, {att.checkInCoordinates.lng.toFixed(4)}
-                        </span>
+                        {(att.checkInCoordinates.lat !== 0 || att.checkInCoordinates.lng !== 0) && (
+                          <span className="text-2xs text-slate-400 block font-mono">
+                            {att.checkInCoordinates.lat.toFixed(4)}, {att.checkInCoordinates.lng.toFixed(4)}
+                          </span>
+                        )}
                       </div>
 
                       <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
@@ -1342,10 +1396,12 @@ export const CrewFieldPortalModal: React.FC<CrewFieldPortalModalProps> = ({
                       <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                         <span className="text-2xs text-slate-400 block font-medium">مدة التواجد الميداني</span>
                         <span className="font-bold text-emerald-700 font-mono">
-                          {att.durationMinutes ? `${att.durationMinutes / 60} ساعات` : 'قيد الاحتساب'}
+                          {att.durationMinutes !== undefined
+                            ? `${Math.floor(att.durationMinutes / 60)} س ${att.durationMinutes % 60} د`
+                            : 'قيد الاحتساب'}
                         </span>
                         <span className="text-2xs text-emerald-600 block">
-                          {att.autoTriggered ? '⚡ تسجيل تلقائي ذكي' : 'تسجيل يدوي موثق'}
+                          {att.autoTriggered ? 'تسجيل تلقائي عند الوصول' : 'تسجيل يدوي'}
                         </span>
                       </div>
                     </div>

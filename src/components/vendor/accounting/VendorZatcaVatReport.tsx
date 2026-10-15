@@ -13,6 +13,41 @@ import {
   AlertCircle,
   HelpCircle,
 } from 'lucide-react';
+import { riyadhToday } from '../../../utils/riyadhDate';
+import { quarterOf, toRiyadhDate } from '../../../utils/riyadhCalendar';
+
+const QUARTER_NAMES = ['الأول', 'الثاني', 'الثالث', 'الرابع'];
+const QUARTER_MONTHS = ['يناير - مارس', 'أبريل - يونيو', 'يوليو - سبتمبر', 'أكتوبر - ديسمبر'];
+
+/** `YYYY-Qn` key of a date-ish value, or null if it has no parseable date. */
+function quarterKeyOf(value: string | undefined | null): string | null {
+  const d = toRiyadhDate(value);
+  return d ? `${d.slice(0, 4)}-Q${quarterOf(d)}` : null;
+}
+
+function quarterLabel(key: string, withMonths = false): string {
+  const [year, q] = key.split('-Q');
+  const idx = Number(q) - 1;
+  const base = `الربع ${QUARTER_NAMES[idx] ?? q} ${year}`;
+  return withMonths ? `${base} (${QUARTER_MONTHS[idx] ?? ''})` : base;
+}
+
+/** The current Riyadh quarter and the seven before it, newest first. */
+function recentQuarterKeys(): string[] {
+  const today = riyadhToday();
+  let year = Number(today.slice(0, 4));
+  let q = quarterOf(today);
+  const keys: string[] = [];
+  for (let i = 0; i < 8; i++) {
+    keys.push(`${year}-Q${q}`);
+    q -= 1;
+    if (q === 0) {
+      q = 4;
+      year -= 1;
+    }
+  }
+  return keys;
+}
 
 interface VendorZatcaVatReportProps {
   invoices: VendorInvoice[];
@@ -22,12 +57,23 @@ interface VendorZatcaVatReportProps {
 }
 
 export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
-  invoices,
-  expenses,
-  posSales,
+  invoices: allInvoices,
+  expenses: allExpenses,
+  posSales: allPosSales,
   brandSettings,
 }) => {
-  const [selectedQuarter, setSelectedQuarter] = useState<'Q3' | 'Q2' | 'Q1' | 'Q4'>('Q3');
+  const [quarterOptions] = useState(recentQuarterKeys);
+  const [selectedQuarter, setSelectedQuarter] = useState<string>(() => quarterOptions[0]);
+  const selectedQuarterLabel = quarterLabel(selectedQuarter);
+
+  // Only records dated inside the selected quarter (Riyadh dates) count.
+  const invoices = (allInvoices || []).filter(
+    (inv) => inv.status !== 'draft' && quarterKeyOf(inv.issueDate) === selectedQuarter
+  );
+  const posSales = (allPosSales || []).filter(
+    (s) => s.status !== 'refunded' && quarterKeyOf(s.eventDate || s.createdAt) === selectedQuarter
+  );
+  const expenses = (allExpenses || []).filter((e) => quarterKeyOf(e.date) === selectedQuarter);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // 1. Calculate Taxable Sales (المبيعات الخاضعة للنسبة الأساسية 15%)
@@ -83,13 +129,15 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
           {/* Quarter Selector */}
           <select
             value={selectedQuarter}
-            onChange={(e) => setSelectedQuarter(e.target.value as any)}
+            onChange={(e) => setSelectedQuarter(e.target.value)}
+            aria-label="الفترة الضريبية"
             className="px-3 py-2 rounded-xl bg-slate-100 font-medium text-xs border border-slate-200 text-slate-800 focus:outline-none"
           >
-            <option value="Q3">الربع الثالث 2026 (يوليو - سبتمبر)</option>
-            <option value="Q2">الربع الثاني 2026 (أبريل - يونيو)</option>
-            <option value="Q1">الربع الأول 2026 (يناير - مارس)</option>
-            <option value="Q4">الربع الرابع 2026 (أكتوبر - ديسمبر)</option>
+            {quarterOptions.map((key) => (
+              <option key={key} value={key}>
+                {quarterLabel(key, true)}
+              </option>
+            ))}
           </select>
 
           <button
@@ -170,7 +218,7 @@ export const VendorZatcaVatReport: React.FC<VendorZatcaVatReportProps> = ({
           </div>
 
           <div className="text-xs text-slate-500 font-medium bg-white px-3 py-1.5 rounded-xl border border-slate-200">
-            الفترة الضريبية: الربع الثالث 2026
+            الفترة الضريبية: {selectedQuarterLabel}
           </div>
         </div>
 

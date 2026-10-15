@@ -59,6 +59,7 @@ export function CartScreen() {
                     <div className="text-xs text-ink-3 mt-1 tnum">
                       {money(c.service.price, ar)} / {c.service.priceUnit}
                       {c.date ? ` · ${c.date}` : ''}
+                      {(c.service.minQuantity || 1) > 1 ? ` · ${ar ? 'الحد الأدنى' : 'Minimum'} ${c.service.minQuantity}` : ''}
                     </div>
                     <div className="flex items-center gap-3.5 mt-2.5 flex-wrap">
                       <div className="flex items-center gap-1 border border-line rounded-control p-0.5">

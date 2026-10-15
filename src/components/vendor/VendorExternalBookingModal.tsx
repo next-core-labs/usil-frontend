@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { riyadhToday } from '../../utils/riyadhDate';
 import { VendorBooking, BlockedDate, BookingSource, CrewMember } from '../../types';
 import { PlaceSearchSelect } from '../PlaceSearchSelect';
 import type { VendorListing } from '../../contracts/vendors/vendor-listings';
@@ -30,24 +31,22 @@ interface VendorExternalBookingModalProps {
   listings?: VendorListing[];
 }
 
-export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProps> = ({
+const VendorExternalBookingModalBody: React.FC<VendorExternalBookingModalProps> = ({
   isOpen,
   onClose,
   onSaveBooking,
   existingBookings,
   blockedDates,
   crewMembers,
-  initialDate = '2026-08-25',
+  initialDate,
   listings = [],
 }) => {
-  if (!isOpen) return null;
-
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [source, setSource] = useState<BookingSource>('external_phone');
   const [serviceId, setServiceId] = useState(listings[0]?.id || '');
   const [customServiceTitle, setCustomServiceTitle] = useState('');
-  const [date, setDate] = useState(initialDate);
+  const [date, setDate] = useState(() => initialDate || riyadhToday());
   const [startTime, setStartTime] = useState('18:00');
   const [endTime, setEndTime] = useState('23:00');
   const [city, setSelectedCity] = useState('الرياض');
@@ -431,3 +430,10 @@ export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProp
     </div>
   );
 };
+
+/**
+ * Mount the body only while open: it keeps its hooks unconditional and gives
+ * every opening fresh form state.
+ */
+export const VendorExternalBookingModal: React.FC<VendorExternalBookingModalProps> = (props) =>
+  props.isOpen ? <VendorExternalBookingModalBody {...props} /> : null;

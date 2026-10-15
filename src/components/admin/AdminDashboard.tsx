@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ShieldCheck,
   Users,
@@ -19,16 +19,39 @@ import {
   CreditCard,
   Package,
   MessageCircle,
+  Sparkles,
+  Hourglass,
+  RotateCcw,
+  Undo2,
 } from 'lucide-react';
 import { CATEGORIES } from '../../data/services';
-import { Tabs } from '../ui/Tabs';
+import { Tabs, type TabItem } from '../ui/Tabs';
 import { StatCard } from '../ui/Card';
+import { Badge } from '../ui/Badge';
+import { ConfirmDialog } from '../ui/Modal';
 import { controlClass } from '../ui/Field';
 import type { UserProfile } from '../../types';
 import { BOOKING_PENDING_APPROVAL_STATUS, BOOKING_REJECTED_STATUS } from '../../contracts/vendors/vendor-listings';
 import { SeoSettingsPanel } from './SeoSettingsPanel';
 import { MoyasarSettingsPanel } from './MoyasarSettingsPanel';
 import { OwnerWhatsAppPanel } from './OwnerWhatsAppPanel';
+import { AiIntegrationsPanel } from './AiIntegrationsPanel';
+import {
+  filterBookings,
+  formatHalalas,
+  formatSar,
+  hasDuplicatePayments,
+  hasPendingRefund,
+  isPaid,
+  isRefunded,
+  needsAdminApproval,
+  owesRefund,
+  requestApi,
+  statusChangeWarnings,
+  vendorCount,
+  type AdminBookingRow,
+  type BookingFilter,
+} from '../../utils/adminBookings';
 import { whatsappChatUrl } from '../../utils/ownerWhatsApp';
 import { DEMAND_STATUS_AR, DEMAND_STATUSES, type DemandStatus } from '../../data/cityDemand';
 import {
@@ -107,6 +130,7 @@ type AdminSection =
   | 'overview'
   | 'seo'
   | 'moyasar'
+  | 'ai'
   | 'couriers'
   | 'external'
   | 'listings'
@@ -142,15 +166,57 @@ type AdminListing = {
   fulfillment: string[];
 };
 
-type AdminBooking = {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  serviceName: string;
-  notes?: string;
-  status: string;
-  createdAt: string;
+type AdminBooking = AdminBookingRow;
+
+/** Settings tabs whose writes the server allows the owner admin only (accounts_manager gets 403). */
+const ADMIN_ONLY_SECTIONS: readonly AdminSection[] = ['seo', 'moyasar', 'ai'];
+
+type LoadKey =
+  | 'users'
+  | 'bookings'
+  | 'applications'
+  | 'couriers'
+  | 'listings'
+  | 'socials'
+  | 'external'
+  | 'demand'
+  | 'support';
+
+/** Every list the dashboard loads, fetched independently so one failure never blanks the rest. */
+const LOAD_SOURCES: Array<{ key: LoadKey; url: string; label: string }> = [
+  { key: 'users', url: '/api/admin/users', label: 'حسابات المنصة' },
+  { key: 'bookings', url: '/api/bookings', label: 'الحجوزات' },
+  { key: 'applications', url: '/api/admin/vendor-applications', label: 'طلبات الموردين' },
+  { key: 'couriers', url: '/api/admin/couriers', label: 'طلبات المناديب' },
+  { key: 'listings', url: '/api/admin/listings', label: 'منتجات الموردين' },
+  { key: 'socials', url: '/api/admin/vendor-socials', label: 'حسابات التواصل' },
+  { key: 'external', url: '/api/external-bookings', label: 'الحجوزات الخارجية' },
+  { key: 'demand', url: '/api/admin/city-requests', label: 'طلبات المدن' },
+  { key: 'support', url: '/api/admin/support-messages', label: 'رسائل الدعم' },
+];
+
+type PendingConfirm = {
+  title: string;
+  message: React.ReactNode;
+  confirmLabel: string;
+  tone: 'danger' | 'primary';
+  run: () => Promise<void>;
+};
+
+function SectionError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <div className="flex items-start gap-2 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3">
+      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
+      <span>{message}</span>
+    </div>
+  );
+}
+
+const BOOKING_FILTER_LABEL: Record<BookingFilter, string> = {
+  all: 'كل الحجوزات',
+  pending_approval: BOOKING_PENDING_APPROVAL_STATUS,
+  refund_due: 'استرداد مستحق',
 };
 
 const ROLE_LABEL: Record<AdminUser['role'], string> = {
@@ -242,6 +308,14 @@ export function AdminDashboard({
   const [newSupportCount, setNewSupportCount] = useState(0);
   const [externalCourierFilter, setExternalCourierFilter] = useState('all');
   const [externalStatusFilter, setExternalStatusFilter] = useState('all');
+  const [sectionErrors, setSectionErrors] = useState<Partial<Record<LoadKey, string>>>({});
+  const [bookingFilter, setBookingFilter] = useState<BookingFilter>('all');
+  const [bookingNotice, setBookingNotice] = useState<{ tone: 'error' | 'success'; text: string } | null>(null);
+  const [confirmState, setConfirmState] = useState<PendingConfirm | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const [scrollToBookings, setScrollToBookings] = useState(0);
+  const bookingsRef = useRef<HTMLElement>(null);
+  const isOwnerAdmin = currentUser?.role === 'admin';
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -254,47 +328,59 @@ export function AdminDashboard({
     setLoading(true);
     setError(null);
     try {
-      const [usersRes, bookingsRes, appsRes, couriersRes, listingsRes, socialsRes, externalRes, demandRes, supportRes] = await Promise.all([
-        fetch('/api/admin/users', { credentials: 'include' }),
-        fetch('/api/bookings', { credentials: 'include' }),
-        fetch('/api/admin/vendor-applications', { credentials: 'include' }),
-        fetch('/api/admin/couriers', { credentials: 'include' }),
-        fetch('/api/admin/listings', { credentials: 'include' }),
-        fetch('/api/admin/vendor-socials', { credentials: 'include' }),
-        fetch('/api/external-bookings', { credentials: 'include' }),
-        fetch('/api/admin/city-requests', { credentials: 'include' }),
-        fetch('/api/admin/support-messages', { credentials: 'include' }),
-      ]);
-      const usersData = await usersRes.json();
-      const bookingsData = await bookingsRes.json();
-      const appsData = await appsRes.json();
-      const couriersData = await couriersRes.json();
-      const listingsData = await listingsRes.json();
-      const socialsData = await socialsRes.json();
-      const externalData = await externalRes.json();
-      const demandData = demandRes.ok ? await demandRes.json() : { data: [] };
-      const supportData = supportRes.ok ? await supportRes.json() : { data: [] };
-      if (!usersRes.ok || !usersData.success) {
-        setError(usersData.error || 'تعذر تحميل حسابات المنصة.');
-        return;
-      }
-      if (!bookingsRes.ok || !bookingsData.success) {
-        setError(bookingsData.error || 'تعذر تحميل الحجوزات.');
-        return;
-      }
-      setUsers(usersData.data || []);
-      setBookings(bookingsData.data || []);
-      setApplications(appsData.data || []);
-      setCouriers(couriersData.data || []);
-      setListings(listingsData.data || []);
-      setVendorSocials(socialsData.data || []);
-      setExternalBookings(externalData.data || []);
-      setCityRequests(demandData.data || []);
-      setNewSupportCount(
-        ((supportData.data || []) as Array<{ status?: string }>).filter((row) => (row.status || 'new') === 'new').length,
+      const results = await Promise.allSettled(
+        LOAD_SOURCES.map((source) =>
+          requestApi<{ success?: boolean; error?: string; data?: unknown[] }>(
+            source.url,
+            undefined,
+            `تعذر تحميل ${source.label}.`,
+          ),
+        ),
       );
-    } catch {
-      setError('تعذر الاتصال بالخادم.');
+      const errors: Partial<Record<LoadKey, string>> = {};
+      results.forEach((settled, index) => {
+        const { key, label } = LOAD_SOURCES[index];
+        if (settled.status === 'rejected' || !settled.value.ok) {
+          // A failed section keeps whatever it showed before and says why.
+          if (key !== 'support') {
+            errors[key] = settled.status === 'rejected' ? `تعذر تحميل ${label}.` : settled.value.error;
+          }
+          return;
+        }
+        const rows = Array.isArray(settled.value.data?.data) ? settled.value.data.data : [];
+        switch (key) {
+          case 'users':
+            setUsers(rows as AdminUser[]);
+            break;
+          case 'bookings':
+            setBookings(rows as AdminBooking[]);
+            break;
+          case 'applications':
+            setApplications(rows as VendorApplication[]);
+            break;
+          case 'couriers':
+            setCouriers(rows as CourierApplication[]);
+            break;
+          case 'listings':
+            setListings(rows as AdminListing[]);
+            break;
+          case 'socials':
+            setVendorSocials(rows as AdminVendorSocials[]);
+            break;
+          case 'external':
+            setExternalBookings(rows as ExternalBookingRow[]);
+            break;
+          case 'demand':
+            setCityRequests(rows as CityDemandRow[]);
+            break;
+          case 'support':
+            setNewSupportCount(
+              (rows as Array<{ status?: string }>).filter((row) => (row.status || 'new') === 'new').length,
+            );
+            break;
+        }
+      });
+      setSectionErrors(errors);
     } finally {
       setLoading(false);
     }
@@ -304,22 +390,48 @@ export function AdminDashboard({
     load();
   }, []);
 
+  /** JSON mutation against the admin API; never throws, returns the parsed body or null with the error shown. */
+  const mutate = async <T extends Record<string, unknown> = Record<string, unknown>>(
+    url: string,
+    method: 'POST' | 'PATCH' | 'DELETE' | 'PUT',
+    body: unknown,
+    fallbackError: string,
+    report: (message: string) => void = setError,
+  ): Promise<(T & { success?: boolean; error?: string }) | null> => {
+    const result = await requestApi<T & { success?: boolean; error?: string }>(
+      url,
+      body === undefined
+        ? { method }
+        : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+      fallbackError,
+    );
+    if (!result.ok) {
+      report(result.error);
+      return null;
+    }
+    return result.data;
+  };
+
+  const askConfirm = (pending: PendingConfirm) => setConfirmState(pending);
+
+  const runConfirm = async () => {
+    if (!confirmState) return;
+    setConfirmBusy(true);
+    try {
+      await confirmState.run();
+    } finally {
+      setConfirmBusy(false);
+      setConfirmState(null);
+    }
+  };
+
   const createAccount = async (event: React.FormEvent) => {
     event.preventDefault();
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (!data.success) {
-        setError(data.error || 'تعذر إنشاء الحساب.');
-        return;
-      }
+      const data = await mutate('/api/admin/users', 'POST', form, 'تعذر إنشاء الحساب.');
+      if (!data) return;
       setForm({ name: '', email: '', phone: '', password: '', role: 'client' });
       await load();
     } finally {
@@ -328,101 +440,74 @@ export function AdminDashboard({
   };
 
   const markEmailVerified = async (id: string) => {
-    const res = await fetch(`/api/admin/users/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ emailVerified: true }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر تأكيد البريد.');
-      return;
-    }
+    const data = await mutate(`/api/admin/users/${id}`, 'PATCH', { emailVerified: true }, 'تعذر تأكيد البريد.');
+    if (!data) return;
     setUsers((prev) => prev.map((item) => (item.id === id ? { ...item, emailVerified: true } : item)));
   };
 
   const changeRole = async (id: string, role: AdminUser['role']) => {
-    const res = await fetch(`/api/admin/users/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ role }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر تغيير صلاحية الحساب.');
-      return;
-    }
+    const data = await mutate(`/api/admin/users/${id}`, 'PATCH', { role }, 'تعذر تغيير صلاحية الحساب.');
+    if (!data) return;
     setUsers((prev) => prev.map((item) => (item.id === id ? { ...item, role } : item)));
   };
 
-  const removeUser = async (id: string) => {
-    const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE', credentials: 'include' });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر حذف الحساب.');
-      return;
-    }
-    setUsers((prev) => prev.filter((item) => item.id !== id));
+  const removeUser = (user: AdminUser) => {
+    askConfirm({
+      title: 'حذف الحساب نهائياً؟',
+      message:
+        user.role === 'vendor'
+          ? `حذف «${user.name}» يحذف معه بيانات المورّد كلها: منتجاته في الكتالوج، ملفه، وحساباته المرتبطة. لا يمكن التراجع.`
+          : `سيُحذف حساب «${user.name}» (${user.email}) ولن يقدر يدخل بعدها. لا يمكن التراجع.`,
+      confirmLabel: 'نعم، احذف الحساب',
+      tone: 'danger',
+      run: async () => {
+        setError(null);
+        const data = await mutate(`/api/admin/users/${user.id}`, 'DELETE', undefined, 'تعذر حذف الحساب.');
+        if (!data) return;
+        setUsers((prev) => prev.filter((item) => item.id !== user.id));
+        // Vendor deletion cascades to listings and socials; refresh those lists.
+        if (user.role === 'vendor') void load();
+      },
+    });
   };
 
   const setDemandStatus = async (id: string, status: DemandStatus) => {
-    const res = await fetch(`/api/admin/city-requests/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ status }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر تحديث طلب المدينة.');
-      return;
-    }
+    const data = await mutate(`/api/admin/city-requests/${id}`, 'PATCH', { status }, 'تعذر تحديث طلب المدينة.');
+    if (!data) return;
     setCityRequests((prev) => prev.map((row) => (row.id === id ? { ...row, status } : row)));
   };
 
   const toggleSocialVerify = async (vendorId: string, network: string, verified: boolean) => {
     const action = verified ? 'verify' : 'unverify';
-    const res = await fetch(`/api/admin/vendor-socials/${vendorId}/${network}/${action}`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر تحديث التوثيق');
-      return;
-    }
+    const data = await mutate(
+      `/api/admin/vendor-socials/${vendorId}/${network}/${action}`,
+      'POST',
+      undefined,
+      'تعذر تحديث التوثيق',
+    );
+    if (!data) return;
     await load();
   };
 
   const decideApplication = async (id: string, action: 'approve' | 'reject') => {
-    const res = await fetch(`/api/admin/vendor-applications/${id}/${action}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ reason: action === 'reject' ? 'رفض إداري' : undefined }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر مراجعة طلب المورّد.');
-      return;
-    }
+    const data = await mutate(
+      `/api/admin/vendor-applications/${id}/${action}`,
+      'POST',
+      { reason: action === 'reject' ? 'رفض إداري' : undefined },
+      'تعذر مراجعة طلب المورّد.',
+    );
+    if (!data) return;
     await load();
   };
 
   const decideCourier = async (id: string, action: 'approve' | 'reject') => {
-    const res = await fetch(`/api/admin/couriers/${id}/${action}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ reason: action === 'reject' ? 'رفض إداري' : undefined }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر مراجعة طلب المندوب.');
-      return;
-    }
+    const data = await mutate(
+      `/api/admin/couriers/${id}/${action}`,
+      'POST',
+      { reason: action === 'reject' ? 'رفض إداري' : undefined },
+      'تعذر مراجعة طلب المندوب.',
+    );
+    if (!data) return;
     await load();
   };
 
@@ -435,68 +520,125 @@ export function AdminDashboard({
       setError('المنتج يحتاج مساراً واحداً على الأقل');
       return;
     }
-    const res = await fetch(`/api/admin/listings/${listing.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ fulfillment: next }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر تعديل مسار المنتج');
-      return;
-    }
+    const data = await mutate(`/api/admin/listings/${listing.id}`, 'PATCH', { fulfillment: next }, 'تعذر تعديل مسار المنتج');
+    if (!data) return;
     setListings((prev) => prev.map((item) => (item.id === listing.id ? { ...item, fulfillment: next } : item)));
   };
 
+  const reportBookingError = (text: string) => setBookingNotice({ tone: 'error', text });
+
+  /** Replaces a row with the server's copy when it sends one (status, cancellation, refund state). */
+  const mergeBooking = (id: string, patch: Partial<AdminBooking>) =>
+    setBookings((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+
   const updateStatus = async (id: string, status: string) => {
-    const res = await fetch(`/api/bookings/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ status }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر تحديث حالة الطلب.');
+    setBookingNotice(null);
+    const data = await mutate<{ booking?: AdminBooking }>(
+      `/api/bookings/${id}`,
+      'PATCH',
+      { status },
+      'تعذر تحديث حالة الطلب.',
+      reportBookingError,
+    );
+    if (!data) return;
+    mergeBooking(id, data.booking && typeof data.booking === 'object' ? data.booking : { status });
+  };
+
+  /** Routine changes go straight through; anything final, backwards or refund-creating is confirmed first. */
+  const requestStatusChange = (booking: AdminBooking, status: string) => {
+    if (status === booking.status) return;
+    const warnings = statusChangeWarnings(booking, status);
+    if (!warnings.length) {
+      void updateStatus(booking.id, status);
       return;
     }
-    setBookings((prev) => prev.map((item) => (item.id === id ? { ...item, status } : item)));
+    askConfirm({
+      title: `تغيير حالة الطلب ${booking.id} إلى «${status}»؟`,
+      message: (
+        <span className="block space-y-1.5">
+          {warnings.map((line) => (
+            <span key={line} className="block">
+              • {line}
+            </span>
+          ))}
+        </span>
+      ),
+      confirmLabel: 'نعم، غيّر الحالة',
+      tone: 'danger',
+      run: () => updateStatus(booking.id, status),
+    });
+  };
+
+  /** Everything owed back on the order: the cancellation's refund and any un-refunded duplicate payment. */
+  const refundOwedLabel = (booking: AdminBooking) => {
+    const parts: string[] = [];
+    if (booking.cancellation?.refundStatus === 'pending') parts.push(`مبلغ ${formatHalalas(booking.cancellation.refundHalalas)}`);
+    for (const dup of booking.duplicatePayments || []) {
+      if (dup.refundStatus !== 'refunded') parts.push(`الدفعة المكررة ${formatSar(Number(dup.amount))}`);
+    }
+    return parts.join(' و') || 'المبلغ المستحق';
+  };
+
+  const markRefundDone = (booking: AdminBooking) => {
+    askConfirm({
+      title: 'تأكيد إتمام الاسترداد',
+      message: `تأكد أن ${refundOwedLabel(booking)} أُعيد فعلاً للعميل «${booking.name}» من لوحة ميسر قبل التأكيد — هذا الزر يسجّل الاسترداد فقط ولا يحوّل أي مبلغ.`,
+      confirmLabel: 'تم الاسترداد',
+      tone: 'primary',
+      run: async () => {
+        setBookingNotice(null);
+        const data = await mutate<{ booking?: AdminBooking }>(
+          `/api/bookings/${booking.id}/refund-done`,
+          'POST',
+          undefined,
+          'تعذر تسجيل الاسترداد.',
+          reportBookingError,
+        );
+        if (!data) return;
+        mergeBooking(
+          booking.id,
+          data.booking && typeof data.booking === 'object'
+            ? data.booking
+            : { cancellation: { ...booking.cancellation, refundStatus: 'refunded' } },
+        );
+        setBookingNotice({ tone: 'success', text: `سُجّل استرداد الطلب ${booking.id}.` });
+      },
+    });
   };
 
   const loadExternalBookings = async () => {
-    const res = await fetch('/api/external-bookings', { credentials: 'include' });
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      setError(data.error || 'تعذر تحميل الحجوزات الخارجية.');
+    const result = await requestApi<{ success?: boolean; error?: string; data?: ExternalBookingRow[] }>(
+      '/api/external-bookings',
+      undefined,
+      'تعذر تحميل الحجوزات الخارجية.',
+    );
+    if (!result.ok) {
+      setSectionErrors((prev) => ({ ...prev, external: result.error }));
       return;
     }
-    setExternalBookings(data.data || []);
+    setSectionErrors((prev) => ({ ...prev, external: undefined }));
+    setExternalBookings(Array.isArray(result.data?.data) ? result.data.data : []);
   };
 
   const updateExternalStatus = async (id: string, status: string) => {
-    const res = await fetch(`/api/external-bookings/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ status }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر تعديل حالة الحجز الخارجي.');
-      return;
-    }
+    const data = await mutate(`/api/external-bookings/${id}`, 'PATCH', { status }, 'تعذر تعديل حالة الحجز الخارجي.');
+    if (!data) return;
     setExternalBookings((prev) => prev.map((item) => (item.id === id ? { ...item, status } : item)));
   };
 
-  const removeExternalBooking = async (id: string) => {
-    const res = await fetch(`/api/external-bookings/${id}`, { method: 'DELETE', credentials: 'include' });
-    const data = await res.json();
-    if (!data.success) {
-      setError(data.error || 'تعذر حذف الحجز الخارجي.');
-      return;
-    }
-    setExternalBookings((prev) => prev.filter((item) => item.id !== id));
+  const removeExternalBooking = (row: ExternalBookingRow) => {
+    askConfirm({
+      title: 'حذف الحجز الخارجي؟',
+      message: `سيُحذف حجز «${row.customerName}» (${row.serviceType}) المسجّل باسم المندوب ${row.courierName}. لا يمكن التراجع.`,
+      confirmLabel: 'نعم، احذف الحجز',
+      tone: 'danger',
+      run: async () => {
+        setError(null);
+        const data = await mutate(`/api/external-bookings/${row.id}`, 'DELETE', undefined, 'تعذر حذف الحجز الخارجي.');
+        if (!data) return;
+        setExternalBookings((prev) => prev.filter((item) => item.id !== row.id));
+      },
+    });
   };
 
   const filteredExternal = externalBookings.filter(
@@ -510,7 +652,7 @@ export function AdminDashboard({
   );
 
   const exportExternalCsv = () => {
-    const blob = new Blob([`\uFEFF${externalBookingsCsv(filteredExternal)}`], {
+    const blob = new Blob([`﻿${externalBookingsCsv(filteredExternal)}`], {
       type: 'text/csv;charset=utf-8;',
     });
     const url = URL.createObjectURL(blob);
@@ -521,11 +663,46 @@ export function AdminDashboard({
     URL.revokeObjectURL(url);
   };
 
-  const removeBooking = async (id: string) => {
-    const res = await fetch(`/api/bookings/${id}`, { method: 'DELETE', credentials: 'include' });
-    const data = await res.json();
-    if (data.success) setBookings((prev) => prev.filter((item) => item.id !== id));
+  const removeBooking = (booking: AdminBooking) => {
+    askConfirm({
+      title: `حذف الحجز ${booking.id}؟`,
+      message: isPaid(booking)
+        ? 'هذا الطلب مدفوع — الخادم يرفض حذف الطلبات المدفوعة أو التي عليها استرداد مستحق. ألغِ الطلب بدلاً من حذفه.'
+        : `سيُحذف طلب «${booking.name}» (${booking.serviceName}) من سجلات المنصة نهائياً. لا يمكن التراجع.`,
+      confirmLabel: 'نعم، احذف الحجز',
+      tone: 'danger',
+      run: async () => {
+        setBookingNotice(null);
+        const data = await mutate(`/api/bookings/${booking.id}`, 'DELETE', undefined, 'تعذر حذف الحجز.', reportBookingError);
+        if (!data) return;
+        setBookings((prev) => prev.filter((item) => item.id !== booking.id));
+      },
+    });
   };
+
+  const pendingApprovalBookings = bookings.filter((row) => row.status === BOOKING_PENDING_APPROVAL_STATUS);
+  const adminApprovalCount = pendingApprovalBookings.filter(needsAdminApproval).length;
+  const refundDueCount = bookings.filter(owesRefund).length;
+  const visibleBookings = filterBookings(bookings, bookingFilter);
+
+  const jumpToBookings = (filter: BookingFilter) => {
+    setAdminSection('overview');
+    setBookingFilter(filter);
+    setScrollToBookings((n) => n + 1);
+  };
+
+  useEffect(() => {
+    if (!scrollToBookings) return;
+    const timer = window.setTimeout(() => {
+      bookingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [scrollToBookings]);
+
+  // An accounts_manager cannot reach the owner-only settings tabs, even via stale state.
+  useEffect(() => {
+    if (!isOwnerAdmin && ADMIN_ONLY_SECTIONS.includes(adminSection)) setAdminSection('overview');
+  }, [isOwnerAdmin, adminSection]);
 
   // Was a tenth local copy of the input string; now the shared treatment.
   const inputClass = controlClass;
@@ -575,10 +752,16 @@ export function AdminDashboard({
           ariaLabel="أقسام لوحة الإدارة"
           active={adminSection}
           onChange={setAdminSection}
-          tabs={[
-            { id: 'overview', label: 'نظرة عامة' },
+          tabs={([
+            {
+              id: 'overview',
+              label: 'نظرة عامة',
+              count: pendingApprovalBookings.length + refundDueCount,
+              countTone: 'warning' as const,
+            },
             { id: 'seo', label: 'تحسين الظهور / SEO', icon: Search },
             { id: 'moyasar', label: 'ميسر', icon: CreditCard },
+            { id: 'ai', label: 'الذكاء الاصطناعي', icon: Sparkles },
             {
               id: 'couriers',
               label: 'مناديب التوصيل',
@@ -603,13 +786,33 @@ export function AdminDashboard({
               count: newSupportCount,
               countTone: 'warning' as const,
             },
-          ]}
+          ] as TabItem<AdminSection>[]).filter((tab) => isOwnerAdmin || !ADMIN_ONLY_SECTIONS.includes(tab.id))}
         />
 
         {/* KPIs ordered by what needs action first: pending approvals lead,
             totals follow. Anything awaiting a decision is toned, not neutral. */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">
           {[
+            {
+              label: BOOKING_PENDING_APPROVAL_STATUS,
+              value: pendingApprovalBookings.length,
+              icon: Hourglass,
+              tone: adminApprovalCount ? 'danger' : pendingApprovalBookings.length ? 'warning' : 'default',
+              hint: adminApprovalCount
+                ? `${adminApprovalCount} متعدد الموردين — موافقتك أنت`
+                : pendingApprovalBookings.length
+                  ? 'بانتظار رد المورّد'
+                  : undefined,
+              onClick: () => jumpToBookings('pending_approval'),
+            },
+            {
+              label: 'استرداد مستحق',
+              value: refundDueCount,
+              icon: RotateCcw,
+              tone: refundDueCount ? 'danger' : 'default',
+              hint: refundDueCount ? 'أعد المبلغ من ميسر ثم سجّله' : undefined,
+              onClick: () => jumpToBookings('refund_due'),
+            },
             {
               label: 'طلبات موردين معلّقة',
               value: applications.filter((item) => item.status === 'pending').length,
@@ -632,7 +835,13 @@ export function AdminDashboard({
               onClick: () => setAdminSection('demand'),
             },
             { label: 'كل الحسابات', value: users.length, icon: Users, tone: 'default' },
-            { label: 'الحجوزات', value: bookings.length, icon: CalendarCheck2, tone: 'default' },
+            {
+              label: 'الحجوزات',
+              value: bookings.length,
+              icon: CalendarCheck2,
+              tone: 'default',
+              onClick: () => jumpToBookings('all'),
+            },
             {
               label: 'حجوزات خارجية',
               value: externalBookings.length,
@@ -653,17 +862,19 @@ export function AdminDashboard({
               label={stat.label}
               value={stat.value}
               icon={stat.icon}
-              tone={stat.tone as 'default' | 'warning'}
+              tone={stat.tone as 'default' | 'warning' | 'danger'}
+              hint={'hint' in stat ? stat.hint : undefined}
               onClick={stat.onClick}
             />
           ))}
         </div>
       </section>
 
-      {adminSection === 'seo' ? <SeoSettingsPanel /> : null}
-      {adminSection === 'moyasar' ? <MoyasarSettingsPanel /> : null}
+      {isOwnerAdmin && adminSection === 'seo' ? <SeoSettingsPanel /> : null}
+      {isOwnerAdmin && adminSection === 'moyasar' ? <MoyasarSettingsPanel /> : null}
+      {isOwnerAdmin && adminSection === 'ai' ? <AiIntegrationsPanel /> : null}
 
-      {adminSection !== 'seo' && adminSection !== 'moyasar' && error ? (
+      {!ADMIN_ONLY_SECTIONS.includes(adminSection) && error ? (
         <div className="flex items-start gap-2 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-2xl p-4">
           <AlertCircle className="w-4 h-4 mt-0.5" />
           {error}
@@ -673,6 +884,7 @@ export function AdminDashboard({
       {adminSection === 'couriers' ? (
         <section className="bg-surface border border-line rounded-panel p-5 shadow-e1 space-y-4">
           <h2 className="text-lg font-bold">مناديب التوصيل</h2>
+          <SectionError message={sectionErrors.couriers} />
           {couriers.length === 0 ? (
             <p className="text-sm text-slate-500">ما فيه طلبات مناديب حالياً. تظهر هنا بعد سجّل معنا كمندوب توصيل.</p>
           ) : (
@@ -769,6 +981,8 @@ export function AdminDashboard({
                 تصدير CSV
               </button>
             </div>
+
+            <SectionError message={sectionErrors.external} />
 
             <div className="flex flex-wrap gap-2">
               <select
@@ -868,7 +1082,7 @@ export function AdminDashboard({
                         <td className="py-3">
                           <button
                             type="button"
-                            onClick={() => removeExternalBooking(row.id)}
+                            onClick={() => removeExternalBooking(row)}
                             className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 inline-flex items-center justify-center hover:bg-rose-100"
                             title="حذف الحجز الخارجي"
                           >
@@ -893,6 +1107,7 @@ export function AdminDashboard({
               التوثيق هنا مراجعة يوصل للرابط — ليست علامة ميتا أو تيك توك الرسمية. العميل يرى شارة «موثّق» فقط بعد هذا الزر.
             </p>
           </div>
+          <SectionError message={sectionErrors.socials} />
           {vendorSocials.length === 0 ? (
             <p className="text-sm text-slate-500">المورد ما ربط حسابات بعد</p>
           ) : (
@@ -974,6 +1189,7 @@ export function AdminDashboard({
               طلبات عملاء ما لقوا منتجاً في مدينتهم. تواصل ثم حدّث الحالة بعد المطابقة.
             </p>
           </div>
+          <SectionError message={sectionErrors.demand} />
           {loading ? (
             <p className="text-sm text-slate-500">جارٍ التحميل…</p>
           ) : cityRequests.length === 0 ? (
@@ -1037,6 +1253,7 @@ export function AdminDashboard({
       {adminSection === 'listings' ? (
         <section className="bg-surface border border-line rounded-panel p-5 shadow-e1 space-y-4">
           <h2 className="text-lg font-bold">منتجات الموردين ومسار يوصل</h2>
+          <SectionError message={sectionErrors.listings} />
           {listings.length === 0 ? (
             <p className="text-sm text-slate-500">ما فيه منتجات مورّدين مسجّلة بعد. تظهر هنا بعد تسجيل المنتج من لوحة المورد.</p>
           ) : (
@@ -1079,6 +1296,7 @@ export function AdminDashboard({
       <>
       <section className="bg-surface border border-line rounded-panel p-5 shadow-e1 space-y-4">
         <h2 className="text-lg font-bold">طلبات تسجيل الموردين</h2>
+        <SectionError message={sectionErrors.applications} />
         {applications.length === 0 ? (
           <p className="text-sm text-slate-500">ما فيه طلبات مورّدين حالياً.</p>
         ) : (
@@ -1171,6 +1389,11 @@ export function AdminDashboard({
 
         <div className="lg:col-span-3 bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
           <h2 className="text-lg font-bold mb-4">كل حسابات يوصل</h2>
+          {sectionErrors.users ? (
+            <div className="mb-3">
+              <SectionError message={sectionErrors.users} />
+            </div>
+          ) : null}
           <div className="space-y-2">
             {users.map((user) => (
               <div key={user.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
@@ -1210,7 +1433,7 @@ export function AdminDashboard({
                   </select>
                   {user.id !== currentUser?.id ? (
                     <button
-                      onClick={() => removeUser(user.id)}
+                      onClick={() => removeUser(user)}
                       className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 inline-flex items-center justify-center hover:bg-rose-100"
                       title="حذف الحساب"
                     >
@@ -1222,82 +1445,246 @@ export function AdminDashboard({
                 </div>
               </div>
             ))}
-            {!loading && users.length === 0 ? (
+            {!loading && users.length === 0 && !sectionErrors.users ? (
               <p className="text-sm text-slate-500">لا توجد حسابات بعد.</p>
             ) : null}
           </div>
         </div>
       </section>
 
-      <section className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-surface border border-line rounded-panel p-5 shadow-e1">
-          <h2 className="text-lg font-bold mb-4">أقسام الكتالوج المعتمدة</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {CATEGORIES.filter((cat) => cat.id !== 'all').map((cat) => (
-              <div key={cat.id} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                <div className="font-bold text-slate-900 text-sm">{cat.name}</div>
-                <div className="text-xs text-slate-500 mt-1">
-                  {listings.filter((item) => item.categoryName === cat.name).length} خدمات
-                </div>
-              </div>
-            ))}
+      <section
+        ref={bookingsRef}
+        id="admin-bookings"
+        className="bg-surface border border-line rounded-panel p-5 shadow-e1 space-y-4 scroll-mt-4"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-bold">حجوزات المنصة</h2>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="تصفية الحجوزات">
+            {(['all', 'pending_approval', 'refund_due'] as const).map((filter) => {
+              const count =
+                filter === 'all' ? bookings.length : filter === 'pending_approval' ? pendingApprovalBookings.length : refundDueCount;
+              const active = bookingFilter === filter;
+              return (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setBookingFilter(filter)}
+                  aria-pressed={active}
+                  className={`px-3 h-9 rounded-xl text-2xs font-bold border inline-flex items-center gap-1.5 ${
+                    active ? 'bg-navy text-white border-navy' : 'bg-white text-slate-700 border-slate-200'
+                  }`}
+                >
+                  {BOOKING_FILTER_LABEL[filter]}
+                  <span className="tnum">{count}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
-        <div className="bg-surface border border-line rounded-panel p-5 shadow-e1 overflow-x-auto">
-          <h2 className="text-lg font-bold mb-4">حجوزات المنصة</h2>
-          {bookings.length === 0 && !loading ? (
-            <p className="text-sm text-slate-500">لا توجد حجوزات مسجّلة بعد.</p>
+
+        <SectionError message={sectionErrors.bookings} />
+
+        {bookingNotice ? (
+          bookingNotice.tone === 'error' ? (
+            <SectionError message={bookingNotice.text} />
           ) : (
-            <table className="w-full text-sm text-right min-w-[640px]">
+            <div className="flex items-start gap-2 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
+              <span>{bookingNotice.text}</span>
+            </div>
+          )
+        ) : null}
+
+        {bookings.length === 0 && !loading && !sectionErrors.bookings ? (
+          <p className="text-sm text-slate-500">لا توجد حجوزات مسجّلة بعد.</p>
+        ) : visibleBookings.length === 0 && !loading ? (
+          <p className="text-sm text-slate-500">ما فيه حجوزات تطابق «{BOOKING_FILTER_LABEL[bookingFilter]}».</p>
+        ) : (
+          <div className="overflow-x-auto -mx-5 sm:mx-0 px-5 sm:px-0">
+            <table className="w-full text-sm text-right min-w-[1040px]">
               <thead>
                 <tr className="text-xs text-slate-500 border-b border-slate-100">
                   <th className="py-2 font-bold">رقم</th>
                   <th className="py-2 font-bold">العميل</th>
                   <th className="py-2 font-bold">الخدمة</th>
+                  <th className="py-2 font-bold">موعد المناسبة</th>
+                  <th className="py-2 font-bold">الإجمالي</th>
+                  <th className="py-2 font-bold">الدفع والاسترداد</th>
                   <th className="py-2 font-bold">الحالة</th>
                   <th className="py-2 font-bold">إجراء</th>
                 </tr>
               </thead>
               <tbody>
-                {bookings.map((booking) => (
-                  <tr key={booking.id} className="border-b border-slate-50">
-                    <td className="py-3 font-mono text-xs">{booking.id}</td>
-                    <td className="py-3">
-                      <div className="font-bold">{booking.name}</div>
-                      <div className="text-xs text-slate-500">{booking.phone}</div>
-                    </td>
-                    <td className="py-3">{booking.serviceName}</td>
-                    <td className="py-3">
-                      <select
-                        value={booking.status}
-                        onChange={(e) => updateStatus(booking.id, e.target.value)}
-                        className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium"
-                      >
-                        {[booking.status, ...STATUS_OPTIONS.filter((s) => s !== booking.status)].map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="py-3">
-                      <button
-                        onClick={() => removeBooking(booking.id)}
-                        className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 inline-flex items-center justify-center hover:bg-rose-100"
-                        title="حذف الحجز"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {visibleBookings.map((booking) => {
+                  const vendors = vendorCount(booking);
+                  const multiVendorApproval = needsAdminApproval(booking);
+                  const duplicates = booking.duplicatePayments || [];
+                  return (
+                    <tr
+                      key={booking.id}
+                      className={`border-b border-slate-50 align-top ${multiVendorApproval || owesRefund(booking) ? 'bg-warning-bg/40' : ''}`}
+                    >
+                      <td className="py-3 pe-2">
+                        <div className="font-mono text-xs">{booking.id}</div>
+                        <div className="text-2xs text-slate-400 mt-0.5">{booking.createdAt?.slice(0, 10)}</div>
+                      </td>
+                      <td className="py-3 pe-2">
+                        <div className="font-bold">{booking.name}</div>
+                        <div className="text-xs text-slate-500" dir="ltr">
+                          {booking.phone}
+                        </div>
+                      </td>
+                      <td className="py-3 pe-2">
+                        <div>{booking.serviceName}</div>
+                        <div className="text-2xs text-slate-400 mt-0.5">
+                          {[
+                            booking.city,
+                            booking.items?.length ? `${booking.items.length} بند` : '',
+                            vendors > 1 ? `${vendors} موردين` : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </div>
+                      </td>
+                      <td className="py-3 pe-2 whitespace-nowrap">
+                        {booking.eventDate ? (
+                          <>
+                            <div className="text-xs font-medium tnum">{booking.eventDate}</div>
+                            {booking.eventTime ? (
+                              <div className="text-2xs text-slate-500 tnum" dir="ltr">
+                                {booking.eventTime}
+                              </div>
+                            ) : null}
+                          </>
+                        ) : (
+                          <span className="text-2xs text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 pe-2 whitespace-nowrap">
+                        <div className="font-bold tnum">{formatSar(booking.totalAmount)}</div>
+                        {booking.bookingMode ? (
+                          <div className="text-2xs text-slate-400">
+                            {booking.bookingMode === 'approval' ? 'بموافقة المورّد' : 'حجز فوري'}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td className="py-3 pe-2">
+                        <div className="flex flex-col items-start gap-1">
+                          {isPaid(booking) ? (
+                            <Badge tone="success" size="sm" icon={CheckCircle2}>
+                              مدفوع
+                            </Badge>
+                          ) : (
+                            <Badge tone="neutral" size="sm">
+                              غير مدفوع
+                            </Badge>
+                          )}
+                          {hasPendingRefund(booking) ? (
+                            <Badge tone="danger" size="sm" icon={RotateCcw}>
+                              استرداد مستحق {formatHalalas(booking.cancellation?.refundHalalas)}
+                            </Badge>
+                          ) : isRefunded(booking) ? (
+                            <Badge tone="info" size="sm" icon={Undo2}>
+                              تم الاسترداد
+                            </Badge>
+                          ) : null}
+                          {hasDuplicatePayments(booking) ? (
+                            <span
+                              title={duplicates
+                                .map((dup) =>
+                                  [dup.paymentId, Number.isFinite(Number(dup.amount)) ? formatSar(Number(dup.amount)) : '', dup.at?.slice(0, 16).replace('T', ' ')]
+                                    .filter(Boolean)
+                                    .join(' · '),
+                                )
+                                .join('\n')}
+                            >
+                              <Badge tone="warning" size="sm" icon={AlertCircle}>
+                                دفعة مكررة ×{duplicates.length} — أعدها من ميسر
+                              </Badge>
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td className="py-3 pe-2">
+                        <select
+                          value={booking.status}
+                          onChange={(e) => requestStatusChange(booking, e.target.value)}
+                          aria-label={`حالة الطلب ${booking.id}`}
+                          className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium"
+                        >
+                          {[booking.status, ...STATUS_OPTIONS.filter((s) => s !== booking.status)].map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                        {multiVendorApproval ? (
+                          <div className="mt-1">
+                            <Badge tone="warning" size="sm">
+                              متعدد الموردين — موافقة الإدارة
+                            </Badge>
+                          </div>
+                        ) : null}
+                      </td>
+                      <td className="py-3">
+                        <div className="flex items-center gap-2">
+                          {owesRefund(booking) ? (
+                            <button
+                              type="button"
+                              onClick={() => markRefundDone(booking)}
+                              className="px-2.5 h-8 rounded-lg bg-emerald-600 text-white text-2xs font-medium whitespace-nowrap hover:bg-emerald-700"
+                            >
+                              تم الاسترداد
+                            </button>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => removeBooking(booking)}
+                            className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 inline-flex items-center justify-center hover:bg-rose-100"
+                            title="حذف الحجز"
+                            aria-label={`حذف الحجز ${booking.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
-          )}
+          </div>
+        )}
+      </section>
+
+      <section className="bg-surface border border-line rounded-panel p-5 shadow-e1">
+        <h2 className="text-lg font-bold mb-4">أقسام الكتالوج المعتمدة</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          {CATEGORIES.filter((cat) => cat.id !== 'all').map((cat) => (
+            <div key={cat.id} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+              <div className="font-bold text-slate-900 text-sm">{cat.name}</div>
+              <div className="text-xs text-slate-500 mt-1">
+                {listings.filter((item) => item.categoryName === cat.name).length} خدمات
+              </div>
+            </div>
+          ))}
         </div>
       </section>
       </>
       ) : null}
+
+      <ConfirmDialog
+        open={confirmState !== null}
+        onClose={() => {
+          if (!confirmBusy) setConfirmState(null);
+        }}
+        onConfirm={() => void runConfirm()}
+        title={confirmState?.title || ''}
+        message={confirmState?.message || ''}
+        confirmLabel={confirmState?.confirmLabel}
+        tone={confirmState?.tone}
+        loading={confirmBusy}
+      />
     </main>
   );
 }

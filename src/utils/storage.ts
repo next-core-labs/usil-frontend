@@ -224,6 +224,16 @@ export async function saveDraftBookingForm(draft: DraftBookingForm): Promise<voi
   }
 }
 
+/** Forget the checkout draft (name, phone, notes) — on logout, so the next person on the device doesn't inherit it. */
+export async function clearDraftBookingForm(): Promise<void> {
+  safeLocalStorage.removeItem(STORAGE_KEYS.DRAFT_BOOKING_FORM);
+  try {
+    await usilStorage.removeItem(STORAGE_KEYS.DRAFT_BOOKING_FORM);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 export async function loadDraftBookingForm(): Promise<DraftBookingForm | null> {
   try {
     const draft = await usilStorage.getItem<DraftBookingForm>(STORAGE_KEYS.DRAFT_BOOKING_FORM);

@@ -8,6 +8,7 @@ import {
   NFCPaymentData,
 } from '../../types';
 import { VendorTapToPayNfcModal } from './VendorTapToPayNfcModal';
+import { riyadhToday } from '../../utils/riyadhDate';
 import {
   Calculator,
   Plus,
@@ -95,7 +96,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
   // Customer & Event Form State
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [eventDate, setEventDate] = useState('2026-08-27');
+  const [eventDate, setEventDate] = useState(() => riyadhToday());
   const [venueName, setVenueName] = useState('قاعة / استراحة خاصة');
   const [discountAmount, setDiscountAmount] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<'mada' | 'visa' | 'apple_pay' | 'cash' | 'bank_transfer' | 'tap_to_pay_nfc'>('tap_to_pay_nfc');
@@ -248,7 +249,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
 
     if (cart.length === 0) return;
 
-    const receiptNum = `POS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const receiptNum = `POS-${riyadhToday().slice(0, 4)}-${Math.floor(1000 + Math.random() * 9000)}`;
     const newSale: POSSaleRecord = {
       id: `pos-sale-${Date.now()}`,
       receiptNumber: receiptNum,
@@ -317,7 +318,7 @@ export const VendorPOSCashier: React.FC<VendorPOSCashierProps> = ({
       return;
     }
 
-    const receiptNum = `POS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const receiptNum = `POS-${riyadhToday().slice(0, 4)}-${Math.floor(1000 + Math.random() * 9000)}`;
     const newSale: POSSaleRecord = {
       id: `pos-sale-${Date.now()}`,
       receiptNumber: receiptNum,

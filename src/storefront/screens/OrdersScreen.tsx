@@ -8,6 +8,7 @@ import { money } from '../money';
 import { Reveal, StepRail } from '../primitives';
 import { productPhoto } from '../ProductCard';
 import { fill } from '../copy';
+import { riyadhToday } from '../../utils/riyadhDate';
 
 /** A platform order as `GET /api/bookings` returns it to its client. */
 export type MyOrder = {
@@ -57,8 +58,11 @@ export function OrdersScreen() {
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null);
 
+  // «طلباتي» is a client's own orders. For staff the same endpoint returns other people's
+  // orders (admin: every order), so they get their dashboard instead of a misleading list.
+  const isClient = sf.user?.role === 'client';
   const load = useCallback(() => {
-    if (!sf.user) return;
+    if (!sf.user || sf.user.role !== 'client') return;
     setStatus('loading');
     fetch('/api/bookings', { credentials: 'include' })
       .then(async (res) => {
@@ -188,6 +192,28 @@ export function OrdersScreen() {
     </div>
   );
 
+  if (sf.user && !isClient) {
+    return (
+      <main className="max-w-[900px] mx-auto px-[clamp(16px,4vw,40px)] pt-8 pb-16">
+        {header}
+        <div className="mt-6 py-14 px-6 text-center bg-surface border border-dashed border-navy-300 rounded-card">
+          <span className="inline-grid place-items-center w-16 h-16 rounded-card bg-tint-blue text-action">
+            <ClipboardList className="w-7 h-7" aria-hidden />
+          </span>
+          <div className="text-xl font-bold mt-[18px]">{L('«طلباتي» لحسابات العملاء', '"My orders" is for client accounts')}</div>
+          <div className="text-sm text-ink-3 mt-1.5">
+            {L('طلبات المنصة الخاصة فيك تلقاها داخل لوحة التحكم.', 'You will find your platform orders inside your dashboard.')}
+          </div>
+          {sf.openDashboard ? (
+            <button type="button" onClick={sf.openDashboard} className="mt-[22px] h-12 px-6 rounded-xl bg-navy text-white text-[15px] font-semibold">
+              {t.mDashboard}
+            </button>
+          ) : null}
+        </div>
+      </main>
+    );
+  }
+
   if (!sf.user) {
     return (
       <main className="max-w-[900px] mx-auto px-[clamp(16px,4vw,40px)] pt-8 pb-16">
@@ -245,7 +271,12 @@ export function OrdersScreen() {
             const listing = listingOf(o);
             const vendor = vendorOf(o);
             const qty = (o.items || []).reduce((sum, i) => sum + (Number(i.quantity) || 0), 0) || 1;
-            const createdAt = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-GB') : '';
+            // The server stamps `createdAt` in UTC ("YYYY-MM-DD HH:mm" or ISO); show the Riyadh day.
+            const createdTime = o.createdAt
+              ? new Date(/Z|[+-]\d\d:?\d\d$/.test(o.createdAt) ? o.createdAt : `${o.createdAt.replace(' ', 'T')}Z`)
+              : null;
+            const createdIso = createdTime && !Number.isNaN(createdTime.getTime()) ? riyadhToday(createdTime) : null;
+            const createdAt = createdIso ? createdIso.split('-').reverse().join('/') : '';
             return (
               <Reveal key={o.id} as="article" className="bg-surface border border-line rounded-card p-[18px]">
                 <div className="flex items-center justify-between gap-3 flex-wrap">

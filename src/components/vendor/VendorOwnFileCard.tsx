@@ -3,7 +3,7 @@ import { CheckCircle2, Clock, Store } from 'lucide-react';
 import { FULFILLMENT_AR_LABEL } from '../../contracts/vendors/vendor-listings';
 import { publicSocials } from '../../contracts/vendors/vendor-socials';
 import type { VendorOwnProfile } from '../../contracts/vendors/vendor-profile';
-import { vendorHandle } from '../../contracts/vendors/vendor-profile';
+import { pathForVendor } from '../../utils/siteRoutes';
 import { VendorSocialIcons } from './VendorSocialIcons';
 
 const STATUS_AR: Record<VendorOwnProfile['status'], string> = {
@@ -19,7 +19,8 @@ export function VendorOwnFileCard({
   profile: VendorOwnProfile;
   compact?: boolean;
 }) {
-  const handle = vendorHandle(profile.projectName, profile.vendorId);
+  // Only the real vendor id resolves (/vendor/:id); a name-based handle would 404.
+  const vendorPath = profile.vendorId ? pathForVendor(profile.vendorId) : '';
   const socials = publicSocials(profile.socials);
   return (
     <article
@@ -57,9 +58,11 @@ export function VendorOwnFileCard({
           <VendorSocialIcons links={socials} />
         </div>
       ) : null}
-      <p className="mt-3 text-2xs text-slate-500 font-mono" dir="ltr">
-        usil.app/vendor/{handle}
-      </p>
+      {vendorPath ? (
+        <p className="mt-3 text-2xs text-slate-500 font-mono break-all" dir="ltr">
+          usil.app{vendorPath}
+        </p>
+      ) : null}
       {profile.status === 'pending' ? (
         <p className="mt-2 text-2xs text-slate-500 leading-relaxed inline-flex items-start gap-1.5">
           <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />

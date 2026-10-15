@@ -13,6 +13,7 @@ import {
   templateBody,
   type Template,
 } from '../../utils/vendorWhatsApp';
+import { riyadhToday } from '../../utils/riyadhDate';
 
 type View = 'clients' | 'crew' | 'support';
 
@@ -93,7 +94,7 @@ export function VendorWhatsAppDesk({
   brandName: string;
 }) {
   const [view, setView] = useState<View>('clients');
-  const today = new Date().toISOString().slice(0, 10);
+  const today = riyadhToday();
 
   // ── Clients ──
   const clients = useMemo(() => buildClientContacts(bookings, today), [bookings, today]);

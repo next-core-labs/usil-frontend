@@ -18,6 +18,7 @@ import {
   Layers,
   FileSpreadsheet,
 } from 'lucide-react';
+import { riyadhToday } from '../../../utils/riyadhDate';
 
 interface VendorExpenseManagerProps {
   expenses: ExpenseRecord[];
@@ -60,7 +61,7 @@ export const VendorExpenseManager: React.FC<VendorExpenseManagerProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<ExpenseRecord['paymentMethod']>('mada');
   const [paidTo, setPaidTo] = useState('');
   const [invoiceReference, setInvoiceReference] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => riyadhToday());
   const [notes, setNotes] = useState('');
   const [relatedBookingId, setRelatedBookingId] = useState('');
 

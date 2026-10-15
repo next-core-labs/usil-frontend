@@ -104,19 +104,27 @@ export function ExternalBookingForm({
         if (alive) setLoadingCouriers(false);
       }
     })();
-    (async () => {
+    // Approved vendors for the «المورّد المرتبط» suggestions. Couriers may read
+    // /api/external-bookings/vendors; the admin-only vendor-hubs list is only a
+    // fallback for a server that predates it. Either failing leaves free text.
+    const readVendorNames = async (url: string): Promise<string[] | null> => {
       try {
-        const res = await fetch('/api/admin/vendor-hubs', { credentials: 'include' });
-        const data = await res.json();
-        if (!alive || !res.ok || !data.success) return;
-        setVendors(
-          (data.data || [])
-            .map((hub: { projectName?: string; name?: string }) => hub.projectName || hub.name || '')
-            .filter(Boolean),
-        );
+        const res = await fetch(url, { credentials: 'include' });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.success || !Array.isArray(data.data)) return null;
+        const names = (data.data as Array<{ projectName?: string; name?: string }>)
+          .map((row) => String(row?.projectName || row?.name || '').trim())
+          .filter(Boolean);
+        return Array.from(new Set(names));
       } catch {
-        /* قائمة الموردين اختيارية — الخانة تبقى نصاً حراً */
+        return null;
       }
+    };
+    (async () => {
+      const names =
+        (await readVendorNames('/api/external-bookings/vendors')) ??
+        (await readVendorNames('/api/admin/vendor-hubs'));
+      if (alive && names) setVendors(names);
     })();
     return () => {
       alive = false;
