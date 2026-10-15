@@ -17,6 +17,7 @@ import { VendorExpenseManager } from './accounting/VendorExpenseManager';
 import { VendorEventCosting } from './accounting/VendorEventCosting';
 import { VendorZatcaVatReport } from './accounting/VendorZatcaVatReport';
 import { VendorCrewPayroll } from './accounting/VendorCrewPayroll';
+import { USIL_WHATSAPP, whatsappChatUrl } from '../../utils/ownerWhatsApp';
 import {
   Wallet,
   Scale,
@@ -36,6 +37,23 @@ import {
   Printer,
   Sparkles,
 } from 'lucide-react';
+
+/**
+ * Money state of one Usil-marketplace order for this vendor, as the backend
+ * knows it. Supplied by the parent; when absent the wallet shows «غير متاح بعد».
+ */
+export interface PlatformOrderMoney {
+  id: string;
+  /** Order total the client paid (SAR, VAT-inclusive). */
+  totalAmount: number;
+  /** The client's payment was captured. */
+  paid: boolean;
+  /** The order was delivered/completed (funds leave escrow). */
+  completed: boolean;
+}
+
+/** Usil's commission on marketplace orders. */
+const PLATFORM_COMMISSION = 0.15;
 
 interface VendorFinancialSuiteProps {
   payouts: FinancialPayout[];
@@ -65,6 +83,8 @@ interface VendorFinancialSuiteProps {
     autoCreateExpense: boolean
   ) => void;
   onAutoCalculatePayrollFromHours?: () => void;
+  /** Real marketplace orders with payment state — drives escrow/available balances. */
+  platformOrders?: PlatformOrderMoney[];
 }
 
 export type AccountingTab =
@@ -97,13 +117,14 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
   onBatchMarkPayrollPaid,
   onAddConsolidatedVoucher,
   onAutoCalculatePayrollFromHours,
+  platformOrders,
 }) => {
   const [activeTab, setActiveTab] = useState<AccountingTab>('pnl');
 
   // Payout Modal State
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState(5000);
-  const [selectedIban, setSelectedIban] = useState(brandSettings.iban || 'SA92 8000 0211 4455 6677 4012');
+  const [withdrawAmount, setWithdrawAmount] = useState(0);
+  const [selectedIban, setSelectedIban] = useState(brandSettings.iban || '');
   const [successMessage, setSuccessMessage] = useState('');
 
   // Calculations for Wallet
@@ -115,17 +136,51 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
   const platformNetVendorRevenue = platformGrossRevenue - platformCommissionDeducted;
   const totalCommissionSaved = externalRevenue * 0.15;
 
-  const availableForPayout = 8450;
-  const heldInEscrow = 11850;
+  // Wallet balances from real marketplace orders (null = data not available yet).
+  //  - escrow: paid orders not completed yet, net of Usil's 15%;
+  //  - available: paid + completed orders net of 15%, minus payouts already requested.
+  const net = (amount: number) => amount * (1 - PLATFORM_COMMISSION);
+  const heldInEscrow: number | null = platformOrders
+    ? platformOrders.filter((o) => o.paid && !o.completed).reduce((sum, o) => sum + net(o.totalAmount || 0), 0)
+    : null;
+  const alreadyRequested = (payouts || [])
+    .filter((p) => p.status !== 'held_escrow')
+    .reduce((sum, p) => sum + (p.amount || 0), 0);
+  const availableForPayout: number | null = platformOrders
+    ? Math.max(
+        0,
+        platformOrders.filter((o) => o.paid && o.completed).reduce((sum, o) => sum + net(o.totalAmount || 0), 0) -
+          alreadyRequested
+      )
+    : null;
+  const formatSar = (v: number) => v.toLocaleString('ar-SA', { maximumFractionDigits: 2 });
+
+  const openWithdrawModal = () => {
+    setWithdrawAmount(availableForPayout !== null ? Math.floor(availableForPayout) : 0);
+    setSelectedIban(brandSettings.iban || '');
+    setShowWithdrawModal(true);
+  };
 
   const handleWithdrawSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onRequestPayout(Number(withdrawAmount), selectedIban);
+    const amount = Number(withdrawAmount);
+    const iban = selectedIban.replace(/\s+/g, '').toUpperCase();
+    if (!(amount > 0) || !iban) return;
+    // Records the request only — no money moves until فريق يوصل reviews and transfers it.
+    onRequestPayout(amount, iban);
+    const msg = [
+      'طلب سحب أرباح من لوحة المورّد',
+      `المنشأة: ${brandSettings.brandName || '—'}`,
+      `المبلغ المطلوب: ${formatSar(amount)} ر.س`,
+      `الآيبان: ${iban}`,
+    ].join('\n');
+    const url = whatsappChatUrl(USIL_WHATSAPP, msg);
+    if (url) window.open(url, '_blank', 'noopener');
     setShowWithdrawModal(false);
     setSuccessMessage(
-      `تم رفع طلب تحويل فوري لمبلغ ${Number(withdrawAmount).toLocaleString('ar-SA')} ر.س إلى حسابك البنكي بنجاح.`
+      `أُرسل طلب سحب ${formatSar(amount)} ر.س إلى فريق يوصل للمراجعة. لا يتم تحويل أي مبلغ تلقائياً — سيتواصل معك الفريق لتأكيد التحويل.`
     );
-    setTimeout(() => setSuccessMessage(''), 5000);
+    setTimeout(() => setSuccessMessage(''), 8000);
   };
 
   const navSubTabs = [
@@ -303,11 +358,11 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
             </div>
 
             <button
-              onClick={() => setShowWithdrawModal(true)}
+              onClick={openWithdrawModal}
               className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-medium flex items-center gap-2 shadow-xs transition-colors"
             >
               <ArrowUpRight className="w-4 h-4" />
-              <span>طلب سحب أرباح فوري للبنك</span>
+              <span>طلب سحب أرباح</span>
             </button>
           </div>
 
@@ -368,17 +423,23 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
           <div className="grid sm:grid-cols-3 gap-5">
             <div className="p-6 rounded-3xl bg-white border border-slate-200 card-shadow space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 font-medium">الرصيد المتاح للتحويل الفوري</span>
+                <span className="text-xs text-slate-500 font-medium">الرصيد المتاح للسحب</span>
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                   <Wallet className="w-4 h-4" />
                 </div>
               </div>
               <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-700">
-                {availableForPayout.toLocaleString('ar-SA')}{' '}
-                <span className="text-xs font-sans text-slate-500">ر.س</span>
+                {availableForPayout === null ? (
+                  <span className="text-base font-sans text-slate-400">غير متاح بعد</span>
+                ) : (
+                  <>
+                    {formatSar(availableForPayout)}{' '}
+                    <span className="text-xs font-sans text-slate-500">ر.س</span>
+                  </>
+                )}
               </div>
               <p className="text-2xs text-slate-500">
-                أرباح مناسبات مكتملة تم تأكيد جاهزيتها
+                طلبات يوصل المدفوعة والمكتملة بعد خصم عمولة 15% وطلبات السحب السابقة
               </p>
             </div>
 
@@ -390,11 +451,17 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
                 </div>
               </div>
               <div className="text-2xl sm:text-3xl font-bold font-mono text-blue-700">
-                {heldInEscrow.toLocaleString('ar-SA')}{' '}
-                <span className="text-xs font-sans text-slate-500">ر.س</span>
+                {heldInEscrow === null ? (
+                  <span className="text-base font-sans text-slate-400">غير متاح بعد</span>
+                ) : (
+                  <>
+                    {formatSar(heldInEscrow)}{' '}
+                    <span className="text-xs font-sans text-slate-500">ر.س</span>
+                  </>
+                )}
               </div>
               <p className="text-2xs text-slate-500">
-                تُصرف تلقائياً فور إتمام مناسبات هذا الأسبوع
+                طلبات يوصل المدفوعة التي لم تكتمل بعد (صافي بعد 15%) — تُتاح للسحب بعد اكتمال الطلب
               </p>
             </div>
 
@@ -407,14 +474,18 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
               </div>
               <div className="space-y-0.5">
                 <div className="text-sm font-bold text-slate-800">
-                  {brandSettings.bankName || 'مصرف الراجحي'}
+                  {brandSettings.bankName || (brandSettings.iban ? '—' : 'لم يُضف حساب بنكي بعد')}
                 </div>
-                <div className="font-mono text-xs text-slate-500 dir-ltr text-right">
-                  {brandSettings.iban}
-                </div>
+                {brandSettings.iban && (
+                  <div className="font-mono text-xs text-slate-500 text-right" dir="ltr">
+                    {brandSettings.iban}
+                  </div>
+                )}
               </div>
-              <p className="text-2xs text-emerald-600 font-medium">
-                ✓ آيبان معتمد للتحويل السريع IPS
+              <p className="text-2xs text-slate-500 font-medium">
+                {brandSettings.iban
+                  ? 'من بيانات البراند — تأكد من صحته قبل طلب السحب'
+                  : 'أضف الآيبان من «تعديل بيانات البراند»'}
               </p>
             </div>
           </div>
@@ -425,7 +496,7 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
               <h4 className="text-base font-bold text-slate-900">
                 سجل التحويلات البنكية ومسحوبات الأرباح
               </h4>
-              <span className="text-xs text-slate-500">تحويل فوري إلى الحساب البنكي</span>
+              <span className="text-xs text-slate-500">يُحوَّل بعد مراجعة فريق يوصل</span>
             </div>
 
             <div className="overflow-x-auto">
@@ -440,7 +511,14 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {payouts.map((payout) => (
+                  {(payouts || []).length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-6 px-4 text-center text-slate-500">
+                        لا توجد طلبات سحب أو تحويلات بعد.
+                      </td>
+                    </tr>
+                  )}
+                  {(payouts || []).map((payout) => (
                     <tr key={payout.id} className="hover:bg-slate-50">
                       <td className="py-3.5 px-4 font-mono font-bold text-slate-800">{payout.reference}</td>
                       <td className="py-3.5 px-4 font-mono text-slate-600">{payout.date}</td>
@@ -484,7 +562,7 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
           <div className="w-full max-w-md bg-white rounded-3xl p-6 space-y-4 text-right card-shadow">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h4 className="text-base font-bold text-slate-900">
-                طلب سحب أرباح فوري إلى الحساب البنكي
+                طلب سحب أرباح
               </h4>
               <button
                 onClick={() => setShowWithdrawModal(false)}
@@ -496,19 +574,23 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
 
             <form onSubmit={handleWithdrawSubmit} className="space-y-4 text-xs">
               <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
-                <span className="text-emerald-900 font-bold">الرصيد المتاح للسحب الآن:</span>
+                <span className="text-emerald-900 font-bold">الرصيد المتاح للسحب:</span>
                 <span className="font-mono font-bold text-emerald-800 text-sm">
-                  {availableForPayout.toLocaleString('ar-SA')} ر.س
+                  {availableForPayout === null ? 'غير متاح بعد' : `${formatSar(availableForPayout)} ر.س`}
                 </span>
               </div>
+
+              <p className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 leading-relaxed">
+                هذا طلب يُرسل إلى فريق يوصل للمراجعة، ويُفتح واتساب يوصل برسالة فيها المبلغ والآيبان. لا يتم تحويل أي مبلغ تلقائياً.
+              </p>
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">المبلغ المطلوب سحبه (ر.س) *</label>
                 <input
                   type="number"
                   required
-                  min={100}
-                  max={availableForPayout}
+                  min={1}
+                  max={availableForPayout !== null ? Math.max(1, Math.floor(availableForPayout)) : undefined}
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(Number(e.target.value))}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono font-bold text-sm text-right focus:border-emerald-500 focus:outline-none"
@@ -521,6 +603,8 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
                   type="text"
                   required
                   value={selectedIban}
+                  placeholder="SA…"
+                  dir="ltr"
                   onChange={(e) => setSelectedIban(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-xs text-right bg-slate-50 focus:outline-none"
                 />
@@ -531,7 +615,7 @@ export const VendorFinancialSuite: React.FC<VendorFinancialSuiteProps> = ({
                   type="submit"
                   className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs shadow-xs"
                 >
-                  تأكيد وإرسال الحوالة البنكية
+                  إرسال الطلب لفريق يوصل
                 </button>
                 <button
                   type="button"

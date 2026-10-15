@@ -46,6 +46,7 @@ import {
   Lock,
   Package,
 } from 'lucide-react';
+import { riyadhToday } from '../../utils/riyadhDate';
 
 interface VendorDatabaseBackupModalProps {
   isOpen: boolean;
@@ -151,7 +152,7 @@ export const VendorDatabaseBackupModal: React.FC<VendorDatabaseBackupModalProps>
   const handleDownload = () => {
     if (!backupData) return;
     const safeBrand = (brandSettings.brandName || 'vendor').replace(/\s+/g, '_');
-    const dateStr = new Date().toISOString().split('T')[0];
+    const dateStr = riyadhToday();
     const fileName = `aseel_backup_${safeBrand}_${dateStr}.json`;
 
     const downloadedFileName = downloadJSONBackupFile(backupData, fileName);

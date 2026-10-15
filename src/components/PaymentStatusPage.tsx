@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Check, XCircle, Loader2 } from 'lucide-react';
 import { useLang } from '../storefront/lang';
 import { money } from '../storefront/money';
+import { clearPendingPayment, loadPendingPayment } from '../utils/pendingPayment';
 
 type PayState = 'loading' | 'paid' | 'failed';
 
@@ -9,7 +10,16 @@ type PayState = 'loading' | 'paid' | 'failed';
  * Checkout step 3 (confirmation) from the design, driven by Moyasar's verified
  * payment record: `/payment/success?id=<moyasar id>`.
  */
-export function PaymentSuccessPage({ onBack, onOrders }: { onBack: () => void; onOrders?: () => void }) {
+export function PaymentSuccessPage({
+  onBack,
+  onOrders,
+  onPaid,
+}: {
+  onBack: () => void;
+  onOrders?: () => void;
+  /** Runs once the payment is verified — the moment the cart may be emptied. */
+  onPaid?: () => void;
+}) {
   const { t, ar } = useLang();
   const [state, setState] = useState<PayState>('loading');
   const [amount, setAmount] = useState<number | null>(null);
@@ -37,7 +47,10 @@ export function PaymentSuccessPage({ onBack, onOrders }: { onBack: () => void; o
         setOrderId(String(data.bookingId || data.metadata?.bookingId || data.metadata?.order_id || ''));
         const paid = String(data.status || '').toLowerCase() === 'paid';
         setState(paid ? 'paid' : 'failed');
-        if (!paid) setError(t.payFailedSub);
+        if (paid) {
+          clearPendingPayment();
+          onPaid?.();
+        } else setError(t.payFailedSub);
       })
       .catch((err: Error) => {
         setState('failed');
@@ -107,6 +120,8 @@ export function PaymentSuccessPage({ onBack, onOrders }: { onBack: () => void; o
 
 export function PaymentCancelledPage({ onBack, onCart }: { onBack: () => void; onCart?: () => void }) {
   const { t } = useLang();
+  // The order still exists with its invoice: resuming it beats a second, duplicate order.
+  const [pending] = useState(() => loadPendingPayment());
   return (
     <main className="max-w-[720px] mx-auto px-[clamp(16px,4vw,40px)] pt-10 pb-16">
       <div className="bg-surface border border-line rounded-card p-[clamp(24px,4vw,40px)] text-center">
@@ -116,6 +131,15 @@ export function PaymentCancelledPage({ onBack, onCart }: { onBack: () => void; o
         <h1 className="mt-5 mb-2 text-[clamp(24px,3vw,34px)] font-bold tracking-[-0.03em]">{t.payCancelledTitle}</h1>
         <p className="mx-auto max-w-[420px] text-[15px] leading-[1.7] text-ink-1">{t.payCancelledSub}</p>
         <div className="flex gap-2.5 justify-center mt-[22px] flex-wrap">
+          {pending ? (
+            <button
+              type="button"
+              onClick={() => window.location.assign(pending.paymentUrl)}
+              className="h-12 px-[22px] rounded-xl bg-action text-white text-[15px] font-semibold"
+            >
+              {t.resumePay}
+            </button>
+          ) : null}
           <button type="button" onClick={onCart || onBack} className="h-12 px-[22px] rounded-xl bg-navy text-white text-[15px] font-semibold">
             {t.backToCart}
           </button>

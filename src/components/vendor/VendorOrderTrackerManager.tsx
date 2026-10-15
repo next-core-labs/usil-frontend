@@ -3,20 +3,11 @@ import { ClientOrderTracking, VendorBrandSettings } from '../../types';
 import { PublicOrderTrackerView } from './PublicOrderTrackerView';
 import {
   Clock,
-  Share2,
-  ExternalLink,
-  Code2,
-  CheckCircle2,
-  Sparkles,
-  Phone,
-  MessageCircle,
   Copy,
-  Plus,
   Eye,
-  ShieldCheck,
-  Send,
+  MessageCircle,
+  PackageSearch,
   Zap,
-  Terminal,
 } from 'lucide-react';
 
 interface VendorOrderTrackerManagerProps {
@@ -25,36 +16,55 @@ interface VendorOrderTrackerManagerProps {
   onUpdateStep: (trackingId: string, stepId: string, isCompleted: boolean) => void;
 }
 
+const STATUS_LABELS: Record<ClientOrderTracking['status'], string> = {
+  draft: 'مسودة',
+  confirmed: 'مؤكد',
+  preparing: 'جاري التجهيز',
+  on_the_way: 'الطاقم في الطريق',
+  setup_ready: 'الموقع جاهز',
+  completed: 'مكتمل',
+};
+
 export const VendorOrderTrackerManager: React.FC<VendorOrderTrackerManagerProps> = ({
-  trackings,
+  trackings: trackingsProp,
   brandSettings,
   onUpdateStep,
 }) => {
-  const [selectedTracking, setSelectedTracking] = useState<ClientOrderTracking>(trackings[0]);
+  const trackings = trackingsProp ?? [];
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
-  const [copiedApi, setCopiedApi] = useState(false);
 
-  const activeTrackingUrl = `https://usil.app/track/${selectedTracking.trackingCode}`;
+  // Derive the selection from the live list so updates (and deletions) are reflected.
+  const selectedTracking =
+    trackings.find((t) => t.id === selectedId) ?? trackings[0] ?? null;
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(activeTrackingUrl);
+  const handleCopyCode = () => {
+    if (!selectedTracking) return;
+    void navigator.clipboard?.writeText(selectedTracking.trackingCode).catch(() => undefined);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const handleCopyApiSnippet = () => {
-    const snippet = `// 🚀 كود استدعاء API تتبع الطلب المجاني (Free Usil Tracking API)
-async function getOrderLiveStatus(trackingCode) {
-  const res = await fetch(\`https://usil.app/api/v1/track/\${trackingCode}\`, {
-    headers: { 'X-Vendor-Key': 'FREE_TIER_KEY' }
-  });
-  return await res.json();
-}`;
-    navigator.clipboard.writeText(snippet);
-    setCopiedApi(true);
-    setTimeout(() => setCopiedApi(false), 2000);
-  };
+  if (!selectedTracking) {
+    return (
+      <div className="space-y-6 text-right">
+        <div className="p-8 rounded-3xl bg-white border border-slate-200 card-shadow text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto">
+            <PackageSearch className="w-7 h-7 text-slate-400" />
+          </div>
+          <h2 className="text-base font-bold text-slate-900">لا توجد طلبات قيد التتبع حالياً</h2>
+          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+            عند تأكيد حجز لديك سيظهر هنا لتحديث مراحل التجهيز (تجهيز المعدات، تحرك الطاقم، جاهزية الموقع) وإبلاغ العميل بها.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const clientMessage = `مرحباً ${selectedTracking.clientName}،\nتحديث بخصوص مناسبتكم (${selectedTracking.serviceTitle}) بتاريخ ${selectedTracking.eventDate}: الحالة الحالية «${STATUS_LABELS[selectedTracking.status] ?? 'مؤكد'}».\nرمز التتبع: ${selectedTracking.trackingCode}`;
+  const clientPhoneDigits = (selectedTracking.clientPhone || '').replace(/\D/g, '');
+  const timeline = selectedTracking.timeline ?? [];
 
   return (
     <div className="space-y-6 text-right">
@@ -64,13 +74,13 @@ async function getOrderLiveStatus(trackingCode) {
         <div className="space-y-1">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-medium border border-white/10">
             <Zap className="w-3.5 h-3.5" />
-            <span>بوابة تتبع الطلبات المباشرة وAPI المجاني (Free Real-time Tracking Portal)</span>
+            <span>متابعة مراحل تجهيز الطلبات</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold">
-            تتبع المناسبات المباشر للعميل (مجاناً 100%)
+            تتبع المناسبات للعميل
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 font-normal">
-            امنح عملاءك تجربة فندقية فاخرة لمتابعة مراحل التجهيز، تحرك الطاقم، صور الموقع، والتواصل مع المشرف بدون أي تكلفة إضافية وبعلامتك التجارية.
+            حدّث مراحل التجهيز لكل مناسبة وأرسل للعميل آخر حالة عبر واتساب.
           </p>
         </div>
 
@@ -84,11 +94,11 @@ async function getOrderLiveStatus(trackingCode) {
           </button>
 
           <button
-            onClick={handleCopyLink}
+            onClick={handleCopyCode}
             className="px-4 py-2.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white text-xs font-medium flex items-center gap-2 shadow-xs transition-colors"
           >
-            <Share2 className="w-4 h-4" />
-            <span>{copiedCode ? 'تم نسخ الرابط!' : 'نسخ رابط التتبع للعميل'}</span>
+            <Copy className="w-4 h-4" />
+            <span>{copiedCode ? 'تم نسخ الرمز!' : 'نسخ رمز التتبع'}</span>
           </button>
         </div>
       </div>
@@ -100,11 +110,8 @@ async function getOrderLiveStatus(trackingCode) {
         <div className="lg:col-span-4 p-5 rounded-3xl bg-white border border-slate-200 card-shadow space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="text-sm font-bold text-slate-900">
-              روابط التتبع النشطة ({trackings.length})
+              الطلبات قيد التتبع ({trackings.length})
             </h3>
-            <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-              تحديث فوري
-            </span>
           </div>
 
           <div className="space-y-2.5 overflow-y-auto max-h-[500px]">
@@ -113,7 +120,7 @@ async function getOrderLiveStatus(trackingCode) {
               return (
                 <div
                   key={trk.id}
-                  onClick={() => setSelectedTracking(trk)}
+                  onClick={() => setSelectedId(trk.id)}
                   className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
                     isSelected
                       ? 'bg-blue-50/80 border-action shadow-xs'
@@ -136,7 +143,7 @@ async function getOrderLiveStatus(trackingCode) {
                   <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200/60">
                     <span className="font-bold text-slate-700">{trk.eventDate}</span>
                     <span className="px-2 py-0.5 rounded text-2xs font-medium bg-emerald-100 text-emerald-800">
-                      {trk.status === 'preparing' ? 'جاري التجهيز' : 'مؤكد'}
+                      {STATUS_LABELS[trk.status] ?? 'مؤكد'}
                     </span>
                   </div>
                 </div>
@@ -165,19 +172,19 @@ async function getOrderLiveStatus(trackingCode) {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <a
-                  href={`https://wa.me/${selectedTracking.clientPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
-                    `مرحباً ${selectedTracking.clientName}،\nيمكنك الآن متابعة تجهيزات مناسبتكم لحظة بلحظة، وتحرك الطاقم الميداني وموقع الفعالية عبر الرابط المباشر:\n${activeTrackingUrl}`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 hover:bg-emerald-700"
-                >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  <span>إرسال الرابط للعميل</span>
-                </a>
-              </div>
+              {clientPhoneDigits && (
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`https://wa.me/${clientPhoneDigits}?text=${encodeURIComponent(clientMessage)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 hover:bg-emerald-700"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>إرسال الحالة للعميل</span>
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Step Checkers for Vendor */}
@@ -188,7 +195,12 @@ async function getOrderLiveStatus(trackingCode) {
               </h4>
 
               <div className="space-y-2.5">
-                {selectedTracking.timeline.map((step) => (
+                {timeline.length === 0 && (
+                  <p className="text-xs text-slate-500 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                    لا توجد مراحل مسجلة لهذا الطلب بعد.
+                  </p>
+                )}
+                {timeline.map((step) => (
                   <div
                     key={step.id}
                     className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 transition-all ${
@@ -223,30 +235,6 @@ async function getOrderLiveStatus(trackingCode) {
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* Free API & Embed Snippet Box */}
-            <div className="p-4 rounded-2xl bg-navy text-white space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs font-medium">كود API وتضمين التتبع المجاني لموقعك</span>
-                </div>
-                <button
-                  onClick={handleCopyApiSnippet}
-                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-2xs font-medium text-white flex items-center gap-1"
-                >
-                  <Copy className="w-3 h-3" />
-                  <span>{copiedApi ? 'تم النسخ!' : 'نسخ كود API'}</span>
-                </button>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-950/80 font-mono text-2xs text-emerald-300 overflow-x-auto text-left leading-relaxed">
-                GET https://usil.app/api/v1/track/{selectedTracking.trackingCode}
-              </div>
-              <p className="text-2xs text-slate-300 leading-normal">
-                💡 يمكنك تضمين صفحة التتبع داخل موقعك الخاص مجاناً بدون أي اشتراكات شهرية، ليبقى عميلك مرتبطاً بك طوال الوقت.
-              </p>
             </div>
 
           </div>

@@ -6,6 +6,7 @@ import {
   ConsolidatedCrewPaymentVoucher,
 } from '../../../types';
 import { tafqeetSAR } from '../../../utils/arabicNumberToWords';
+import { riyadhToday } from '../../../utils/riyadhDate';
 import { generateCrewPayrollVoucherPDF } from '../../../utils/zatcaPdfExporter';
 import {
   Receipt,
@@ -39,7 +40,7 @@ interface UnifiedPaymentVoucherModalProps {
   existingVoucher?: ConsolidatedCrewPaymentVoucher | null;
 }
 
-export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProps> = ({
+const UnifiedPaymentVoucherModalBody: React.FC<UnifiedPaymentVoucherModalProps> = ({
   isOpen,
   onClose,
   selectedEntries,
@@ -48,8 +49,6 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
   onConfirmIssuedVoucher,
   existingVoucher,
 }) => {
-  if (!isOpen) return null;
-
   const isViewOnly = !!existingVoucher;
 
   // Form states for new issuance
@@ -57,23 +56,23 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
     existingVoucher ? existingVoucher.paymentMethod : 'bank_transfer'
   );
   const [bankReference, setBankReference] = useState(
-    existingVoucher?.bankReferenceNumber || `SARIE-${Math.floor(100000 + Math.random() * 900000)}`
+    existingVoucher?.bankReferenceNumber || ''
   );
   const [preparedBy, setPreparedBy] = useState(
-    existingVoucher?.preparedBy || 'سعد المحاسب المالي'
+    existingVoucher?.preparedBy || ''
   );
   const [approvedBy, setApprovedBy] = useState(
-    existingVoucher?.approvedBy || 'المدير المالي التنفيذي'
+    existingVoucher?.approvedBy || ''
   );
   const [voucherNotes, setVoucherNotes] = useState(
     existingVoucher?.notes || 'تم صرف أجور الطاقم الميداني عن المناسبات المنجزة حسب ساعات العمل المعتمدة.'
   );
   const [autoCreateExpense, setAutoCreateExpense] = useState(true);
   const [voucherNumber] = useState(
-    existingVoucher?.voucherNumber || `CPV-2026-${Math.floor(1000 + Math.random() * 9000)}`
+    existingVoucher?.voucherNumber || `CPV-${riyadhToday().slice(0, 4)}-${Math.floor(1000 + Math.random() * 9000)}`
   );
   const [issueDate] = useState(
-    existingVoucher?.issueDate || new Date().toISOString().split('T')[0]
+    existingVoucher?.issueDate || riyadhToday()
   );
   const [isSuccessIssued, setIsSuccessIssued] = useState(false);
 
@@ -171,7 +170,10 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
   };
 
   const handleDownloadPdf = () => {
-    generateCrewPayrollVoucherPDF(existingVoucher || buildVoucher(), brandSettings);
+    generateCrewPayrollVoucherPDF(existingVoucher || buildVoucher(), brandSettings).catch((err) => {
+      console.error('PDF export failed', err);
+      alert('تعذّر إنشاء ملف PDF. تحقق من الاتصال ثم حاول مرة أخرى.');
+    });
   };
 
   const handleShareWhatsApp = () => {
@@ -573,3 +575,10 @@ export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProp
     </div>
   );
 };
+
+/**
+ * Mount the body only while open: it keeps its hooks unconditional and gives
+ * every opening fresh form state.
+ */
+export const UnifiedPaymentVoucherModal: React.FC<UnifiedPaymentVoucherModalProps> = (props) =>
+  props.isOpen ? <UnifiedPaymentVoucherModalBody {...props} /> : null;

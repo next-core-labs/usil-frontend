@@ -55,6 +55,8 @@ export type StorefrontProps = {
   openRegionPicker: () => void;
 
   cart: BookingItem[];
+  /** False until the saved cart has been read back from storage. */
+  cartReady: boolean;
   addToCart: StorefrontValue['addToCart'];
   updateQuantity: (serviceId: string, delta: number) => void;
   removeFromCart: (serviceId: string) => void;
@@ -272,6 +274,7 @@ export function Storefront(props: StorefrontProps) {
     setSelectedCity: props.setSelectedCity,
     openRegionPicker: props.openRegionPicker,
     cart: props.cart,
+    cartReady: props.cartReady,
     addToCart,
     updateQuantity: props.updateQuantity,
     removeFromCart: props.removeFromCart,
@@ -285,7 +288,7 @@ export function Storefront(props: StorefrontProps) {
     canMessageVendors,
     messageVendor,
     chatTarget,
-    clearChatTarget: () => setChatTarget(null),
+    clearChatTarget: useCallback(() => setChatTarget(null), []),
     onAuthSuccess: props.onAuthSuccess,
     logout: props.logout,
     openDashboard: props.openDashboard,
@@ -351,7 +354,7 @@ export function Storefront(props: StorefrontProps) {
           />
         ) : null;
       case 'payment-success':
-        return <PaymentSuccessPage onBack={goHome} onOrders={() => navigate('/orders')} />;
+        return <PaymentSuccessPage onBack={goHome} onOrders={() => navigate('/orders')} onPaid={props.clearCart} />;
       case 'payment-cancelled':
         return <PaymentCancelledPage onBack={goHome} onCart={() => navigate('/cart')} />;
       default:

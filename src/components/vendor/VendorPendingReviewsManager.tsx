@@ -19,19 +19,21 @@ import {
   X,
 } from 'lucide-react';
 import { DoubleBlindReview, VendorBooking } from '../../types';
-import { INITIAL_DOUBLE_BLIND_REVIEWS } from '../../data/reviewData';
 import { whatsappChatUrl } from '../../utils/ownerWhatsApp';
 
 interface VendorPendingReviewsManagerProps {
   bookings: VendorBooking[];
   onOpenWhatsAppMessage?: (phone: string, text: string) => void;
+  /** Real double-blind reviews for this vendor, when the backend provides them. */
+  reviews?: DoubleBlindReview[];
 }
 
 export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerProps> = ({
   bookings,
   onOpenWhatsAppMessage,
+  reviews,
 }) => {
-  const [reviewsList, setReviewsList] = useState<DoubleBlindReview[]>(INITIAL_DOUBLE_BLIND_REVIEWS);
+  const [reviewsList, setReviewsList] = useState<DoubleBlindReview[]>(() => reviews ?? []);
   const [activeReviewModal, setActiveReviewModal] = useState<DoubleBlindReview | null>(null);
 
   // Form states for vendor rating client
@@ -40,11 +42,7 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
   const [paymentRating, setPaymentRating] = useState(5);
   const [clarityRating, setClarityRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([
-    'عميل راقٍ ومثالي 💎',
-    'سداد فوري 💳',
-    'تنسيق واستقبال رائع 📍',
-  ]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
   const [remindedIds, setRemindedIds] = useState<Record<string, boolean>>({});
@@ -68,14 +66,10 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
             punctualityRating,
             paymentRating,
             clarityRating,
-            comment:
-              reviewComment ||
-              'عميل كريم ومنضبط، سدد كامل المستحقات ونسّق معنا بوضوح ولباقة.',
+            comment: reviewComment.trim(),
             tags: selectedTags,
             submittedAt: new Date().toISOString(),
           },
-          aiSummary: 'تطابق كامل بين تقييم الطرفين بنسبة 99% مع إشادة بالسداد السريع وحسن الاستقبال وجودة الخدمة.',
-          aiTrustMatch: 99,
         };
       })
     );
@@ -116,9 +110,11 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
 
   // Automated delayed review reminder sender
   const handleSendDelayedReminder = (item: DoubleBlindReview, recipient: 'client' | 'vendor') => {
-    const phone = recipient === 'client' ? item.clientPhone : '0501234567';
-    const name = recipient === 'client' ? item.clientName : item.vendorName;
-    const msg = `مرحباً ${name} 🌸\nنرجو تذكيركم بإتمام تقييم مناسبة (${item.serviceTitle}) رقم ${item.bookingNumber} على منصة يوصل.\nالتقييم محمي بنظام (التقييم الأعمى المزدوج) ولن يظهر للطرف الآخر حتى يكتمل التقييم من كلاكما.\nرابط التقييم المباشر: https://usil.app/reviews/${item.id}`;
+    // Only the client can be reminded from here (the vendor is the one using this screen).
+    if (recipient !== 'client' || !item.clientPhone) return;
+    const phone = item.clientPhone;
+    const name = item.clientName;
+    const msg = `مرحباً ${name} 🌸\nنرجو تذكيركم بإتمام تقييم مناسبة (${item.serviceTitle}) رقم ${item.bookingNumber} على منصة يوصل.\nالتقييم محمي بنظام (التقييم الأعمى المزدوج) ولن يظهر للطرف الآخر حتى يكتمل التقييم من كلاكما.`;
 
     setRemindedIds((prev) => ({ ...prev, [item.id]: true }));
 
@@ -162,6 +158,16 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
         </div>
       </div>
 
+      {reviewsList.length === 0 ? (
+        <div className="p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-2">
+          <Star className="w-8 h-8 text-slate-300 mx-auto" />
+          <p className="font-bold text-slate-800 text-sm">لا توجد تقييمات بعد</p>
+          <p className="text-xs text-slate-500">
+            ستظهر هنا تقييمات الطلبات المكتملة عبر يوصل عند توفرها.
+          </p>
+        </div>
+      ) : (
+      <>
       {/* 1. Urgent: Completed Orders Waiting for YOUR (Vendor) Review */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -349,7 +355,7 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
-                    توافق التقييمين: {item.aiTrustMatch}% 🛡️
+                    {item.aiTrustMatch !== undefined ? `توافق التقييمين: ${item.aiTrustMatch}% 🛡️` : 'مكتمل'}
                   </span>
                 </div>
               </div>
@@ -431,6 +437,9 @@ export const VendorPendingReviewsManager: React.FC<VendorPendingReviewsManagerPr
           ))}
         </div>
       </div>
+
+      </>
+      )}
 
       {/* Review Submission Modal for Vendor */}
       {activeReviewModal && (

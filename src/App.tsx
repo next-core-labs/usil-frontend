@@ -10,9 +10,8 @@ import {
   saveCartToStorage,
   loadCartFromStorage,
   saveBookingsToStorage,
-  saveOrderTrackingsToStorage,
-  loadOrderTrackingsFromStorage,
   saveInventoryToStorage,
+  clearDraftBookingForm,
 } from './utils/storage';
 import {
   ServiceItem,
@@ -87,6 +86,7 @@ import {
   createBlockedDate,
   deleteBlockedDate,
   workspaceFromServer,
+  officeFromServer,
   fetchCatalogListings,
   createVendorListing,
   updateVendorListing,
@@ -95,6 +95,7 @@ import {
   fetchMyVendorFile,
 } from './utils/vendorWorkspace';
 import { fetchTrending, type TrendingService } from './utils/trendingApi';
+import { clearPendingPayment } from './utils/pendingPayment';
 
 export default function App() {
   // Mode View State: 'client' (Marketplace) or 'vendor' (Vendor Operating System Hub)
@@ -254,10 +255,19 @@ export default function App() {
   const [vendorOwnProfile, setVendorOwnProfile] = useState<VendorOwnProfile | null>(null);
 
   const signOutFromStore = async () => {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {
+      /* offline: still forget the session locally */
+    }
     setCurrentUser(null);
     setSupervisingVendor(null);
     setViewMode('client');
+    // A shared device must not hand the next person this user's cart, picks or contact details.
+    setCartItems([]);
+    setComparedServices([]);
+    void clearDraftBookingForm();
+    clearPendingPayment();
     try {
       sessionStorage.removeItem('usil_supervise_vendor');
     } catch {
@@ -407,16 +417,9 @@ export default function App() {
   useEffect(() => {
     async function loadPersistedAppData() {
       try {
-        const [savedCart, savedTrackings] = await Promise.all([
-          loadCartFromStorage(),
-          loadOrderTrackingsFromStorage(),
-        ]);
-
+        const savedCart = await loadCartFromStorage();
         if (savedCart && Array.isArray(savedCart)) {
           setCartItems(savedCart);
-        }
-        if (savedTrackings && Array.isArray(savedTrackings) && savedTrackings.length > 0) {
-          setOrderTrackings(savedTrackings);
         }
       } catch (err) {
         console.warn('Error hydrating state from localforage:', err);
@@ -427,6 +430,29 @@ export default function App() {
 
     loadPersistedAppData();
   }, []);
+
+  // 1b. A saved cart holds a snapshot of each product. Once the live catalog is in, swap in
+  // the current listing (price, photos, minimum) and drop listings that are gone — otherwise
+  // the server's re-pricing answers 409 on every checkout and a refresh can't fix it.
+  useEffect(() => {
+    if (!isStorageLoaded || catalogStatus !== 'ready') return;
+    const live = new Map(vendorCatalogServices.map((service) => [String(service.id), service]));
+    setCartItems((prev) => {
+      let changed = false;
+      const next: BookingItem[] = [];
+      for (const row of prev) {
+        const fresh = live.get(String(row.service.id));
+        if (!fresh) {
+          changed = true;
+          continue;
+        }
+        const quantity = Math.max(row.quantity, fresh.minQuantity || 1);
+        if (fresh !== row.service || quantity !== row.quantity) changed = true;
+        next.push({ ...row, service: fresh, quantity });
+      }
+      return changed ? next : prev;
+    });
+  }, [vendorCatalogServices, catalogStatus, isStorageLoaded]);
 
   // 2. Auto-save cart items to localforage whenever cart updates
   useEffect(() => {
@@ -443,12 +469,6 @@ export default function App() {
     if (!isStorageLoaded) return;
     saveBookingsToStorage(vendorBookings);
   }, [vendorBookings, isStorageLoaded]);
-
-  // 4. Auto-save order trackings to localforage whenever trackings update
-  useEffect(() => {
-    if (!isStorageLoaded) return;
-    saveOrderTrackingsToStorage(orderTrackings);
-  }, [orderTrackings, isStorageLoaded]);
 
   // 5. Auto-save inventory to localforage whenever inventory updates
   useEffect(() => {
@@ -480,6 +500,23 @@ export default function App() {
         setInventoryItems(next.inventoryItems as InventoryItem[]);
         setVendorContracts(next.contracts as SmartServiceContract[]);
         setVendorListings(next.listings as VendorListing[]);
+        // The back office's books belong to this vendor only: replace them all, so a
+        // supervisor switching vendors never sees (or saves) the previous vendor's data.
+        const office = officeFromServer((res.data as { office?: unknown })?.office);
+        setInvoices(office.invoices as VendorInvoice[]);
+        setCrewMembers(office.crewMembers as CrewMember[]);
+        setExpenses(office.expenses as ExpenseRecord[]);
+        setCrewPayroll(office.payrollEntries as CrewPayrollEntry[]);
+        setConsolidatedVouchers(office.consolidatedVouchers as ConsolidatedCrewPaymentVoucher[]);
+        setPayouts(office.payouts as FinancialPayout[]);
+        setPosItems(office.posItems as POSItem[]);
+        setPosSales(office.posSales as POSSaleRecord[]);
+        setReceivables(office.receivables as ReceivableDebt[]);
+        setOrderTrackings(office.trackings as ClientOrderTracking[]);
+        setBrandSettings({
+          ...DEFAULT_VENDOR_BRAND_SETTINGS,
+          ...((office.brandSettings || {}) as Partial<VendorBrandSettings>),
+        });
         const profile = (res.data as { profile?: VendorOwnProfile })?.profile;
         if (profile?.projectName) {
           setVendorOwnProfile((prev) => ({
@@ -495,12 +532,13 @@ export default function App() {
             listingCount: (next.listings as VendorListing[]).length,
             socials: prev?.socials,
           }));
+          const saved = (office.brandSettings || {}) as Partial<VendorBrandSettings>;
           setBrandSettings((prev) => ({
             ...prev,
-            brandName: profile.projectName || prev.brandName,
-            phone: profile.phone || prev.phone,
-            email: profile.email || prev.email,
-            logoUrl: profile.logoUrl || prev.logoUrl,
+            brandName: saved.brandName || profile.projectName || prev.brandName,
+            phone: saved.phone || profile.phone || prev.phone,
+            email: saved.email || profile.email || prev.email,
+            logoUrl: saved.logoUrl || profile.logoUrl || prev.logoUrl,
           }));
         }
       })
@@ -532,12 +570,44 @@ export default function App() {
         inventoryItems,
         contracts: vendorContracts,
         listings: vendorListings,
+        office: {
+          invoices,
+          crewMembers,
+          expenses,
+          payrollEntries: crewPayroll,
+          consolidatedVouchers,
+          payouts,
+          posItems,
+          posSales,
+          receivables,
+          trackings: orderTrackings,
+          brandSettings: brandSettings as unknown as Record<string, unknown>,
+        },
       }, isVendorSupervisor(currentUser?.role) ? supervisingVendor?.vendorId : undefined)
         .then(() => setVendorSync('synced'))
         .catch(() => setVendorSync('error'));
     }, 700);
     return () => clearTimeout(timer);
-  }, [vendorBookings, blockedDates, inventoryItems, vendorContracts, vendorListings, currentUser, supervisingVendor?.vendorId]);
+  }, [
+    vendorBookings,
+    blockedDates,
+    inventoryItems,
+    vendorContracts,
+    vendorListings,
+    invoices,
+    crewMembers,
+    expenses,
+    crewPayroll,
+    consolidatedVouchers,
+    payouts,
+    posItems,
+    posSales,
+    receivables,
+    orderTrackings,
+    brandSettings,
+    currentUser,
+    supervisingVendor?.vendorId,
+  ]);
 
   const superviseId = isVendorSupervisor(currentUser?.role) ? supervisingVendor?.vendorId : undefined;
 
@@ -639,8 +709,11 @@ export default function App() {
       prev
         .map((item) => {
           if (item.service.id === serviceId) {
+            // Never below the vendor's minimum: stepping down from it removes the line instead.
+            const min = Math.max(1, item.service.minQuantity || 1);
             const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
+            if (newQty < min) return delta < 0 && item.quantity <= min ? null : { ...item, quantity: min };
+            return { ...item, quantity: newQty };
           }
           return item;
         })
@@ -928,43 +1001,14 @@ export default function App() {
   };
 
   const handleAutoCalculatePayrollFromHours = () => {
-    let createdCount = 0;
     const newPayrollEntries: CrewPayrollEntry[] = [];
 
     const updatedCrewMembers = crewMembers.map((member) => {
       const currentLogs = member.workLogs || [];
       const unprocessed = currentLogs.filter((l) => l.status === 'unprocessed');
 
-      if (unprocessed.length === 0) {
-        // If no unprocessed logs exist, simulate a shift from assigned bookings
-        const sampleBooking = vendorBookings[createdCount % vendorBookings.length];
-        if (sampleBooking && createdCount < 2) {
-          const rate = member.hourlyRate || 65;
-          const regH = 5;
-          const otH = 1;
-          const totalEarned = regH * rate + otH * (rate * 1.5);
-          newPayrollEntries.push({
-            id: `pyr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            crewId: member.id,
-            crewName: member.name,
-            role: member.role,
-            bookingId: sampleBooking.id,
-            eventTitle: `${sampleBooking.serviceTitle} (${sampleBooking.customerName})`,
-            eventDate: sampleBooking.date,
-            regularHours: regH,
-            overtimeHours: otH,
-            hourlyRate: rate,
-            earnedAmount: totalEarned,
-            bonusAmount: 0,
-            deductionAmount: 0,
-            netPayout: totalEarned,
-            paymentStatus: 'pending',
-            bankIban: member.bankIban,
-          });
-          createdCount++;
-        }
-        return member;
-      }
+      // Payroll only ever comes from hours the crew actually logged.
+      if (unprocessed.length === 0) return member;
 
       const updatedLogs = currentLogs.map((log) => {
         if (log.status === 'unprocessed') {
@@ -988,7 +1032,6 @@ export default function App() {
             paymentStatus: 'pending',
             bankIban: member.bankIban,
           });
-          createdCount++;
           return { ...log, status: 'processed_in_payroll' as const };
         }
         return log;
@@ -1233,7 +1276,7 @@ export default function App() {
       {showPaidBanner && viewMode === 'client' ? (
         <div className="sticky top-0 z-40 bg-success-bg border-b border-success-border text-success px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs sm:text-sm font-medium">
-            تم استلام طلبك. إذا دفعت عبر ميسر، نراجع التحويل ونثبّت الحجز. تقدر تتابع من «طلباتي».
+            وصلتنا عملية الدفع عبر ميسر. تقدر تتابع حالة طلبك من «طلباتي».
           </p>
           <button
             type="button"
@@ -1312,6 +1355,7 @@ export default function App() {
           contracts={vendorContracts}
           onContractsChange={setVendorContracts}
           onNotify={triggerAutoSaveToast}
+          supervisedVendorId={superviseId || null}
           supervisorBanner={
             isVendorSupervisor(currentUser?.role) && supervisingVendor
               ? `تدخل كمدير حسابات — حساب المورّد: ${supervisingVendor.projectName || supervisingVendor.name}`
@@ -1328,17 +1372,9 @@ export default function App() {
           }
           onSwitchToClientMode={() => setViewMode('client')}
           onLogout={async () => {
-            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-            setCurrentUser(null);
-            setSupervisingVendor(null);
-            setViewMode('client');
-            setVendorSync('idle');
             vendorReadyRef.current = false;
-            try {
-              sessionStorage.removeItem('usil_supervise_vendor');
-            } catch {
-              /* ignore */
-            }
+            setVendorSync('idle');
+            await signOutFromStore();
           }}
         />
           </Suspense>
@@ -1358,6 +1394,7 @@ export default function App() {
           setSelectedCity={setSelectedCity}
           openRegionPicker={() => setRegionPickerOpen(true)}
           cart={cartItems}
+          cartReady={isStorageLoaded}
           addToCart={handleAddToCart}
           updateQuantity={handleUpdateQuantity}
           removeFromCart={handleRemoveItem}

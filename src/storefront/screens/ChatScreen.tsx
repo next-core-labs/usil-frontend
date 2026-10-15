@@ -13,6 +13,9 @@ export function ChatScreen() {
   const { t } = useLang();
   const sf = useStorefront();
   const mobile = useIsMobile();
+  const { clearChatTarget } = sf;
+  // A vendor opened via «اسأل المورّد» is pinned for this visit only, not every later /chat.
+  React.useEffect(() => () => clearChatTarget(), [clearChatTarget]);
 
   if (!sf.user || sf.user.role !== 'client') {
     const guest = !sf.user;
@@ -69,7 +72,7 @@ export function ChatScreen() {
           pinned={pinned}
           initialPinnedKey={pinned[0]?.key}
           emptyTitle={target ? t.chatTitle : t.chatTitle}
-          emptyHint={t.chatGuestSub}
+          emptyHint={t.chatEmptySub}
           className="h-full"
         />
       </div>

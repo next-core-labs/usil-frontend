@@ -9,8 +9,10 @@ import {
 } from '../../contracts/vendors/vendor-socials';
 import { emptySocialFormValues, VendorSocialsForm } from './VendorSocialsForm';
 import { VendorSocialIcons } from './VendorSocialIcons';
+import { vendorApiUrl } from '../../utils/vendorWorkspace';
 
-export function VendorSocialsPanel() {
+/** `vendorId` is set when an admin supervises a vendor, so edits land on that vendor, not the admin. */
+export function VendorSocialsPanel({ vendorId }: { vendorId?: string | null } = {}) {
   const [values, setValues] = useState(emptySocialFormValues());
   const [confirmedOwn, setConfirmedOwn] = useState(false);
   const [socials, setSocials] = useState<VendorSocials | null>(null);
@@ -27,7 +29,8 @@ export function VendorSocialsPanel() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/vendor/socials', { credentials: 'include' })
+    setLoading(true);
+    fetch(vendorApiUrl('/api/vendor/socials', vendorId), { credentials: 'include' })
       .then((res) => res.json())
       .then((json) => {
         if (cancelled) return;
@@ -42,14 +45,14 @@ export function VendorSocialsPanel() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [vendorId]);
 
   const save = async () => {
     setSaving(true);
     setError('');
     setSaved('');
     try {
-      const res = await fetch('/api/vendor/socials', {
+      const res = await fetch(vendorApiUrl('/api/vendor/socials', vendorId), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

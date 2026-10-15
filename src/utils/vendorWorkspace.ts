@@ -5,7 +5,57 @@ export type VendorWorkspacePayload = {
   contracts?: unknown[];
   listings?: unknown[];
   socials?: unknown;
+  office?: VendorOffice;
 };
+
+/**
+ * The back office's own books — invoices, crew, accounting, POS, brand — kept on
+ * the server next to the workspace (`office` on GET/PUT /api/vendor/workspace).
+ * The server treats it as opaque per-vendor data under a fixed key whitelist.
+ */
+export type VendorOffice = {
+  invoices?: unknown[];
+  crewMembers?: unknown[];
+  expenses?: unknown[];
+  payrollEntries?: unknown[];
+  consolidatedVouchers?: unknown[];
+  payouts?: unknown[];
+  posItems?: unknown[];
+  posSales?: unknown[];
+  receivables?: unknown[];
+  trackings?: unknown[];
+  brandSettings?: Record<string, unknown>;
+};
+
+const OFFICE_LISTS = [
+  'invoices',
+  'crewMembers',
+  'expenses',
+  'payrollEntries',
+  'consolidatedVouchers',
+  'payouts',
+  'posItems',
+  'posSales',
+  'receivables',
+  'trackings',
+] as const;
+
+export type VendorOfficeList = (typeof OFFICE_LISTS)[number];
+
+/** Every list present (empty when missing or malformed) plus brand settings when the vendor saved any. */
+export function officeFromServer(raw: unknown): Record<VendorOfficeList, unknown[]> & {
+  brandSettings: Record<string, unknown> | null;
+} {
+  const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const lists = Object.fromEntries(
+    OFFICE_LISTS.map((key) => [key, Array.isArray(src[key]) ? (src[key] as unknown[]) : []]),
+  ) as Record<VendorOfficeList, unknown[]>;
+  const brand = src.brandSettings;
+  return {
+    ...lists,
+    brandSettings: brand && typeof brand === 'object' && !Array.isArray(brand) ? (brand as Record<string, unknown>) : null,
+  };
+}
 
 export function workspaceHasData(payload: VendorWorkspacePayload | null | undefined): boolean {
   if (!payload) return false;
@@ -158,13 +208,13 @@ export async function deleteVendorListing(id: string, vendorId?: string | null) 
   return parse(res);
 }
 
-export async function fetchVendorSocials() {
-  const res = await fetch('/api/vendor/socials', { credentials: 'include' });
+export async function fetchVendorSocials(vendorId?: string | null) {
+  const res = await fetch(vendorApiUrl('/api/vendor/socials', vendorId), { credentials: 'include' });
   return parse(res);
 }
 
-export async function saveVendorSocials(payload: Record<string, unknown>) {
-  const res = await fetch('/api/vendor/socials', {
+export async function saveVendorSocials(payload: Record<string, unknown>, vendorId?: string | null) {
+  const res = await fetch(vendorApiUrl('/api/vendor/socials', vendorId), {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

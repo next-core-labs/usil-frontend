@@ -44,6 +44,8 @@ export type StorefrontValue = {
 
   /* cart */
   cart: BookingItem[];
+  /** False until the saved cart has been read back from storage (a refresh on /checkout). */
+  cartReady: boolean;
   addToCart: (service: ServiceItem, quantity?: number, date?: string, time?: string, city?: string, notes?: string) => void;
   updateQuantity: (serviceId: string, delta: number) => void;
   removeFromCart: (serviceId: string) => void;

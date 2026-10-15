@@ -1,7 +1,26 @@
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { VendorInvoice, VendorBrandSettings, ConsolidatedCrewPaymentVoucher } from '../types';
 import { tafqeetSAR } from './arabicNumberToWords';
+import { applyArabicFont, PDF_FONT } from './pdfArabicFont';
+import { encodeQrMatrix } from './qrMatrix';
+
+/** A Saudi VAT registration number: 15 digits, starting and ending with 3. */
+export function isValidSaudiVatNumber(vat: string | undefined | null): boolean {
+  return !!vat && /^3\d{13}3$/.test(vat.replace(/\s/g, ''));
+}
+
+/** ISO-8601 timestamp (seconds precision, UTC) for a `YYYY-MM-DD` issue date in Riyadh. */
+function zatcaTimestamp(issueDate: string | undefined): string {
+  const d = issueDate && /^\d{4}-\d{2}-\d{2}$/.test(issueDate)
+    ? new Date(`${issueDate}T00:00:00+03:00`)
+    : new Date();
+  return d.toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
+
+function newA4(): jsPDF {
+  return new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+}
 
 /**
  * Encodes ZATCA TLV (Tag-Length-Value) string for QR Code compliance
@@ -29,8 +48,8 @@ export function generateZatcaTlvBase64(
     return tlv;
   };
 
-  const tag1 = getTlv(1, sellerName || 'Vendor');
-  const tag2 = getTlv(2, vatNumber || '300000000000003');
+  const tag1 = getTlv(1, sellerName);
+  const tag2 = getTlv(2, vatNumber);
   const tag3 = getTlv(3, timestamp || new Date().toISOString());
   const tag4 = getTlv(4, totalAmount.toFixed(2));
   const tag5 = getTlv(5, vatAmount.toFixed(2));
@@ -54,66 +73,42 @@ export function generateZatcaTlvBase64(
 }
 
 /**
- * Draws a clean procedural QR code representation on the PDF canvas
+ * Draws a real, scannable QR code of `qrText` (module grid from the ZXing encoder).
  */
-function drawQrCodeBox(doc: jsPDF, x: number, y: number, size: number, qrText: string) {
-  doc.setFillColor(245, 247, 250);
-  doc.roundedRect(x, y, size, size, 2, 2, 'F');
-  doc.setDrawColor(203, 213, 225);
-  doc.roundedRect(x, y, size, size, 2, 2, 'S');
+async function drawQrCode(doc: jsPDF, x: number, y: number, size: number, qrText: string, caption: string) {
+  const matrix = await encodeQrMatrix(qrText);
+  const quiet = 2; // modules of white border on each side
+  const count = matrix.length + quiet * 2;
+  const cell = size / count;
 
-  // Decorative QR corners
-  doc.setFillColor(10, 26, 51);
-  const cornerSize = size * 0.22;
-  // Top-left
-  doc.rect(x + 2, y + 2, cornerSize, cornerSize, 'F');
   doc.setFillColor(255, 255, 255);
-  doc.rect(x + 3.5, y + 3.5, cornerSize - 3, cornerSize - 3, 'F');
-  doc.setFillColor(10, 26, 51);
-  doc.rect(x + 4.5, y + 4.5, cornerSize - 5, cornerSize - 5, 'F');
+  doc.rect(x, y, size, size, 'F');
+  doc.setFillColor(0, 0, 0);
+  matrix.forEach((row, r) => {
+    row.forEach((dark, c) => {
+      // Slight overlap avoids hairline gaps between modules in some viewers.
+      if (dark) doc.rect(x + (c + quiet) * cell, y + (r + quiet) * cell, cell + 0.02, cell + 0.02, 'F');
+    });
+  });
 
-  // Top-right
-  doc.rect(x + size - cornerSize - 2, y + 2, cornerSize, cornerSize, 'F');
-  doc.setFillColor(255, 255, 255);
-  doc.rect(x + size - cornerSize - 0.5, y + 3.5, cornerSize - 3, cornerSize - 3, 'F');
-  doc.setFillColor(10, 26, 51);
-  doc.rect(x + size - cornerSize + 0.5, y + 4.5, cornerSize - 5, cornerSize - 5, 'F');
-
-  // Bottom-left
-  doc.rect(x + 2, y + size - cornerSize - 2, cornerSize, cornerSize, 'F');
-  doc.setFillColor(255, 255, 255);
-  doc.rect(x + 3.5, y + size - cornerSize - 0.5, cornerSize - 3, cornerSize - 3, 'F');
-  doc.setFillColor(10, 26, 51);
-  doc.rect(x + 4.5, y + size - cornerSize + 0.5, cornerSize - 5, cornerSize - 5, 'F');
-
-  // Center pattern pixels
-  doc.setFillColor(10, 26, 51);
-  const dotSize = 1.6;
-  for (let r = 0; r < 5; r++) {
-    for (let c = 0; c < 5; c++) {
-      if ((r + c + (r * c)) % 2 === 0) {
-        doc.rect(x + cornerSize + 3 + c * dotSize, y + cornerSize + 3 + r * dotSize, dotSize - 0.3, dotSize - 0.3, 'F');
-      }
-    }
-  }
-
+  doc.setFont(PDF_FONT, 'normal');
   doc.setFontSize(6.5);
   doc.setTextColor(100, 116, 139);
-  doc.text('ZATCA E-INVOICE QR', x + size / 2, y + size + 3.5, { align: 'center' });
+  doc.text(caption, x + size / 2, y + size + 3.5, { align: 'center' });
 }
 
 /**
- * Generates and downloads a ZATCA Compliant Tax Invoice PDF
+ * Generates and downloads an invoice PDF. When the vendor has a valid Saudi VAT
+ * number it is a simplified tax invoice carrying a real ZATCA (phase 1) TLV QR
+ * code; otherwise it is a plain invoice with no QR and no tax-invoice claim.
  */
-export function generateZatcaInvoicePDF(
+export async function generateZatcaInvoicePDF(
   invoice: VendorInvoice,
   brandSettings: VendorBrandSettings
-) {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-  });
+): Promise<void> {
+  const doc = newA4();
+  await applyArabicFont(doc);
+  const hasVat = isValidSaudiVatNumber(brandSettings.vatNumber);
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -130,46 +125,71 @@ export function generateZatcaInvoicePDF(
   // Header Title
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text('TAX INVOICE | SIMPLIFIED TAX INVOICE', margin, 12);
+  doc.setFont(PDF_FONT, 'bold');
+  doc.text(hasVat ? 'SIMPLIFIED TAX INVOICE | فاتورة ضريبية مبسطة' : 'INVOICE | فاتورة', margin, 12);
   doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(192, 161, 107);
-  doc.text('ZATCA VAT COMPLIANT ELECTRONIC INVOICE - KINGDOM OF SAUDI ARABIA', margin, 18);
+  doc.text(
+    hasVat ? `VAT ${Math.round((invoice.taxRate || 0.15) * 100)}% | ضريبة القيمة المضافة` : 'المملكة العربية السعودية',
+    margin,
+    18
+  );
 
   // Status Badge in Header
-  const statusText = invoice.status === 'paid' ? 'PAID IN FULL' : invoice.status === 'partial' ? 'PARTIALLY PAID' : 'UNPAID / PENDING';
+  const statusText = invoice.status === 'paid' ? 'مدفوعة | PAID' : invoice.status === 'partial' ? 'مدفوعة جزئياً | PARTIAL' : 'غير مدفوعة | UNPAID';
   doc.setFillColor(invoice.status === 'paid' ? 16 : 245, invoice.status === 'paid' ? 185 : 158, invoice.status === 'paid' ? 129 : 11);
   doc.roundedRect(pageWidth - margin - 38, 7, 38, 12, 2, 2, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.text(statusText, pageWidth - margin - 19, 14.5, { align: 'center' });
 
   // Seller Details (Left) & QR Code (Right)
   let curY = 36;
   doc.setTextColor(15, 23, 42);
   doc.setFontSize(13);
-  doc.setFont('helvetica', 'bold');
-  doc.text(brandSettings.brandName || 'Vendor Establishment', margin, curY);
+  doc.setFont(PDF_FONT, 'bold');
+  doc.text(brandSettings.brandName || '—', margin, curY);
 
   doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(71, 85, 105);
   curY += 5;
   if (brandSettings.slogan) {
     doc.text(brandSettings.slogan, margin, curY);
     curY += 4.5;
   }
-  doc.text(`VAT Number (الرقم الضريبي): ${brandSettings.vatNumber || '300000000000003'}`, margin, curY);
-  curY += 4.5;
-  doc.text(`CR Number (السجل التجاري): ${brandSettings.crNumber || '1010000000'} | City: ${brandSettings.city || 'Riyadh'}`, margin, curY);
-  curY += 4.5;
-  doc.text(`Contact: ${brandSettings.phone || '0500000000'} | Email: ${brandSettings.email || 'info@vendor.sa'}`, margin, curY);
+  if (brandSettings.vatNumber) {
+    doc.text(`VAT No.: ${brandSettings.vatNumber} | الرقم الضريبي`, margin, curY);
+    curY += 4.5;
+  }
+  const crLine = [
+    brandSettings.crNumber ? `CR: ${brandSettings.crNumber} | السجل التجاري` : '',
+    brandSettings.city ? `City: ${brandSettings.city}` : '',
+  ].filter(Boolean).join(' | ');
+  if (crLine) {
+    doc.text(crLine, margin, curY);
+    curY += 4.5;
+  }
+  const contactLine = [
+    brandSettings.phone ? `Contact: ${brandSettings.phone}` : '',
+    brandSettings.email ? `Email: ${brandSettings.email}` : '',
+  ].filter(Boolean).join(' | ');
+  if (contactLine) doc.text(contactLine, margin, curY);
 
-  // ZATCA QR Box on right
-  const qrSize = 25;
-  drawQrCodeBox(doc, pageWidth - margin - qrSize, 34, qrSize, invoice.invoiceNumber);
+  // Real ZATCA phase-1 QR (TLV: seller, VAT no., timestamp, total, VAT) — only with a valid VAT number.
+  if (hasVat) {
+    const qrSize = 25;
+    const tlv = generateZatcaTlvBase64(
+      brandSettings.brandName || brandSettings.accountHolder || 'Vendor',
+      brandSettings.vatNumber.replace(/\s/g, ''),
+      zatcaTimestamp(invoice.issueDate),
+      invoice.total,
+      invoice.taxAmount
+    );
+    await drawQrCode(doc, pageWidth - margin - qrSize, 33, qrSize, tlv, 'رمز QR للفاتورة الضريبية');
+  }
 
   // Metadata Box (Invoice Details & Customer Details)
   curY = 64;
@@ -182,42 +202,44 @@ export function generateZatcaInvoicePDF(
   const col1X = margin + 4;
   doc.setFontSize(8);
   doc.setTextColor(100, 116, 139);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.text('INVOICE NO:', col1X, curY + 6);
   doc.text('ISSUE DATE:', col1X, curY + 12);
   doc.text('EVENT DATE:', col1X, curY + 18);
   doc.text('PAYMENT METHOD:', col1X, curY + 24);
 
   doc.setTextColor(15, 23, 42);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.text(invoice.invoiceNumber, col1X + 32, curY + 6);
   doc.text(invoice.issueDate, col1X + 32, curY + 12);
   doc.text(invoice.eventDate || invoice.dueDate, col1X + 32, curY + 18);
-  doc.text(invoice.paymentMethod || 'Bank Transfer', col1X + 32, curY + 24);
+  doc.text(invoice.paymentMethod || '—', col1X + 32, curY + 24);
 
   // Right column: Buyer info
   const col2X = pageWidth / 2 + 5;
   doc.setTextColor(100, 116, 139);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.text('BILLED TO (العميل):', col2X, curY + 6);
   doc.text('CUSTOMER PHONE:', col2X, curY + 12);
   doc.text('CUSTOMER VAT ID:', col2X, curY + 18);
-  doc.text('TRACKING CODE:', col2X, curY + 24);
+  if (invoice.trackingCode) doc.text('TRACKING CODE:', col2X, curY + 24);
 
   doc.setTextColor(15, 23, 42);
-  doc.setFont('helvetica', 'normal');
-  doc.text(invoice.clientName || 'Valued Client', col2X + 36, curY + 6);
-  doc.text(invoice.clientPhone || 'N/A', col2X + 36, curY + 12);
-  doc.text(invoice.clientTaxId || 'N/A (Consumer)', col2X + 36, curY + 18);
-  doc.setTextColor(21, 94, 239);
-  doc.text(invoice.trackingCode || 'MTH-TRK-8821', col2X + 36, curY + 24);
+  doc.setFont(PDF_FONT, 'normal');
+  doc.text(invoice.clientName || '—', col2X + 36, curY + 6);
+  doc.text(invoice.clientPhone || '—', col2X + 36, curY + 12);
+  doc.text(invoice.clientTaxId || '—', col2X + 36, curY + 18);
+  if (invoice.trackingCode) {
+    doc.setTextColor(21, 94, 239);
+    doc.text(invoice.trackingCode, col2X + 36, curY + 24);
+  }
 
   // Table of Items using jspdf-autotable
   const tableData = invoice.items.map((item, index) => {
     const unitPrice = Number(item.unitPrice) || 0;
     const qty = Number(item.quantity) || 1;
     const itemSubtotal = unitPrice * qty;
-    const itemVat = itemSubtotal * (invoice.taxRate || 0.15);
+    const itemVat = itemSubtotal * (invoice.taxRate ?? 0.15);
     const itemTotal = itemSubtotal + itemVat;
 
     return [
@@ -226,14 +248,14 @@ export function generateZatcaInvoicePDF(
       qty.toString(),
       `${unitPrice.toFixed(2)} SAR`,
       `${itemSubtotal.toFixed(2)} SAR`,
-      `${itemVat.toFixed(2)} SAR (15%)`,
+      `${itemVat.toFixed(2)} SAR`,
       `${itemTotal.toFixed(2)} SAR`,
     ];
   });
 
   autoTable(doc, {
     startY: 97,
-    head: [['#', 'Item & Description / الوصف', 'Qty', 'Unit Price', 'Subtotal (Excl)', 'VAT (15%)', 'Total (SAR)']],
+    head: [['#', 'Item & Description / الوصف', 'Qty', 'Unit Price', 'Subtotal (Excl)', `VAT (${Math.round((invoice.taxRate ?? 0.15) * 100)}%)`, 'Total (SAR)']],
     body: tableData,
     margin: { left: margin, right: margin },
     theme: 'grid',
@@ -246,7 +268,7 @@ export function generateZatcaInvoicePDF(
     },
     columnStyles: {
       0: { halign: 'center', cellWidth: 10 },
-      1: { halign: 'left', cellWidth: 'auto' },
+      1: { halign: 'right', cellWidth: 'auto' },
       2: { halign: 'center', cellWidth: 14 },
       3: { halign: 'right', cellWidth: 24 },
       4: { halign: 'right', cellWidth: 26 },
@@ -254,6 +276,7 @@ export function generateZatcaInvoicePDF(
       6: { halign: 'right', cellWidth: 28, fontStyle: 'bold', textColor: [10, 26, 51] },
     },
     styles: {
+      font: PDF_FONT,
       fontSize: 8,
       cellPadding: 3,
       textColor: [30, 41, 59],
@@ -279,17 +302,17 @@ export function generateZatcaInvoicePDF(
   doc.setFontSize(8);
   doc.setTextColor(100, 116, 139);
   doc.text('Subtotal (قبل الضريبة):', summaryBoxX + 4, summaryBoxY + 7);
-  doc.text('VAT 15% (ضريبة القيمة المضافة):', summaryBoxX + 4, summaryBoxY + 14);
-  doc.setFont('helvetica', 'bold');
+  doc.text(`VAT ${Math.round((invoice.taxRate ?? 0.15) * 100)}% (ضريبة القيمة المضافة):`, summaryBoxX + 4, summaryBoxY + 14);
+  doc.setFont(PDF_FONT, 'bold');
   doc.setTextColor(15, 23, 42);
   doc.text('Grand Total (الإجمالي شامل الضريبة):', summaryBoxX + 4, summaryBoxY + 22);
 
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(15, 23, 42);
   doc.text(`${invoice.subtotal.toFixed(2)} SAR`, summaryBoxX + summaryBoxWidth - 4, summaryBoxY + 7, { align: 'right' });
   doc.text(`${invoice.taxAmount.toFixed(2)} SAR`, summaryBoxX + summaryBoxWidth - 4, summaryBoxY + 14, { align: 'right' });
   
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.setTextColor(21, 94, 239);
   doc.setFontSize(9.5);
   doc.text(`${invoice.total.toFixed(2)} SAR`, summaryBoxX + summaryBoxWidth - 4, summaryBoxY + 22, { align: 'right' });
@@ -315,24 +338,30 @@ export function generateZatcaInvoicePDF(
   doc.roundedRect(margin, summaryBoxY, leftBoxWidth, 42, 2, 2, 'S');
 
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.setTextColor(10, 26, 51);
-  doc.text('Official Bank Settlement Details (الحساب البنكي المعتمد):', margin + 4, summaryBoxY + 6);
-  doc.setFont('helvetica', 'normal');
+  doc.text('Bank Details (الحساب البنكي):', margin + 4, summaryBoxY + 6);
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(71, 85, 105);
-  doc.text(`Bank: ${brandSettings.bankName || 'Al Rajhi Bank'} | Beneficiary: ${brandSettings.accountHolder || brandSettings.brandName}`, margin + 4, summaryBoxY + 12);
-  doc.setFont('helvetica', 'bold');
+  const bankLine = [
+    brandSettings.bankName ? `Bank: ${brandSettings.bankName}` : '',
+    brandSettings.accountHolder || brandSettings.brandName
+      ? `Beneficiary: ${brandSettings.accountHolder || brandSettings.brandName}`
+      : '',
+  ].filter(Boolean).join(' | ');
+  doc.text(bankLine || '—', margin + 4, summaryBoxY + 12);
+  doc.setFont(PDF_FONT, 'bold');
   doc.setTextColor(15, 23, 42);
-  doc.text(`IBAN: ${brandSettings.iban || 'SA00 0000 0000 0000 0000 0000'}`, margin + 4, summaryBoxY + 18);
+  doc.text(brandSettings.iban ? `IBAN: ${brandSettings.iban}` : 'IBAN: —', margin + 4, summaryBoxY + 18);
 
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.setTextColor(10, 26, 51);
   doc.text('Terms & Conditions (شروط التوريد):', margin + 4, summaryBoxY + 26);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(100, 116, 139);
   doc.setFontSize(7);
   const termsText = doc.splitTextToSize(
-    invoice.terms || brandSettings.invoiceFooterNotes || 'This is a certified electronic invoice issued in accordance with ZATCA tax regulations in KSA. Prices include full logistics and event execution.',
+    invoice.terms || brandSettings.invoiceFooterNotes || '',
     leftBoxWidth - 8
   );
   doc.text(termsText, margin + 4, summaryBoxY + 31);
@@ -344,17 +373,17 @@ export function generateZatcaInvoicePDF(
 
   doc.setFontSize(7.5);
   doc.setTextColor(148, 163, 184);
-  doc.text('Generated electronically via Usil Vendor OS. Valid without physical signature.', margin, footerY + 5);
+  doc.text('Generated electronically via Usil.', margin, footerY + 5);
   doc.text(`Invoice ID: ${invoice.id} | Page 1 of 1`, pageWidth - margin, footerY + 5, { align: 'right' });
 
   // Save the PDF
-  doc.save(`ZATCA-Tax-Invoice-${invoice.invoiceNumber}.pdf`);
+  doc.save(`${hasVat ? 'Tax-Invoice' : 'Invoice'}-${invoice.invoiceNumber}.pdf`);
 }
 
 /**
  * Generates and downloads an Official Payment Receipt PDF (سند قبض رسمي معتمد)
  */
-export function generatePaymentReceiptPDF(
+export async function generatePaymentReceiptPDF(
   receiptData: {
     receiptNumber: string;
     customerName: string;
@@ -367,12 +396,9 @@ export function generatePaymentReceiptPDF(
     notes?: string;
   },
   brandSettings: VendorBrandSettings
-) {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-  });
+): Promise<void> {
+  const doc = newA4();
+  await applyArabicFont(doc);
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -386,20 +412,20 @@ export function generatePaymentReceiptPDF(
 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.text('OFFICIAL PAYMENT RECEIPT | سند قبض مالي رسمي', margin, 13);
   doc.setFontSize(8.5);
   doc.setTextColor(192, 161, 107);
-  doc.setFont('helvetica', 'normal');
-  doc.text('CERTIFIED CASH & BANK RECEIPT VOUCHER', margin, 20);
+  doc.setFont(PDF_FONT, 'normal');
+  doc.text('PAYMENT RECEIPT VOUCHER', margin, 20);
 
   // Receipt Number & Date on right
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.text(`Receipt No: ${receiptData.receiptNumber}`, pageWidth - margin, 13, { align: 'right' });
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(203, 213, 225);
   doc.text(`Date: ${receiptData.date}`, pageWidth - margin, 20, { align: 'right' });
 
@@ -407,16 +433,24 @@ export function generatePaymentReceiptPDF(
   let curY = 38;
   doc.setTextColor(15, 23, 42);
   doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text(brandSettings.brandName || 'Vendor Company', margin, curY);
+  doc.setFont(PDF_FONT, 'bold');
+  doc.text(brandSettings.brandName || '—', margin, curY);
 
   doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(71, 85, 105);
   curY += 5;
-  doc.text(`CR: ${brandSettings.crNumber || '1010000000'} | VAT Number: ${brandSettings.vatNumber || '300000000000003'}`, margin, curY);
+  const idLine = [
+    brandSettings.crNumber ? `CR: ${brandSettings.crNumber}` : '',
+    brandSettings.vatNumber ? `VAT Number: ${brandSettings.vatNumber}` : '',
+  ].filter(Boolean).join(' | ');
+  if (idLine) doc.text(idLine, margin, curY);
   curY += 5;
-  doc.text(`City: ${brandSettings.city || 'Riyadh'} | Phone: ${brandSettings.phone || '0500000000'}`, margin, curY);
+  const cityLine = [
+    brandSettings.city ? `City: ${brandSettings.city}` : '',
+    brandSettings.phone ? `Phone: ${brandSettings.phone}` : '',
+  ].filter(Boolean).join(' | ');
+  if (cityLine) doc.text(cityLine, margin, curY);
 
   // Main Voucher Box
   curY = 56;
@@ -430,7 +464,7 @@ export function generatePaymentReceiptPDF(
   doc.roundedRect(margin + 6, curY + 6, pageWidth - margin * 2 - 12, 16, 2, 2, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.text('AMOUNT RECEIVED (المبلغ المقبوض):', margin + 12, curY + 16);
   doc.setFontSize(14);
   doc.text(`${receiptData.amount.toFixed(2)} SAR`, pageWidth - margin - 12, curY + 17, { align: 'right' });
@@ -439,9 +473,9 @@ export function generatePaymentReceiptPDF(
   const tafqeetText = tafqeetSAR(receiptData.amount);
   doc.setFontSize(8.5);
   doc.setTextColor(15, 23, 42);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.text('Amount in Words (المبلغ كتابة):', margin + 8, curY + 30);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(71, 85, 105);
   doc.text(tafqeetText || `${receiptData.amount} Saudi Riyals Only`, margin + 55, curY + 30);
 
@@ -452,7 +486,7 @@ export function generatePaymentReceiptPDF(
   // Detailed Lines
   const rows = [
     { label: 'Received From (استلمنا من السيد/ة):', value: receiptData.customerName },
-    { label: 'Customer Phone (رقم الجوال):', value: receiptData.customerPhone || 'N/A' },
+    { label: 'Customer Phone (رقم الجوال):', value: receiptData.customerPhone || '—' },
     { label: 'For Invoice No (وفاءً للفاتورة رقم):', value: receiptData.invoiceNumber },
     { label: 'Payment Method (طريقة الدفع):', value: receiptData.paymentMethod },
     { label: 'Remaining Balance (الرصيد المتبقي):', value: `${receiptData.remainingAmount.toFixed(2)} SAR` },
@@ -462,11 +496,11 @@ export function generatePaymentReceiptPDF(
   let lineY = curY + 44;
   rows.forEach((r) => {
     doc.setFontSize(8.5);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(PDF_FONT, 'bold');
     doc.setTextColor(100, 116, 139);
     doc.text(r.label, margin + 8, lineY);
 
-    doc.setFont('helvetica', 'normal');
+    doc.setFont(PDF_FONT, 'normal');
     doc.setTextColor(15, 23, 42);
     doc.text(r.value, margin + 70, lineY);
     lineY += 9;
@@ -484,18 +518,18 @@ export function generatePaymentReceiptPDF(
 
   // Recipient signature
   doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.setTextColor(10, 26, 51);
   doc.text('Accountant / Cashier (أمين الصندوق والمحاسب):', margin + 6, sigY + 8);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(100, 116, 139);
   doc.text('Signature & Stamp: _______________________', margin + 6, sigY + 36);
 
   // Client signature
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.setTextColor(10, 26, 51);
   doc.text('Depositor / Customer (المسلّم والمودع):', pageWidth / 2 + 10, sigY + 8);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(100, 116, 139);
   doc.text('Signature: _______________________', pageWidth / 2 + 10, sigY + 36);
 
@@ -506,24 +540,21 @@ export function generatePaymentReceiptPDF(
 
   doc.setFontSize(7.5);
   doc.setTextColor(148, 163, 184);
-  doc.text('Generated electronically via Usil Vendor OS. Certified Accounting Voucher.', margin, footerY + 5);
+  doc.text('Generated electronically via Usil.', margin, footerY + 5);
   doc.text(`Receipt ID: ${receiptData.receiptNumber} | Page 1 of 1`, pageWidth - margin, footerY + 5, { align: 'right' });
 
-  doc.save(`Official-Receipt-Voucher-${receiptData.receiptNumber}.pdf`);
+  doc.save(`Receipt-${receiptData.receiptNumber}.pdf`);
 }
 
 /**
  * Generates and downloads a Consolidated Crew Payroll Voucher PDF (سند صرف أجور طاقم موحد)
  */
-export function generateCrewPayrollVoucherPDF(
+export async function generateCrewPayrollVoucherPDF(
   voucher: ConsolidatedCrewPaymentVoucher,
   brandSettings: VendorBrandSettings
-) {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-  });
+): Promise<void> {
+  const doc = newA4();
+  await applyArabicFont(doc);
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -537,19 +568,19 @@ export function generateCrewPayrollVoucherPDF(
 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(15);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.text('CREW CONSOLIDATED PAYROLL VOUCHER', margin, 12);
   doc.setFontSize(8.5);
   doc.setTextColor(192, 161, 107);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.text('سند صرف أجور الطاقم الميداني الموحد المعتمد', margin, 18);
 
   // Voucher details top-right
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.text(`Voucher: ${voucher.voucherNumber}`, pageWidth - margin, 12, { align: 'right' });
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(203, 213, 225);
   doc.text(`Date: ${voucher.issueDate}`, pageWidth - margin, 18, { align: 'right' });
 
@@ -557,16 +588,16 @@ export function generateCrewPayrollVoucherPDF(
   let curY = 36;
   doc.setTextColor(15, 23, 42);
   doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text(brandSettings.brandName || 'Vendor Company', margin, curY);
+  doc.setFont(PDF_FONT, 'bold');
+  doc.text(brandSettings.brandName || '—', margin, curY);
 
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setTextColor(71, 85, 105);
   curY += 4.5;
-  doc.text(`Payment Method: ${voucher.paymentMethod} | Reference: ${voucher.bankReferenceNumber || 'N/A'}`, margin, curY);
+  doc.text(`Payment Method: ${voucher.paymentMethod} | Reference: ${voucher.bankReferenceNumber || '—'}`, margin, curY);
   curY += 4.5;
-  doc.text(`Prepared by: ${voucher.preparedBy} | Approved by: ${voucher.approvedBy}`, margin, curY);
+  doc.text(`Prepared by: ${voucher.preparedBy || '—'} | Approved by: ${voucher.approvedBy || '—'}`, margin, curY);
 
   // Table of Crew Members & Hours
   const tableData = voucher.entriesSummary.map((item, index) => {
@@ -597,15 +628,16 @@ export function generateCrewPayrollVoucherPDF(
       halign: 'center',
     },
     styles: {
+      font: PDF_FONT,
       fontSize: 7.5,
       cellPadding: 2.5,
       textColor: [30, 41, 59],
     },
     columnStyles: {
       0: { halign: 'center', cellWidth: 8 },
-      1: { halign: 'left', cellWidth: 32 },
-      2: { halign: 'left', cellWidth: 22 },
-      3: { halign: 'left', cellWidth: 'auto' },
+      1: { halign: 'right', cellWidth: 32 },
+      2: { halign: 'right', cellWidth: 22 },
+      3: { halign: 'right', cellWidth: 'auto' },
       4: { halign: 'center', cellWidth: 16 },
       5: { halign: 'right', cellWidth: 20 },
       6: { halign: 'right', cellWidth: 16 },
@@ -627,7 +659,7 @@ export function generateCrewPayrollVoucherPDF(
   doc.text('Total Crew Count (العدد):', pageWidth - margin - 76, finalY + 13);
   doc.text(`${voucher.totalCrewCount} Members`, pageWidth - margin - 4, finalY + 13, { align: 'right' });
 
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.setTextColor(15, 23, 42);
   doc.text('Total Net Paid (إجمالي المنصرف):', pageWidth - margin - 76, finalY + 24);
   doc.setTextColor(16, 185, 129);

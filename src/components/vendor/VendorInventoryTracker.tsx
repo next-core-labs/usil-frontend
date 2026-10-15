@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   InventoryItem,
   InventoryCategory,
@@ -56,7 +56,18 @@ interface VendorInventoryTrackerProps {
     supplierName: string,
     notes?: string
   ) => void;
+  /**
+   * A scan made outside this tab (e.g. the VendorHub header scanner). When it
+   * becomes non-null the same modal this tab's own scanner opens is shown, then
+   * `onPendingScanHandled` is called so the parent can clear it.
+   */
+  pendingScan?: VendorInventoryPendingScan | null;
+  onPendingScanHandled?: () => void;
 }
+
+export type VendorInventoryPendingScan =
+  | { kind: 'add'; barcode: string }
+  | { kind: 'restock'; itemId: string; qty: number };
 
 const CATEGORY_LABELS: Record<InventoryCategory, { label: string; color: string }> = {
   disposables: { label: 'أكواب ومستهلكات', color: 'bg-blue-50 text-action border-blue-200' },
@@ -76,6 +87,8 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
   onEditItem,
   onDeleteItem,
   onRecordRestockExpense,
+  pendingScan,
+  onPendingScanHandled,
 }) => {
   const [pendingDelete, setPendingDelete] = useState<InventoryItem | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -152,6 +165,19 @@ export const VendorInventoryTracker: React.FC<VendorInventoryTrackerProps> = ({
     setRestockSupplier(item.supplierName || '');
     setRestockNotes(`توريد سريع لدعم الفعاليات المجدولة (+${qty} ${item.unit})`);
   };
+
+  // Scan handed over from outside this tab: open the matching modal once, then report it handled.
+  useEffect(() => {
+    if (!pendingScan) return;
+    if (pendingScan.kind === 'add') {
+      handleOpenAddWithBarcode(pendingScan.barcode);
+    } else {
+      const item = inventoryItems.find((it) => it.id === pendingScan.itemId);
+      if (item) handleOpenRestock(item, pendingScan.qty);
+    }
+    onPendingScanHandled?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingScan]);
 
   // Submit restock
   const handleSaveRestock = (e: React.FormEvent) => {

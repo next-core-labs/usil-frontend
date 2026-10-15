@@ -14,10 +14,10 @@ Development — run both:
      npm install
      npm run dev              # http://127.0.0.1:3000  (/api and /uploads proxy to the backend)
 
-Production — the backend serves the built SPA:
+Production — Cloudflare Workers; the backend Worker serves the built SPA:
 
-  cd usil && npm run build
-  cd "../usil backend" && npm run sync:web && npm run build && npm start
+  cd "../usil backend" && npm run deploy    # builds this app, copies it in, deploys
+  (see "../usil backend/deploy/cloudflare.md")
 
 Native apps (Capacitor) — iOS + Android:
 

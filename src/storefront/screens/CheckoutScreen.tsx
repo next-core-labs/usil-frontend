@@ -11,14 +11,16 @@ import { useStorefront } from '../context';
 import { money, vatInside } from '../money';
 import { ArrowIcon } from '../primitives';
 import { productPhoto } from '../ProductCard';
+import { riyadhToday } from '../../utils/riyadhDate';
+import { isMoyasarUrl, savePendingPayment } from '../../utils/pendingPayment';
 
-function isMoyasarUrl(url: string): boolean {
-  try {
-    const host = new URL(url, window.location.origin).hostname.toLowerCase();
-    return host === 'moyasar.com' || host.endsWith('.moyasar.com');
-  } catch {
-    return false;
-  }
+const PENDING_APPROVAL = 'بانتظار موافقة المورّد';
+
+/** `YYYY-MM-DD` plus `days`, on the calendar (no timezone drift). */
+function addDays(date: string, days: number): string {
+  const d = new Date(`${date}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
 }
 
 const inputCls =
@@ -36,9 +38,14 @@ export function CheckoutScreen() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState(sf.selectedCity && sf.selectedCity !== ALL_CITIES_LABEL ? sf.selectedCity : 'الرياض');
-  const [date, setDate] = useState(() => items.find((c) => c.date)?.date || new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 10));
-  const [notes, setNotes] = useState('');
-  const [pay, setPay] = useState(0);
+  // Event dates are Saudi calendar days: "today" is today in Riyadh, whatever the device clock zone.
+  const minDate = riyadhToday();
+  const [date, setDate] = useState(() => {
+    const picked = items.find((c) => c.date && c.date >= minDate)?.date;
+    return picked || addDays(minDate, 2);
+  });
+  const [time, setTime] = useState(() => items.find((c) => c.time)?.time || '');
+  const [notes, setNotes] = useState(() => items.map((c) => c.customNotes).filter(Boolean).join('\n'));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +63,8 @@ export function CheckoutScreen() {
       if (draft.customerPhone) setPhone((p) => p || draft.customerPhone);
       if (draft.eventCity) setCity(draft.eventCity);
       if (draft.generalNotes) setNotes(draft.generalNotes);
+      // Coming back from the sign-in detour must keep the date the shopper picked.
+      if (draft.eventDate && draft.eventDate >= riyadhToday()) setDate(draft.eventDate);
     });
   }, []);
 
@@ -65,14 +74,18 @@ export function CheckoutScreen() {
 
   const total = useMemo(() => items.reduce((sum, c) => sum + (hasCheckoutPrice(c.service.price) ? c.service.price * c.quantity : 0), 0), [items]);
   const approval = items.some((c) => c.service.bookingMode === 'approval');
-  const minDate = new Date().toISOString().slice(0, 10);
+  const isEmpty = sf.cartReady && items.length === 0;
 
-  if (items.length === 0) {
-    sf.navigate('/cart', { replace: true });
-    return null;
-  }
+  // Wait for the saved cart before deciding it is empty, so a refresh on /checkout stays here.
+  useEffect(() => {
+    if (isEmpty) sf.navigate('/cart', { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEmpty]);
+
+  if (!sf.cartReady || items.length === 0) return null;
 
   const steps = [t.step1, t.step2, t.step3];
+  // Moyasar's hosted page offers every method; the shopper picks there, so this is information only.
   const payments = [
     { id: 'mada', label: t.payMada, Icon: CreditCard },
     { id: 'applepay', label: t.payApple, Icon: Wallet },
@@ -86,7 +99,7 @@ export function CheckoutScreen() {
       setError(t.coErrName);
       return;
     }
-    if (!date) {
+    if (!date || date < riyadhToday()) {
       setError(t.coErrDate);
       return;
     }
@@ -125,8 +138,8 @@ export function CheckoutScreen() {
           notes,
           city,
           eventDate: date,
+          ...(time ? { eventTime: time } : {}),
           paymentMethod: 'moyasar',
-          preferredMethod: payments[pay].id,
           totalAmount: total,
           items: items.map((c) => ({ id: c.service.id, title: c.service.title, quantity: c.quantity, price: c.service.price })),
         }),
@@ -135,25 +148,30 @@ export function CheckoutScreen() {
         success?: boolean;
         error?: string;
         awaitingApproval?: boolean;
-        booking?: { id?: string; paymentUrl?: string };
+        booking?: { id?: string; paymentUrl?: string; status?: string; awaitingApproval?: boolean };
       };
+      const sentToVendor =
+        data.awaitingApproval || data.booking?.awaitingApproval || data.booking?.status === PENDING_APPROVAL;
+      // Sent to the vendor; nothing to pay until they approve. A repeat tap on the same
+      // order lands here too (the server answers with the order it already has).
+      if (data.booking?.id && sentToVendor) {
+        sf.clearCart();
+        sf.navigate(`/orders?sent=${encodeURIComponent(String(data.booking.id))}`);
+        return;
+      }
+      const payUrl = String(data.booking?.paymentUrl || '');
+      // The cart stays until Moyasar confirms the payment (/payment/success), so backing
+      // out of the payment page leaves the shopper where they were — with a resume link.
+      if (payUrl && isMoyasarUrl(payUrl)) {
+        savePendingPayment(String(data.booking?.id || ''), payUrl);
+        window.location.assign(payUrl);
+        return;
+      }
       if (!res.ok || !data.success) {
         setError(data.error || t.coErrNet);
         return;
       }
-      // Sent to the vendor; nothing to pay until they approve.
-      if (data.awaitingApproval) {
-        sf.clearCart();
-        sf.navigate(`/orders?sent=${encodeURIComponent(String(data.booking?.id || ''))}`);
-        return;
-      }
-      const payUrl = String(data.booking?.paymentUrl || '');
       if (payUrl) {
-        if (isMoyasarUrl(payUrl)) {
-          sf.clearCart();
-          window.location.assign(payUrl);
-          return;
-        }
         setError(t.coErrPayUrl);
         return;
       }
@@ -178,7 +196,7 @@ export function CheckoutScreen() {
         setError(t.coErrPayUrl);
         return;
       }
-      sf.clearCart();
+      savePendingPayment(orderId, url);
       window.location.assign(url);
     } catch {
       setError(t.coErrNet);
@@ -246,6 +264,10 @@ export function CheckoutScreen() {
                   {t.fDate}
                   <input type="date" value={date} min={minDate} onChange={(e) => setDate(e.target.value)} className={inputCls} required />
                 </label>
+                <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
+                  {t.time}
+                  <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={cn(inputCls, 'tnum')} />
+                </label>
                 <label className="col-span-full flex flex-col gap-1.5 text-[13px] font-semibold">
                   {t.fNotes}
                   <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} className={cn(inputCls, 'h-auto py-3 resize-y')} />
@@ -269,32 +291,17 @@ export function CheckoutScreen() {
             <>
               <div className="text-[17px] font-bold mb-1">{t.payTitle}</div>
               <p className="text-[13px] text-ink-3 mb-3.5">{t.paySub}</p>
-              <div className="flex flex-col gap-2.5" role="radiogroup" aria-label={t.payTitle}>
-                {payments.map((p, i) => {
-                  const on = pay === i;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={on}
-                      onClick={() => setPay(i)}
-                      className={cn(
-                        'flex items-center gap-3 h-14 px-4 rounded-xl border-[1.5px] text-navy text-[15px] font-medium text-start transition-colors',
-                        on ? 'border-action bg-action-100' : 'border-line bg-surface hover:border-action',
-                      )}
-                    >
-                      <span
-                        className="w-[18px] h-[18px] rounded-full border-2 border-action shrink-0"
-                        style={{ background: on ? '#155EEF' : '#fff', boxShadow: 'inset 0 0 0 3px #fff' }}
-                        aria-hidden
-                      />
-                      <p.Icon className="w-5 h-5 text-action" aria-hidden />
-                      {p.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <ul className="grid grid-cols-2 gap-2.5" aria-label={t.payTitle}>
+                {payments.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex items-center gap-3 h-14 px-4 rounded-xl border border-line bg-surface text-navy text-[15px] font-medium"
+                  >
+                    <p.Icon className="w-5 h-5 text-action shrink-0" aria-hidden />
+                    {p.label}
+                  </li>
+                ))}
+              </ul>
               <p className={cn('mt-4 p-3 rounded-control text-xs font-semibold leading-relaxed', approval ? 'bg-warning-bg text-warning' : 'bg-success-bg text-success')}>
                 {approval ? t.coApproval : t.coInstant}
               </p>

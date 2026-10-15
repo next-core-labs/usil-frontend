@@ -61,7 +61,8 @@ export function Reveal({
 }
 
 /** Narrow (<820px in the design → `md`) vs desktop. */
-export function useIsMobile(query = '(max-width: 819px)') {
+/** Matches Tailwind's `md` breakpoint (768px), where the bottom tab bar disappears. */
+export function useIsMobile(query = '(max-width: 767px)') {
   const [mobile, setMobile] = useState(() =>
     typeof window === 'undefined' ? false : window.matchMedia(query).matches,
   );

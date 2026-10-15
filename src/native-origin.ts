@@ -8,7 +8,7 @@ import { Capacitor } from '@capacitor/core';
  * 404. Rather than thread a base URL through ~75 call sites, we rewrite the
  * two API-owned prefixes at the boundary: fetch, XHR, and image elements.
  */
-export const API_ORIGIN = 'https://usil-emjc.onrender.com';
+export const API_ORIGIN = 'https://usil.app';
 
 const REMOTE_PREFIXES = ['/api/', '/uploads/'];
 

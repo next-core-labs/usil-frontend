@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ReceivableDebt, VendorBrandSettings } from '../../../types';
 import { generatePaymentReceiptPDF } from '../../../utils/zatcaPdfExporter';
+import { riyadhToday } from '../../../utils/riyadhDate';
 import {
   Clock,
   AlertTriangle,
@@ -571,7 +572,7 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
             <div className="flex items-center gap-2 pt-2">
               <button
                 onClick={() => {
-                  generatePaymentReceiptPDF(
+                  void generatePaymentReceiptPDF(
                     {
                       receiptNumber: receiptSuccessModal.receiptNumber,
                       customerName: receiptSuccessModal.debt.customerName,
@@ -583,11 +584,14 @@ export const VendorReceivablesManager: React.FC<VendorReceivablesManagerProps> =
                         receiptSuccessModal.debt.remainingAmount - receiptSuccessModal.amount
                       ),
                       paymentMethod: paymentMethod === 'bank_transfer' ? 'تحويل بنكي' : paymentMethod === 'cash' ? 'نقداً' : 'مدى / شبكة',
-                      date: new Date().toISOString().split('T')[0],
+                      date: riyadhToday(),
                       notes: paymentNotes || `سداد دفعة عن ${receiptSuccessModal.debt.serviceTitle}`,
                     },
                     brandSettings
-                  );
+                  ).catch((err) => {
+                    console.error('PDF export failed', err);
+                    alert('تعذّر إنشاء ملف PDF. تحقق من الاتصال ثم حاول مرة أخرى.');
+                  });
                 }}
                 className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center justify-center gap-1.5 shadow-xs transition-colors"
               >

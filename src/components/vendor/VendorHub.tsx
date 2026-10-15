@@ -25,7 +25,7 @@ import { VendorChatDesk } from './VendorChatDesk';
 import { useUnreadChats } from '../chat/useChat';
 import { VendorInvoiceGenerator } from './VendorInvoiceGenerator';
 import { VendorCrewDispatch } from './VendorCrewDispatch';
-import { VendorFinancialSuite } from './VendorFinancialSuite';
+import { VendorFinancialSuite, type PlatformOrderMoney } from './VendorFinancialSuite';
 import { VendorStorefrontBioLink } from './VendorStorefrontBioLink';
 import { VendorPOSCashier } from './VendorPOSCashier';
 import { VendorBrandSettingsModal } from './VendorBrandSettingsModal';
@@ -33,12 +33,13 @@ import { VendorDatabaseBackupModal } from './VendorDatabaseBackupModal';
 import { VendorOrderTrackerManager } from './VendorOrderTrackerManager';
 import { VendorPendingReviewsManager } from './VendorPendingReviewsManager';
 import { TrustAndGrowthHub } from './TrustAndGrowthHub';
-import { VendorWidgetGrid } from './VendorWidgetGrid';
-import { VendorInventoryTracker } from './VendorInventoryTracker';
+import { VendorInventoryTracker, type VendorInventoryPendingScan } from './VendorInventoryTracker';
 import { VendorListingsPanel } from './VendorListingsPanel';
 import { VendorSocialsPanel } from './VendorSocialsPanel';
 import { VendorOwnFileCard } from './VendorOwnFileCard';
 import { BarcodeScannerModal } from './BarcodeScannerModal';
+import { VendorPlatformOrdersPanel, usePlatformOrders } from './VendorPlatformOrdersPanel';
+import { riyadhToday } from '../../utils/riyadhDate';
 import type { VendorListing } from '../../contracts/vendors/vendor-listings';
 import type { VendorOwnProfile } from '../../contracts/vendors/vendor-profile';
 import { calculateInventoryForecasts } from '../../utils/inventoryForecast';
@@ -76,6 +77,7 @@ import {
   CloudOff,
   LogOut,
   Share2,
+  Inbox,
 } from 'lucide-react';
 import { UsilMark } from '../UsilMark';
 
@@ -147,9 +149,12 @@ interface VendorHubProps {
   contracts?: SmartServiceContract[];
   onContractsChange?: (contracts: SmartServiceContract[]) => void;
   onNotify?: (msg: string) => void;
+  /** The vendor a supervising admin is acting for (`?vendorId=`); vendors leave it unset. */
+  supervisedVendorId?: string | null;
 }
 
 export type VendorActiveTab =
+  | 'orders'
   | 'calendar'
   | 'listings'
   | 'trust'
@@ -221,14 +226,18 @@ export const VendorHub: React.FC<VendorHubProps> = ({
   contracts = [],
   onContractsChange,
   onNotify,
+  supervisedVendorId = null,
 }) => {
-  const [activeTab, setActiveTab] = useState<VendorActiveTab>('listings');
+  // Orders first: approval-mode orders sit unpaid until the vendor answers them.
+  const [activeTab, setActiveTab] = useState<VendorActiveTab>('orders');
   const [isExternalModalOpen, setIsExternalModalOpen] = useState(false);
   const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [modalPrefillDate, setModalPrefillDate] = useState('2026-08-25');
+  const [modalPrefillDate, setModalPrefillDate] = useState(() => riyadhToday());
+  // A code scanned from the header scanner, handed to the inventory tab to open the right form.
+  const [headerScan, setHeaderScan] = useState<VendorInventoryPendingScan | null>(null);
 
   // Stats calculation
   const totalRevenue = bookings.reduce((sum, b) => sum + b.totalAmount, 0);
@@ -245,11 +254,24 @@ export const VendorHub: React.FC<VendorHubProps> = ({
     setIsExternalModalOpen(true);
   };
 
+  const platformOrders = usePlatformOrders(supervisedVendorId);
+  // The wallet counts real marketplace money only: paid orders, minus any that ended cancelled or rejected.
+  const platformOrderMoney: PlatformOrderMoney[] = platformOrders.orders
+    .filter((o) => o.status !== 'ملغي' && o.status !== 'مرفوض من المورّد')
+    .map((o) => ({ id: o.id, totalAmount: o.totalAmount, paid: o.paymentStatus === 'paid', completed: o.status === 'مكتمل' }));
+
   // Chat is the vendor's own inbox; a supervising admin's session would read the owner side instead.
   const canChat = !supervisorBanner;
   const unreadChats = useUnreadChats(canChat);
 
   const navTabs = [
+    {
+      id: 'orders',
+      label: 'طلبات المنصة',
+      icon: Inbox,
+      count: platformOrders.pendingCount || undefined,
+      badgeColor: 'bg-amber-500 text-white',
+    },
     { id: 'listings', label: 'منتجاتي ومسار يوصل', icon: Package, count: listings.length, badgeColor: 'bg-action text-white' },
     { id: 'calendar', label: 'التقويم ومنع التعارض', icon: CalendarIcon, count: bookings.length },
     {
@@ -259,10 +281,10 @@ export const VendorHub: React.FC<VendorHubProps> = ({
       count: inventoryShortageCount > 0 ? inventoryShortageCount : inventoryLowCount > 0 ? inventoryLowCount : inventoryItems.length,
       badgeColor: inventoryShortageCount > 0 ? 'bg-rose-600 text-white animate-pulse' : inventoryLowCount > 0 ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-blue-100 text-blue-800',
     },
-    { id: 'trust', label: 'أدوات الثقة والعقود الذكية (B2B)', icon: ShieldCheck, count: 2, badgeColor: 'bg-sand text-slate-950 font-bold' },
+    { id: 'trust', label: 'أدوات الثقة والعقود الذكية (B2B)', icon: ShieldCheck, count: contracts.length || undefined, badgeColor: 'bg-sand text-slate-950 font-bold' },
     { id: 'pos', label: 'كاشير المحل ونقاط البيع (POS)', icon: Calculator, badgeColor: 'bg-emerald-600 text-white' },
     { id: 'ledger', label: 'النظام المحاسبي وقائمة الدخل', icon: TrendingUp, count: overdueDebtsCount || undefined, badgeColor: 'bg-rose-600 text-white' },
-    { id: 'reviews', label: 'التقييم المزدوج وتذكير الطلبات', icon: Star, count: 1, badgeColor: 'bg-amber-500 text-white' },
+    { id: 'reviews', label: 'التقييم المزدوج وتذكير الطلبات', icon: Star },
     { id: 'tracking', label: 'تتبع الطلبات المباشر وAPI', icon: Zap, count: trackings.length, badgeColor: 'bg-blue-600 text-white' },
     ...(canChat
       ? [{ id: 'chats', label: 'المحادثات', icon: MessagesSquare, count: unreadChats || undefined, badgeColor: 'bg-action text-white' }]
@@ -506,6 +528,19 @@ export const VendorHub: React.FC<VendorHubProps> = ({
         ) : null}
         {/* Active Tab View */}
         <div className="pt-2">
+          {activeTab === 'orders' && (
+            <VendorPlatformOrdersPanel
+              orders={platformOrders.orders}
+              status={platformOrders.status}
+              reload={() => void platformOrders.reload()}
+              onOrderUpdated={(order) =>
+                platformOrders.setOrders((prev) => prev.map((row) => (row.id === order.id ? order : row)))
+              }
+              vendorId={supervisedVendorId}
+              onNotify={onNotify}
+            />
+          )}
+
           {activeTab === 'listings' && (
             <div className="space-y-4">
               {ownProfile ? <VendorOwnFileCard profile={ownProfile} compact /> : null}
@@ -539,6 +574,8 @@ export const VendorHub: React.FC<VendorHubProps> = ({
               onEditItem={onEditInventoryItem || (() => {})}
               onDeleteItem={onDeleteInventoryItem || (() => {})}
               onRecordRestockExpense={onRecordRestockExpense || (() => {})}
+              pendingScan={headerScan}
+              onPendingScanHandled={() => setHeaderScan(null)}
             />
           )}
 
@@ -591,7 +628,7 @@ export const VendorHub: React.FC<VendorHubProps> = ({
             />
           )}
 
-          {activeTab === 'socials' && <VendorSocialsPanel />}
+          {activeTab === 'socials' && <VendorSocialsPanel vendorId={supervisedVendorId} />}
 
           {activeTab === 'brand' && (
             <div className="p-8 rounded-3xl bg-white border border-slate-200 card-shadow space-y-6">
@@ -713,6 +750,7 @@ export const VendorHub: React.FC<VendorHubProps> = ({
             <VendorFinancialSuite
               payouts={payouts}
               bookings={bookings}
+              platformOrders={platformOrders.status === 'ready' ? platformOrderMoney : undefined}
               invoices={invoices}
               expenses={expenses}
               receivables={receivables}
@@ -807,10 +845,12 @@ export const VendorHub: React.FC<VendorHubProps> = ({
           onUpdateItemStock={onUpdateItemStock}
           onOpenAddItemWithBarcode={(scannedCode) => {
             setIsScannerModalOpen(false);
+            setHeaderScan({ kind: 'add', barcode: scannedCode });
             setActiveTab('inventory');
           }}
           onOpenRestockExpense={(item, suggestedQty) => {
             setIsScannerModalOpen(false);
+            setHeaderScan({ kind: 'restock', itemId: item.id, qty: suggestedQty });
             setActiveTab('inventory');
           }}
         />

@@ -1,5 +1,11 @@
 import * as XLSX from 'xlsx';
-import { VendorBooking, ExpenseRecord, POSSaleRecord, ExpenseCategory } from '../types';
+import { VendorBooking, ExpenseRecord, POSSaleRecord, ExpenseCategory } from '../../../types';
+import { riyadhToday } from '../../../utils/riyadhDate';
+
+/**
+ * P&L Excel export for VendorProfitAndLoss. Supersedes utils/excelExporter.ts:
+ * it also lists crew wages, inventory supplies, marketing and rent/utilities.
+ */
 
 export interface ProfitAndLossExportData {
   brandName: string;
@@ -12,13 +18,17 @@ export interface ProfitAndLossExportData {
   platformNetRevenue: number;
   totalDirectCosts: number;
   rawMaterialsExpense: number;
+  inventorySuppliesExpense: number;
   directLaborExpense: number;
+  crewWagesExpense: number;
   transportExpense: number;
   packagingExpense: number;
   grossProfit: number;
   grossMarginPercent: number;
   totalOperatingExpenses: number;
   maintenanceExpense: number;
+  marketingExpense: number;
+  rentUtilitiesExpense: number;
   otherPettyCashExpense: number;
   netIncome: number;
   netMarginPercent: number;
@@ -27,6 +37,16 @@ export interface ProfitAndLossExportData {
   expenses: ExpenseRecord[];
   posSales: POSSaleRecord[];
 }
+
+/** Expense categories counted as direct cost of sales (COGS). */
+export const DIRECT_COST_CATEGORIES: ExpenseCategory[] = [
+  'raw_materials',
+  'inventory_supplies',
+  'direct_labor',
+  'crew_wages',
+  'fuel_transport',
+  'packaging_disposables',
+];
 
 const expenseCategoryNames: Record<ExpenseCategory, string> = {
   raw_materials: 'خامات ومواد تموينية (بن، تمور، فواكه، لحوم)',
@@ -49,7 +69,7 @@ export function exportProfitAndLossToExcel(data: ProfitAndLossExportData) {
     ['تقرير قائمة الدخل والأرباح والخسائر الشامل (P&L Income Statement)'],
     ['اسم المنشأة / المورّد:', data.brandName],
     ['الفترة المالية:', data.period],
-    ['تاريخ التصدير:', new Date().toLocaleDateString('ar-SA')],
+    ['تاريخ التصدير:', riyadhToday()],
     ['العملة المعتمدة:', 'ريال سعودي (SAR)'],
     [],
     ['البند المالي (Financial Item)', 'التصنيف المحاسبي', 'المبلغ (SAR)', 'النسبة من الإيراد (%)'],
@@ -64,7 +84,9 @@ export function exportProfitAndLossToExcel(data: ProfitAndLossExportData) {
     // COGS
     ['2. التكاليف المباشرة لتوريد المناسبات (Cost of Sales / COGS)', 'Direct Costs', -data.totalDirectCosts, `${data.totalGrossRevenue ? ((data.totalDirectCosts / data.totalGrossRevenue) * 100).toFixed(1) : 0}%`],
     ['• مشتريات الخامات والمواد الغذائية', 'Raw Materials', -data.rawMaterialsExpense, ''],
-    ['• أجور العمالة المباشرة والميدانية', 'Direct Labor', -data.directLaborExpense, ''],
+    ['• توريدات ومستلزمات المخزون', 'Inventory Supplies', -data.inventorySuppliesExpense, ''],
+    ['• أجور العمالة المباشرة باليومية', 'Direct Labor', -data.directLaborExpense, ''],
+    ['• مسير أجور الطاقم', 'Crew Wages', -data.crewWagesExpense, ''],
     ['• مصاريف الوقود والنقل الميداني', 'Fuel & Logistics', -data.transportExpense, ''],
     ['• مستهلكات التغليف والضيافة', 'Packaging', -data.packagingExpense, ''],
     ['• عمولة منصة يوصل (15% على طلبات المنصة فقط)', 'Platform Fee (15%)', -data.platformCommission, ''],
@@ -77,6 +99,8 @@ export function exportProfitAndLossToExcel(data: ProfitAndLossExportData) {
     // OPEX
     ['3. المصروفات التشغيلية والإدارية (OPEX)', 'Operating Expenses', -data.totalOperatingExpenses, `${data.totalGrossRevenue ? ((data.totalOperatingExpenses / data.totalGrossRevenue) * 100).toFixed(1) : 0}%`],
     ['• صيانة المعدات والدلال والمغاسل', 'Maintenance', -data.maintenanceExpense, ''],
+    ['• إعلانات وتسويق', 'Marketing', -data.marketingExpense, ''],
+    ['• إيجار وكهرباء وإنترنت', 'Rent & Utilities', -data.rentUtilitiesExpense, ''],
     ['• نثريات وضيافة العهد الداخلية', 'Petty Cash', -data.otherPettyCashExpense, ''],
     [],
 
@@ -175,7 +199,7 @@ export function exportProfitAndLossToExcel(data: ProfitAndLossExportData) {
     e.totalAmount || e.amount || 0,
     e.date || '',
     e.paymentMethod === 'bank_transfer' ? 'تحويل بنكي' : e.paymentMethod === 'cash' ? 'نقداً' : e.paymentMethod === 'petty_cash' ? 'عهدة نقدية' : 'مدى / شبكة',
-    ['raw_materials', 'direct_labor', 'crew_wages', 'fuel_transport', 'packaging_disposables'].includes(e.category)
+    DIRECT_COST_CATEGORIES.includes(e.category)
       ? 'تكلفة مباشرة (COGS)'
       : 'مصروف تشغيلي (OPEX)',
   ]);
@@ -206,7 +230,7 @@ export function exportProfitAndLossToExcel(data: ProfitAndLossExportData) {
 
   // Generate and download Excel file
   const safeBrand = (data.brandName || 'Vendor').replace(/\s+/g, '-');
-  const dateStr = new Date().toISOString().split('T')[0];
-  const fileName = `قائمة-الدخل-والأرباح-${safeBrand}-${dateStr}.xlsx`;
+  const periodSlug = (data.period || '').replace(/\s+/g, '-');
+  const fileName = `قائمة-الدخل-والأرباح-${safeBrand}-${periodSlug || riyadhToday()}.xlsx`;
   XLSX.writeFile(wb, fileName);
 }

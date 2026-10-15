@@ -17,6 +17,7 @@ import {
   X,
   CreditCard,
 } from 'lucide-react';
+import { riyadhToday } from '../../utils/riyadhDate';
 
 interface VendorCrewDispatchProps {
   crewMembers: CrewMember[];
@@ -121,7 +122,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
       eventTitle: booking
         ? `${booking.serviceTitle} (${booking.customerName})`
         : 'مناسبة خارجية عامة',
-      eventDate: booking ? booking.date : new Date().toISOString().split('T')[0],
+      eventDate: booking ? booking.date : riyadhToday(),
       regularHours: logRegularHours,
       overtimeHours: logOvertimeHours,
       hourlyRate: logHourlyRate,
@@ -129,7 +130,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
       totalEarned,
       status: 'unprocessed',
       notes: logNotes || 'تسجيل ساعات مناوبة عمل ميدانية معتمدة',
-      recordedAt: new Date().toISOString().split('T')[0],
+      recordedAt: riyadhToday(),
     };
 
     if (onAddWorkLog) {

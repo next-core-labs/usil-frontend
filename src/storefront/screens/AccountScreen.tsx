@@ -32,7 +32,7 @@ export function AccountScreen() {
   const [orderCount, setOrderCount] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!sf.user) return;
+    if (!sf.user || sf.user.role !== 'client') return;
     fetch('/api/bookings', { credentials: 'include' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setOrderCount(d && Array.isArray(d.data) ? d.data.length : null))

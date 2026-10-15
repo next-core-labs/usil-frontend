@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { VendorBooking, BlockedDate } from '../../types';
 import { VendorConflictBadge } from './VendorConflictBadge';
+import { riyadhToday } from '../../utils/riyadhDate';
 import {
   Calendar as CalendarIcon,
   ChevronRight,
@@ -35,14 +36,15 @@ export const VendorCalendarView: React.FC<VendorCalendarViewProps> = ({
   onAddBlockedDate,
   onRemoveBlockedDate,
 }) => {
-  const [selectedDate, setSelectedDate] = useState<string>('2026-08-22');
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(7); // August (0-indexed: 7)
-  const [currentYear, setCurrentYear] = useState(2026);
+  // Open on today's month in Riyadh time.
+  const [todayKey] = useState(() => riyadhToday());
+  const [selectedDate, setSelectedDate] = useState<string>(todayKey);
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(() => Number(todayKey.slice(5, 7)) - 1);
+  const [currentYear, setCurrentYear] = useState(() => Number(todayKey.slice(0, 4)));
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [blockReason, setBlockReason] = useState('');
   const [blockType, setBlockType] = useState<BlockedDate['type']>('maintenance');
-  const [blockInputDate, setBlockInputDate] = useState('2026-08-26');
-  const [copiedICal, setCopiedICal] = useState(false);
+  const [blockInputDate, setBlockInputDate] = useState(todayKey);
 
   const monthNames = [
     'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
@@ -94,12 +96,6 @@ export const VendorCalendarView: React.FC<VendorCalendarViewProps> = ({
     } else {
       setCurrentMonthIndex(currentMonthIndex + 1);
     }
-  };
-
-  const handleCopyICal = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/api/vendor/calendar.ics`);
-    setCopiedICal(true);
-    setTimeout(() => setCopiedICal(false), 2000);
   };
 
   const handleConfirmBlockDate = (e: React.FormEvent) => {
@@ -179,8 +175,10 @@ export const VendorCalendarView: React.FC<VendorCalendarViewProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  setCurrentMonthIndex(7);
-                  setCurrentYear(2026);
+                  const today = riyadhToday();
+                  setCurrentMonthIndex(Number(today.slice(5, 7)) - 1);
+                  setCurrentYear(Number(today.slice(0, 4)));
+                  setSelectedDate(today);
                 }}
                 className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-medium text-slate-800 transition-colors"
               >
@@ -308,15 +306,17 @@ export const VendorCalendarView: React.FC<VendorCalendarViewProps> = ({
               </div>
             </div>
 
-            {/* iCal Link Export */}
+            {/* iCal sync is not built yet — shown as coming soon, disabled */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={handleCopyICal}
-                className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
+                disabled
+                aria-disabled="true"
+                title="قريباً"
+                className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-400 text-xs font-medium inline-flex items-center gap-1.5 cursor-not-allowed"
               >
-                <Copy className="w-3.5 h-3.5 text-action" />
-                <span>{copiedICal ? '✓ تم نسخ رابط iCal' : 'مزامنة مع تقويم Google / Apple'}</span>
+                <Copy className="w-3.5 h-3.5" />
+                <span>مزامنة مع تقويم Google / Apple — قريباً</span>
               </button>
             </div>
 

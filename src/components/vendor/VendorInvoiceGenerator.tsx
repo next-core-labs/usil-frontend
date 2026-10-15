@@ -4,6 +4,15 @@ import {
   generateZatcaInvoicePDF,
   generatePaymentReceiptPDF,
 } from '../../utils/zatcaPdfExporter';
+import { riyadhToday } from '../../utils/riyadhDate';
+
+const PDF_ERROR_MSG = 'تعذّر إنشاء ملف PDF. تحقق من الاتصال ثم حاول مرة أخرى.';
+function runPdf(task: Promise<void>) {
+  task.catch((err) => {
+    console.error('PDF export failed', err);
+    alert(PDF_ERROR_MSG);
+  });
+}
 import {
   FileText,
   Printer,
@@ -41,24 +50,24 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
   onOpenBrandSettings,
   onOpenTracker,
 }) => {
-  const [selectedInvoice, setSelectedInvoice] = useState<VendorInvoice>(invoices[0]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [isWhiteLabelActive, setIsWhiteLabelActive] = useState(true);
+  // Derived from the live list so a new/removed invoice is reflected; null when there are none.
+  const selectedInvoice: VendorInvoice | null =
+    invoices.find((inv) => inv.id === selectedId) ?? invoices[0] ?? null;
+  const setSelectedInvoice = (inv: VendorInvoice) => setSelectedId(inv.id);
 
   // Form State for new invoice
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientTaxId, setClientTaxId] = useState('');
-  const [eventDate, setEventDate] = useState('2026-08-30');
-  const [depositPaid, setDepositPaid] = useState(500);
+  const [eventDate, setEventDate] = useState(() => riyadhToday());
+  const [depositPaid, setDepositPaid] = useState(0);
   const [channelSource, setChannelSource] = useState<VendorInvoice['channelSource']>('external_phone');
-  const [items, setItems] = useState([
-    { description: 'ركن الضيافة النجدية الملكية (دلال ذهبية + تمور ملكية + مضيفين)', quantity: 1, unitPrice: 1850 },
-  ]);
+  const [items, setItems] = useState([{ description: '', quantity: 1, unitPrice: 0 }]);
 
   const handleAddItem = () => {
-    setItems([...items, { description: 'بند خدمة إضافي (مثال: مباشر إضافي أو فواكه)', quantity: 1, unitPrice: 250 }]);
+    setItems([...items, { description: '', quantity: 1, unitPrice: 0 }]);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -89,13 +98,12 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
 
     const newInv: VendorInvoice = {
       id: `inv-${Date.now()}`,
-      invoiceNumber: `INV-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-      trackingCode: `MTH-TRK-${Math.floor(1000 + Math.random() * 9000)}`,
+      invoiceNumber: `INV-${riyadhToday().slice(0, 4)}-${Math.floor(1000 + Math.random() * 9000)}`,
       clientName,
-      clientPhone: clientPhone || '05XXXXXXXX',
+      clientPhone: clientPhone.trim(),
       clientTaxId,
       eventDate,
-      issueDate: new Date().toISOString().split('T')[0],
+      issueDate: riyadhToday(),
       dueDate: eventDate,
       items: items.map((it) => ({
         description: it.description,
@@ -126,14 +134,19 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
     // Reset
     setClientName('');
     setClientPhone('');
+    setClientTaxId('');
+    setDepositPaid(0);
+    setItems([{ description: '', quantity: 1, unitPrice: 0 }]);
   };
 
   const handleDownloadZatcaPdf = () => {
-    generateZatcaInvoicePDF(selectedInvoice, brandSettings);
+    if (!selectedInvoice) return;
+    runPdf(generateZatcaInvoicePDF(selectedInvoice, brandSettings));
   };
 
   const handleDownloadDepositReceipt = () => {
-    generatePaymentReceiptPDF(
+    if (!selectedInvoice) return;
+    runPdf(generatePaymentReceiptPDF(
       {
         receiptNumber: `REC-${selectedInvoice.invoiceNumber.replace('INV-', '')}-01`,
         customerName: selectedInvoice.clientName,
@@ -146,18 +159,14 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
         notes: `دفعة عربون مؤكدة لمناسبة تاريخ ${selectedInvoice.eventDate}`,
       },
       brandSettings
-    );
+    ));
   };
 
   const handlePrint = () => {
     window.print();
   };
 
-  const handleCopyInvoiceLink = () => {
-    navigator.clipboard.writeText(`https://usil.app/invoice/${selectedInvoice.invoiceNumber}`);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
-  };
+  const selectedClientDigits = (selectedInvoice?.clientPhone || '').replace(/\D/g, '');
 
   return (
     <div className="space-y-6 text-right">
@@ -167,13 +176,13 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
         <div className="space-y-1">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium border border-blue-200">
             <FileText className="w-3.5 h-3.5 text-action" />
-            <span>مولّد الفواتير وعقود التوريد بهويتك الخاصة (White-label & ZATCA Compliant)</span>
+            <span>مولّد الفواتير وعروض الأسعار بهويتك الخاصة</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
             عروض الأسعار والفواتير الرسمية المعتمدة
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-normal">
-            أصدر فواتير خارجية باسم وشعار وسجل منشأتك الخاص 100% مع حساب الضريبة ورمز QR ورابط تتبع مجاني للعميل.
+            أصدر فواتير باسم وشعار وسجل منشأتك مع حساب ضريبة القيمة المضافة. يُضاف رمز QR الضريبي إلى ملف PDF عند إدخال رقمك الضريبي في بيانات البراند.
           </p>
         </div>
 
@@ -263,10 +272,10 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          generateZatcaInvoicePDF(inv, brandSettings);
+                          runPdf(generateZatcaInvoicePDF(inv, brandSettings));
                         }}
                         className="p-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-action transition-colors"
-                        title="تحميل PDF ضريبي معتمد"
+                        title="تحميل PDF"
                       >
                         <Download className="w-3 h-3" />
                       </button>
@@ -280,6 +289,13 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
 
         {/* Invoice Printable Preview (8 cols) */}
         <div className="lg:col-span-8 space-y-4">
+          {!selectedInvoice && (
+            <div className="p-8 rounded-3xl bg-white border border-slate-200 card-shadow text-center space-y-2">
+              <FileText className="w-8 h-8 text-slate-300 mx-auto" />
+              <h3 className="text-sm font-bold text-slate-900">لا توجد فواتير بعد</h3>
+              <p className="text-xs text-slate-500">أنشئ أول فاتورة أو عرض سعر من زر «إنشاء فاتورة / عرض سعر جديد».</p>
+            </div>
+          )}
           {selectedInvoice && (
             <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 card-shadow space-y-6 print:border-none print:shadow-none">
               
@@ -308,10 +324,10 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                   <button
                     onClick={handleDownloadZatcaPdf}
                     className="px-3.5 py-2 rounded-xl bg-action hover:bg-action-hover text-white text-xs font-medium flex items-center gap-1.5 shadow-xs transition-all hover:scale-[1.02]"
-                    title="تحميل الفاتورة بصيغة PDF الرسمية المعتمدة لمتطلبات هيئة الزكاة والضريبة والجمارك ZATCA" aria-label="تحميل الفاتورة بصيغة PDF الرسمية المعتمدة لمتطلبات هيئة الزكاة والضريبة والجمارك ZATCA"
+                    title="تحميل الفاتورة بصيغة PDF" aria-label="تحميل الفاتورة بصيغة PDF"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>تحميل فاتورة ZATCA PDF</span>
+                    <span>تحميل الفاتورة PDF</span>
                   </button>
 
                   {/* Download Deposit / Payment Receipt Voucher */}
@@ -326,26 +342,19 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                     </button>
                   )}
 
-                  <a
-                    href={`https://wa.me/${selectedInvoice.clientPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
-                      `مرحباً ${selectedInvoice.clientName}،\nإليك الفاتورة الرسمية رقم ${selectedInvoice.invoiceNumber} لمناسبة ${selectedInvoice.eventDate} من ${brandSettings.brandName}.\nالمبلغ الإجمالي: ${selectedInvoice.total} ر.س.\nيمكنك متابعة حالة الطلب مباشرة عبر: https://usil.app/track/${selectedInvoice.trackingCode || 'MTH-TRK-8812'}`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1 transition-colors"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>واتساب</span>
-                  </a>
-
-                  <button
-                    onClick={handleCopyInvoiceLink}
-                    className="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700 flex items-center gap-1 transition-colors"
-                    title="نسخ رابط الفاتورة والتتبع" aria-label="نسخ رابط الفاتورة والتتبع"
-                  >
-                    <Copy className="w-3.5 h-3.5 text-action" />
-                    <span>{copiedLink ? '✓' : 'نسخ'}</span>
-                  </button>
+                  {selectedClientDigits && (
+                    <a
+                      href={`https://wa.me/${selectedClientDigits}?text=${encodeURIComponent(
+                        `مرحباً ${selectedInvoice.clientName}،\nإليك الفاتورة رقم ${selectedInvoice.invoiceNumber} لمناسبة ${selectedInvoice.eventDate} من ${brandSettings.brandName}.\nالمبلغ الإجمالي: ${selectedInvoice.total} ر.س.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1 transition-colors"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>واتساب</span>
+                    </a>
+                  )}
 
                   <button
                     onClick={handlePrint}
@@ -382,15 +391,6 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                   </div>
                 </div>
 
-                {/* ZATCA QR Code Representation */}
-                <div className="p-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-1">
-                  <div className="w-20 h-20 bg-slate-900 rounded-xl flex items-center justify-center text-white mx-auto">
-                    <QrCode className="w-14 h-14 text-white" />
-                  </div>
-                  <span className="text-2xs text-slate-500 font-medium block">
-                    رمز التحقق الضريبي ZATCA
-                  </span>
-                </div>
               </div>
 
               {/* Welcome Header Note */}
