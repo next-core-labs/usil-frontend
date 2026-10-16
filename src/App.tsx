@@ -1515,6 +1515,7 @@ export default function App() {
       {isVendorRegisterOpen ? (
         <Suspense fallback={null}>
         <VendorRegisterWizard
+          account={currentUser && currentUser.role === 'client' ? currentUser : null}
           onClose={() => setIsVendorRegisterOpen(false)}
           onLoggedIn={(user) => handleAuthSuccess(user)}
           onOpenCourierRegister={() => {

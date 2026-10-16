@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, LayoutGrid, MapPin, Wallet, Users, Truck, ChevronDown, RotateCcw, Check, ArrowUpDown } from 'lucide-react';
 import type { ServiceItem } from '../../types';
 import { CATEGORIES } from '../../data/services';
@@ -9,6 +10,7 @@ import {
   serviceMatchesSearch,
   serviceMatchesPriceRange,
   serviceMatchesFulfillment,
+  serviceMatchesAudience,
   CATALOG_SEARCH_CHIPS,
   type FulfillmentFilter,
 } from '../../data/saudiMarket';
@@ -52,12 +54,7 @@ export function filterServices(services: ServiceItem[], f: {
     .filter((item) => {
       if (f.category !== 'all' && item.category !== f.category) return false;
       if (!cityFilterMatches(item.cities, f.city)) return false;
-      if (f.audience !== 'all') {
-        const a = item.audience || 'family';
-        const exact = a === f.audience;
-        const familyFits = a === 'family' && (f.audience === 'women' || f.audience === 'men');
-        if (!exact && !familyFits) return false;
-      }
+      if (f.audience !== 'all' && !serviceMatchesAudience(item, f.audience)) return false;
       if (f.query.trim() && !serviceMatchesSearch(item, f.query)) return false;
       if (!serviceMatchesPriceRange(item.price, f.price)) return false;
       if (!serviceMatchesFulfillment(item, f.lane)) return false;
@@ -71,7 +68,14 @@ export function filterServices(services: ServiceItem[], f: {
     });
 }
 
-/** Dropdown filter button (city, price, audience, lane, sort) from the sticky row. */
+/**
+ * Dropdown filter button (price, audience, lane, sort) from the sticky row.
+ *
+ * The row scrolls sideways on phones (`overflow-x-auto`), and an overflowing box
+ * clips its children on both axes: a menu positioned inside it was cut off and
+ * turned the row into a vertical scroller. The menu is portalled to <body> and
+ * pinned under its button instead, and closes when the page scrolls away.
+ */
 function FilterMenu({
   icon: Icon,
   label,
@@ -88,24 +92,65 @@ function FilterMenu({
   onPick: (id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left?: number; right?: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
+
+  const place = () => {
+    const btn = buttonRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const rtl = getComputedStyle(btn).direction === 'rtl';
+    const width = Math.min(260, window.innerWidth - 16);
+    // Align the menu's start edge with the button's, kept inside the viewport.
+    setPos(
+      rtl
+        ? { top: rect.bottom + 6, right: Math.max(8, Math.min(window.innerWidth - rect.right, window.innerWidth - width - 8)) }
+        : { top: rect.bottom + 6, left: Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)) },
+    );
+  };
+
+  useLayoutEffect(() => {
+    if (open) place();
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
-    const close = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    const close = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node;
+      if (buttonRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
     };
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    // Scrolling the page or the filter row moves the button away from the menu.
+    const onScroll = (e: Event) => {
+      if (menuRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    };
+    const onResize = () => setOpen(false);
     document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close, { passive: true });
     document.addEventListener('keydown', esc);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onResize);
     return () => {
       document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
       document.removeEventListener('keydown', esc);
+      window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', onResize);
     };
   }, [open]);
 
   return (
-    <div className="relative shrink-0" ref={ref}>
+    <div className="relative shrink-0">
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -117,38 +162,45 @@ function FilterMenu({
       >
         <Icon className="w-3.5 h-3.5" />
         {value ? `${label}: ${value}` : label}
-        <ChevronDown className="w-3.5 h-3.5 opacity-60" aria-hidden />
+        <ChevronDown className={cn('w-3.5 h-3.5 opacity-60 transition-transform', open && 'rotate-180')} aria-hidden />
       </button>
-      {open ? (
-        <ul
-          role="listbox"
-          className="absolute top-full mt-1.5 start-0 z-50 min-w-[200px] max-h-72 overflow-y-auto rounded-card bg-surface border border-line shadow-e3 p-1.5 usil-pop-in"
-        >
-          {options.map((opt) => {
-            const selected = opt.label === value || (!value && opt.id === 'all');
-            return (
-              <li key={opt.id}>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={selected}
-                  onClick={() => {
-                    onPick(opt.id);
-                    setOpen(false);
-                  }}
-                  className={cn(
-                    'w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-control text-sm text-start min-h-0 transition-colors',
-                    selected ? 'bg-action-100 text-action font-semibold' : 'text-navy hover:bg-paper',
-                  )}
-                >
-                  {opt.label}
-                  {selected ? <Check className="w-4 h-4" aria-hidden /> : null}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
+      {open && pos
+        ? createPortal(
+            <ul
+              ref={menuRef}
+              role="listbox"
+              aria-label={label}
+              dir={getComputedStyle(buttonRef.current || document.body).direction}
+              style={{ position: 'fixed', top: pos.top, left: pos.left, right: pos.right, width: 'max-content' }}
+              className="z-[90] min-w-[200px] max-w-[min(260px,calc(100vw-16px))] max-h-[min(18rem,calc(100dvh-120px))] overflow-y-auto overscroll-contain rounded-card bg-surface border border-line shadow-e3 p-1.5 usil-pop-in"
+            >
+              {options.map((opt) => {
+                const selected = opt.label === value || (!value && opt.id === 'all');
+                return (
+                  <li key={opt.id}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={selected}
+                      onClick={() => {
+                        onPick(opt.id);
+                        setOpen(false);
+                      }}
+                      className={cn(
+                        'w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-control text-sm text-start min-h-0 transition-colors',
+                        selected ? 'bg-action-100 text-action font-semibold' : 'text-navy hover:bg-paper',
+                      )}
+                    >
+                      {opt.label}
+                      {selected ? <Check className="w-4 h-4" aria-hidden /> : null}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }
@@ -164,6 +216,21 @@ export function CatalogScreen() {
 
   useEffect(() => setQuery(f.query), [f.query]);
   useEffect(() => setShown(PAGE_SIZE), [f.category, f.audience, f.query, f.price, f.lane, f.sort, sf.selectedCity]);
+
+  // Filtering from the sticky row while deep in the list shrinks the page under the
+  // shopper, leaving them near the footer. Bring the top of the new results into view.
+  const filterKey = [f.category, f.audience, f.query, f.price, f.lane, f.sort, sf.selectedCity].join('|');
+  const lastFilterKey = useRef(filterKey);
+  useEffect(() => {
+    if (lastFilterKey.current === filterKey) return;
+    lastFilterKey.current = filterKey;
+    const section = document.getElementById('services-section');
+    const bar = document.getElementById('catalog-filter-bar');
+    if (!section) return;
+    const offset = 68 + (bar?.offsetHeight || 0) + 8; // site header + sticky filter row
+    const top = section.getBoundingClientRect().top + window.scrollY - offset;
+    if (window.scrollY > top + 4) window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  }, [filterKey]);
 
   const popularity = useMemo(
     () => new Map(sf.trending.map((row) => [row.id, row.trending.score] as const)),
@@ -290,7 +357,7 @@ export function CatalogScreen() {
       </section>
 
       {/* Sticky filter row */}
-      <div className="sticky top-[68px] z-40 bg-paper/[.92] backdrop-blur-xl border-b border-line">
+      <div id="catalog-filter-bar" className="sticky top-[68px] z-40 bg-paper/[.92] backdrop-blur-xl border-b border-line">
         <div className="sf-wrap py-3 flex items-center gap-2 overflow-x-auto scrollbar-none">
           <button
             type="button"
