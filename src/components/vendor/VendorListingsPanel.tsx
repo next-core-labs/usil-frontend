@@ -6,6 +6,7 @@ import { FulfillmentLanePicker } from '../FulfillmentLanePicker';
 import { ProductImagesPicker } from './ProductImagesPicker';
 import { PlaceMultiPicker } from '../PlaceMultiPicker';
 import { formatSelectionCoverage, toggleCoverage } from '../../data/saudiPlaces';
+import { AUDIENCE_LABEL } from '../../data/saudiMarket';
 import {
   FULFILLMENT_AR_LABEL,
   LISTING_CATEGORIES,
@@ -17,6 +18,9 @@ import {
   DEFAULT_BOOKING_MODE,
   parseBookingMode,
   parseListingImages,
+  parseListingAudiences,
+  LISTING_AUDIENCE_IDS,
+  type ListingAudience,
   type ListingBookingMode,
   type VendorListing,
 } from '../../contracts/vendors/vendor-listings';
@@ -32,6 +36,8 @@ type ListingDraft = {
   cities: string[];
   images: string[];
   fulfillment: FulfillmentLane[];
+  /** Empty = suits every audience in the store's «الجمهور» filter. */
+  audiences: ListingAudience[];
   bookingMode: ListingBookingMode;
 };
 
@@ -44,6 +50,7 @@ const emptyDraft = (): ListingDraft => ({
   cities: ['الرياض'],
   images: [],
   fulfillment: [],
+  audiences: [],
   bookingMode: DEFAULT_BOOKING_MODE,
 });
 
@@ -57,6 +64,7 @@ function draftFromListing(item: VendorListing): ListingDraft {
     cities: item.cities.length ? item.cities : ['الرياض'],
     images: parseListingImages(item.images, item.image),
     fulfillment: [...item.fulfillment],
+    audiences: parseListingAudiences(item.audiences),
     bookingMode: parseBookingMode(item.bookingMode),
   };
 }
@@ -142,6 +150,7 @@ export function VendorListingsPanel({
       images: draft.images,
       image: draft.images[0],
       fulfillment: draft.fulfillment,
+      audiences: draft.audiences,
       bookingMode: draft.bookingMode,
     };
     if (editing) {
@@ -349,6 +358,37 @@ export function VendorListingsPanel({
                   setError('');
                 }}
               />
+
+              <fieldset className="rounded-xl border border-line bg-paper p-3 space-y-2 text-right">
+                <legend className="px-1 text-sm font-bold text-navy">الجمهور</legend>
+                <p className="text-2xs text-ink-2 leading-relaxed">
+                  لمن تقدّم هذا المنتج؟ يظهر للعميل في فلتر «الجمهور». إذا ما اخترت شيء يظهر للجميع.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {LISTING_AUDIENCE_IDS.map((id) => {
+                    const on = draft.audiences.includes(id);
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() =>
+                          setDraft((prev) => ({
+                            ...prev,
+                            audiences: on ? prev.audiences.filter((a) => a !== id) : [...prev.audiences, id],
+                          }))
+                        }
+                        className={`min-h-9 px-3 rounded-full border text-xs font-semibold transition-colors ${
+                          on ? 'bg-navy border-navy text-white' : 'bg-surface border-line text-navy hover:border-navy-300'
+                        }`}
+                      >
+                        {on ? <Check className="inline w-3.5 h-3.5 me-1" aria-hidden /> : null}
+                        {AUDIENCE_LABEL[id]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
 
               <fieldset className="rounded-xl border border-line bg-paper p-3 space-y-2 text-right">
                 <legend className="px-1 text-sm font-bold text-navy">

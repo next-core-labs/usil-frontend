@@ -146,7 +146,10 @@ export function LoginScreen({
 
     const nextFieldErrors: Record<string, string> = {};
     if (!email.trim()) nextFieldErrors.email = 'اكتب بريدك الإلكتروني.';
-    if (!phone.trim()) nextFieldErrors.phone = 'اكتب رقم جوالك.';
+    // The mobile is optional for a customer; when given at sign-up it must look like one.
+    if (mode === 'register' && phone.trim() && phone.replace(/\D/g, '').length < 9) {
+      nextFieldErrors.phone = 'رقم الجوال غير صحيح — اكتبه بصيغة 05xxxxxxxx أو اتركه فارغاً.';
+    }
     if (!password) nextFieldErrors.password = 'اكتب الرقم السري.';
     if (mode === 'register' && !name.trim()) nextFieldErrors.name = 'اكتب اسمك الكامل.';
     if (mode === 'register' && password && password.length < 8) {
@@ -158,8 +161,8 @@ export function LoginScreen({
     setFieldErrors(nextFieldErrors);
 
     if (Object.keys(nextFieldErrors).length) {
-      if (!email.trim() || !phone.trim() || !password) {
-        setError('البريد الإلكتروني ورقم الجوال والرقم السري مطلوبة كلها.');
+      if (!email.trim() || !password) {
+        setError('البريد الإلكتروني والرقم السري مطلوبان.');
       } else if (mode === 'register' && !name.trim()) {
         setError('اكتب الاسم لإكمال إنشاء حساب العميل.');
       } else if (mode === 'register' && password.length < 8) {
@@ -180,7 +183,8 @@ export function LoginScreen({
         credentials: 'include',
         body: JSON.stringify({
           email: email.trim(),
-          phone: phone.trim(),
+          // Sign-in is by email and password; the mobile only travels with a sign-up that has one.
+          phone: mode === 'register' && phone.trim() ? phone.trim() : undefined,
           password,
           name: name.trim(),
           avatarDataUrl: mode === 'register' ? avatarDataUrl : undefined,
@@ -326,8 +330,8 @@ export function LoginScreen({
           ? 'أدخل بريدك المسجّل ونرسل إليه رمز استعادة من 6 أرقام.'
           : 'أدخل الرمز الذي وصلك على بريدك، ثم الرقم السري الجديد.'
         : mode === 'register'
-          ? 'سجّل كعميل بالبريد والجوال والرقم السري. يمكنك رفع صورة أو نولّد لك شعاراً باسمك.'
-          : 'أدخل البريد والجوال والرقم السري. النظام يحوّلك تلقائيًا إلى واجهة العميل أو المورد أو الإدارة حسب حسابك.';
+          ? 'سجّل كعميل بالاسم والبريد والرقم السري، والجوال اختياري. يمكنك رفع صورة أو نولّد لك شعاراً باسمك.'
+          : 'أدخل البريد والرقم السري. النظام يحوّلك تلقائيًا إلى واجهة العميل أو المورد أو الإدارة حسب حسابك.';
 
   const body = (
     <>
@@ -481,16 +485,15 @@ export function LoginScreen({
             </label>
           ) : null}
 
-          {mode !== 'forgot' ? (
+          {mode === 'register' ? (
           <label className="block text-sm">
             <span className={labelClass}>
               <Phone className="w-4 h-4 text-action" />
-              رقم الجوال {req}
+              رقم الجوال <span className="text-ink-3 font-normal">(اختياري)</span>
             </span>
             <input
               id="usil-login-phone"
               type="tel"
-              required
               value={phone}
               onChange={(e) => {
                 setPhone(e.target.value);
@@ -600,9 +603,9 @@ export function LoginScreen({
                   الحقل فارغ — اكتب بريدك المسجّل لنرسل إليه رمز الاستعادة.
                 </p>
               ) : null
-            : !email.trim() && !phone.trim() && !password && !error && !successMsg && !loading ? (
+            : !email.trim() && !password && !error && !successMsg && !loading ? (
                 <p className="text-2xs text-ink-3 leading-relaxed">
-                  الحقول فارغة — البريد والجوال والرقم السري مطلوبة كلها.
+                  الحقول فارغة — البريد والرقم السري مطلوبان.
                 </p>
               ) : null}
 
