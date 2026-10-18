@@ -33,7 +33,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { ServiceItem } from '../../types';
 import { CATEGORIES } from '../../data/services';
 import { OCCASION_PACKAGES, CATALOG_SEARCH_CHIPS } from '../../data/saudiMarket';
-import { SAUDI_REGIONS, ALL_CITIES_LABEL } from '../../data/saudiPlaces';
+import { SAUDI_REGIONS, ALL_CITIES_LABEL, cityFilterMatches } from '../../data/saudiPlaces';
 import { TESTIMONIALS } from '../../data/services';
 import { PARTNER_LOGOS, APP_STORE_URL, PLAY_STORE_URL } from '../../data/marketing';
 import { cn } from '../../components/ui/cn';
@@ -103,7 +103,11 @@ export function HomeScreen() {
   const { t, ar, L, categoryName } = useLang();
   const sf = useStorefront();
   const [query, setQuery] = useState('');
-  const services = sf.services;
+  // Counts and the trending shelf follow the region the visitor picked.
+  const services = useMemo(
+    () => sf.services.filter((s) => cityFilterMatches(s.cities, sf.selectedCity)),
+    [sf.services, sf.selectedCity],
+  );
 
   const cityLabel = sf.selectedCity === ALL_CITIES_LABEL || !sf.selectedCity ? t.allRegions : sf.selectedCity;
 
@@ -116,7 +120,12 @@ export function HomeScreen() {
   const submitSearch = () => sf.goCatalog({ query: query.trim(), category: 'all' });
 
   /* «ترند هالأسبوع»: ranked by the API from this week's bookings and views, padded from the catalog. */
-  const shelf = useMemo(() => trendingShelf(sf.trending, services, TRENDING_SHELF_SIZE), [sf.trending, services]);
+  const shelf = useMemo(() => {
+    const here = new Set(services.map((s) => s.id));
+    return trendingShelf(sf.trending.filter((row) => here.has(row.id)), services, TRENDING_SHELF_SIZE);
+  }, [sf.trending, services]);
+  // The shelf is unnumbered, so the numbered sections run 01–04 with or without it.
+  const showTrending = shelf.length >= TRENDING_SHELF_MIN;
 
   const stats = [
     { v: formatCount(services.length), l: t.statListings },
@@ -335,13 +344,13 @@ export function HomeScreen() {
       </section>
 
       {/* ───────────── Trending / fresh listings ───────────── */}
-      {shelf.length >= TRENDING_SHELF_MIN ? <TrendingSection items={shelf} /> : null}
+      {showTrending ? <TrendingSection items={shelf} /> : null}
 
       {/* ───────────── Why ───────────── */}
       <section className="sf-wrap pt-[clamp(40px,6vw,72px)]">
         <Reveal className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-[clamp(24px,4vw,56px)] items-start">
           <div className="md:sticky md:top-[88px]">
-            <SectionHead n="04" kicker={t.secHowKicker} title={t.secHow} sub={t.secHowSub} />
+            <SectionHead n="03" kicker={t.secHowKicker} title={t.secHow} sub={t.secHowSub} />
           </div>
           <div className="flex flex-col">
             {steps.map((s) => (
@@ -565,7 +574,7 @@ function ReviewsSection() {
     <section className="sf-wrap pt-[clamp(56px,8vw,96px)]">
       <Reveal className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-[clamp(24px,4vw,56px)] items-center">
         <div>
-          <SectionHead n="05" kicker={t.secRevKicker} title={t.secRev} />
+          <SectionHead n="04" kicker={t.secRevKicker} title={t.secRev} />
           <div className="flex items-center gap-3.5 flex-wrap mt-[18px]">
             <div className="flex items-baseline gap-1">
               <span className="text-[clamp(48px,6vw,72px)] font-bold tracking-[-0.04em] leading-none tnum">{avg.toFixed(1)}</span>

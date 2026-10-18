@@ -34,7 +34,9 @@ describe('auth UI contracts', () => {
     assert.match(login, /remember:\s*mode === 'login' \? remember/);
     assert.equal(/localStorage\.setItem\([^)]*password/i.test(login), false);
     assert.match(login, /localStorage\.removeItem\('usil_remember_password'\)/);
-    assert.equal(login.includes('الحقول فارغة — البريد والرقم السري مطلوبان.'), true);
+    // The empty form shows a hint, not an error, before anything is typed.
+    assert.equal(login.includes('الحقول فارغة'), false);
+    assert.equal(login.includes('اكتب بريدك أو رقم جوالك والرقم السري للدخول.'), true);
     // The mobile is optional at sign-up and not asked at sign-in.
     assert.match(login, /رقم الجوال <span[^>]*>\(اختياري\)<\/span>/);
     assert.equal(login.includes("if (!phone.trim()) nextFieldErrors.phone"), false);

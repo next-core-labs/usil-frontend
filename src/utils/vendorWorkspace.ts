@@ -5,6 +5,8 @@ export type VendorWorkspacePayload = {
   contracts?: unknown[];
   listings?: unknown[];
   socials?: unknown;
+  /** Public profile fields (e.g. `logoUrl`, which must be one of the server's uploads). */
+  profile?: { projectName?: string; logoUrl?: string };
   office?: VendorOffice;
 };
 
@@ -55,6 +57,119 @@ export function officeFromServer(raw: unknown): Record<VendorOfficeList, unknown
     ...lists,
     brandSettings: brand && typeof brand === 'object' && !Array.isArray(brand) ? (brand as Record<string, unknown>) : null,
   };
+}
+
+/** JSON of each saved section as the server last had it: `listings`, `office.invoices`, … */
+export type WorkspaceSnapshot = Record<string, string>;
+
+const TOP_SECTIONS = ['inventoryItems', 'contracts', 'listings'] as const;
+const OFFICE_SECTIONS = [...OFFICE_LISTS, 'brandSettings'] as const;
+
+function sectionsOf(payload: VendorWorkspacePayload): [string, unknown][] {
+  const out: [string, unknown][] = [];
+  for (const key of TOP_SECTIONS) if (payload[key] !== undefined) out.push([key, payload[key]]);
+  for (const key of OFFICE_SECTIONS) {
+    if (payload.office?.[key] !== undefined) out.push([`office.${key}`, payload.office[key]]);
+  }
+  return out;
+}
+
+export function snapshotWorkspace(payload: VendorWorkspacePayload): WorkspaceSnapshot {
+  return Object.fromEntries(sectionsOf(payload).map(([key, value]) => [key, JSON.stringify(value)]));
+}
+
+/**
+ * Only the sections that differ from what the server last had. A tab holding a
+ * stale copy then can't wipe what another tab, device or supervisor saved in a
+ * section this tab never touched. `null` when nothing changed.
+ */
+export function changedWorkspace(
+  payload: VendorWorkspacePayload,
+  synced: WorkspaceSnapshot,
+): { payload: VendorWorkspacePayload; snapshot: WorkspaceSnapshot } | null {
+  const changed: VendorWorkspacePayload = {};
+  const snapshot: WorkspaceSnapshot = {};
+  for (const [key, value] of sectionsOf(payload)) {
+    const json = JSON.stringify(value);
+    if (synced[key] === json) continue;
+    snapshot[key] = json;
+    if (key.startsWith('office.')) {
+      changed.office = { ...changed.office, [key.slice('office.'.length)]: value };
+    } else {
+      (changed as Record<string, unknown>)[key] = value;
+    }
+  }
+  return Object.keys(snapshot).length ? { payload: changed, snapshot } : null;
+}
+
+/** A platform order as GET /api/bookings returns it to its vendor (own lines only). */
+export type VendorPlatformOrder = {
+  id: string;
+  name?: string;
+  phone?: string;
+  serviceId?: unknown;
+  serviceName?: string;
+  notes?: string;
+  city?: string;
+  eventDate?: string;
+  eventTime?: string;
+  items?: unknown[];
+  totalAmount?: number;
+  status?: string;
+  paymentStatus?: string;
+  createdAt?: string;
+};
+
+const PLATFORM_CALENDAR_STATUS: Record<string, 'confirmed' | 'in_progress' | 'completed'> = {
+  'مؤكد': 'confirmed',
+  'قيد التنفيذ': 'in_progress',
+  'مكتمل': 'completed',
+};
+
+/**
+ * Orders the vendor accepted, as read-only calendar rows (`source: 'platform'`),
+ * so the calendar, crew, expenses and P&L see them next to the vendor's own
+ * bookings. Accepted but unpaid shows as awaiting payment, not as revenue.
+ * Orders still waiting on the vendor, rejected or cancelled stay in the inbox only.
+ */
+export function platformOrdersAsCalendar(orders: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(orders)) return [];
+  const out: Record<string, unknown>[] = [];
+  for (const raw of orders as VendorPlatformOrder[]) {
+    const accepted = raw && PLATFORM_CALENDAR_STATUS[String(raw.status || '')];
+    if (!accepted || !raw.eventDate) continue;
+    const paid = raw.paymentStatus === 'paid';
+    const lines = (Array.isArray(raw.items) ? raw.items : []) as { id?: unknown; title?: unknown }[];
+    const total = Number(raw.totalAmount) || 0;
+    out.push({
+      id: `platform-${raw.id}`,
+      bookingNumber: raw.id,
+      serviceId: String(lines[0]?.id ?? raw.serviceId ?? ''),
+      serviceTitle: lines.map((line) => String(line?.title || '')).filter(Boolean).join(' + ') || raw.serviceName || 'طلب من المنصة',
+      customerName: raw.name || 'عميل يوصل',
+      customerPhone: raw.phone || '',
+      date: String(raw.eventDate).slice(0, 10),
+      startTime: raw.eventTime || '18:00',
+      endTime: '23:30',
+      city: raw.city || '',
+      venueName: 'حسب عنوان العميل',
+      guestCount: 0,
+      totalAmount: total,
+      depositAmount: paid ? total : 0,
+      remainingAmount: paid ? 0 : total,
+      source: 'platform',
+      status: accepted === 'confirmed' && !paid ? 'pending_deposit' : accepted,
+      notes: raw.notes || undefined,
+      createdAt: raw.createdAt || '',
+      readOnly: true,
+    });
+  }
+  return out;
+}
+
+export async function fetchVendorPlatformOrders(vendorId?: string | null) {
+  const res = await fetch(vendorApiUrl('/api/bookings', vendorId), { credentials: 'include' });
+  return parse(res);
 }
 
 export function workspaceHasData(payload: VendorWorkspacePayload | null | undefined): boolean {

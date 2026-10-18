@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { VendorBrandSettings } from '../../types';
 import { FulfillmentLanePicker } from '../FulfillmentLanePicker';
+import { emailProblem, ibanProblem, mobileProblem, normalizeIban, vatProblem } from '../../utils/vendorContactChecks';
 import {
   X,
   Sparkles,
@@ -16,7 +17,122 @@ import {
   Stamp,
   ShieldCheck,
   Eye,
+  Upload,
+  Loader2,
+  Trash2,
 } from 'lucide-react';
+
+const ACCEPTED_IMAGES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+function readAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('تعذر قراءة الصورة'));
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Upload to `/api/uploads`; the server only accepts its own uploads as a vendor logo. */
+async function uploadBrandImage(file: File, purpose: 'logo' | 'stamp'): Promise<string> {
+  if (!ACCEPTED_IMAGES.includes(file.type)) throw new Error('الصيغ المقبولة: JPG أو PNG أو WEBP');
+  if (file.size > MAX_IMAGE_BYTES) throw new Error('حجم الصورة أكبر من 5 ميجابايت');
+  const dataUrl = await readAsDataUrl(file);
+  const res = await fetch('/api/uploads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ purpose: purpose === 'logo' ? 'logo' : 'upload', dataUrl }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || !body?.url) throw new Error(String(body?.error || 'تعذر رفع الصورة، جرّب مرة ثانية'));
+  return String(body.url);
+}
+
+/** Pick an image from the device: preview, replace, remove. */
+function BrandImageField({
+  label,
+  hint,
+  value,
+  purpose,
+  onChange,
+  onBusyChange,
+}: {
+  label: string;
+  hint: string;
+  value: string;
+  purpose: 'logo' | 'stamp';
+  onChange: (url: string) => void;
+  onBusyChange: (busy: boolean) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const pick = async (file: File | undefined) => {
+    if (!file) return;
+    setError('');
+    setBusy(true);
+    onBusyChange(true);
+    try {
+      onChange(await uploadBrandImage(file, purpose));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'تعذر رفع الصورة');
+    } finally {
+      setBusy(false);
+      onBusyChange(false);
+      if (inputRef.current) inputRef.current.value = '';
+    }
+  };
+
+  return (
+    <div>
+      <span className="block text-xs font-medium text-slate-800 mb-1">{label}</span>
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+        <div className="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+          {value ? (
+            <img src={value} alt={label} className="w-full h-full object-contain" />
+          ) : (
+            <ImageIcon className="w-6 h-6 text-slate-300" aria-hidden />
+          )}
+        </div>
+        <div className="flex-1 min-w-0 space-y-1.5">
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-navy text-white text-xs font-medium disabled:opacity-60"
+            >
+              {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden /> : <Upload className="w-3.5 h-3.5" aria-hidden />}
+              {busy ? 'جارٍ الرفع…' : value ? 'تغيير الصورة' : 'رفع صورة'}
+            </button>
+            {value && !busy ? (
+              <button
+                type="button"
+                onClick={() => onChange('')}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:text-rose-600"
+              >
+                <Trash2 className="w-3.5 h-3.5" aria-hidden />
+                إزالة
+              </button>
+            ) : null}
+          </div>
+          <p className="text-2xs text-slate-500">{hint}</p>
+          {error ? <p role="alert" className="text-2xs text-rose-600 font-medium">{error}</p> : null}
+        </div>
+        <input
+          ref={inputRef}
+          type="file"
+          accept={ACCEPTED_IMAGES.join(',')}
+          className="hidden"
+          onChange={(e) => void pick(e.target.files?.[0])}
+        />
+      </div>
+    </div>
+  );
+}
 
 interface VendorBrandSettingsModalProps {
   isOpen: boolean;
@@ -34,8 +150,25 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
   const [formData, setFormData] = useState<VendorBrandSettings>(settings);
   const [activeTab, setActiveTab] = useState<'profile' | 'invoice' | 'preview'>('profile');
   const [showSavedToast, setShowSavedToast] = useState(false);
+  const [uploading, setUploading] = useState(0);
+  const [formError, setFormError] = useState('');
+
+  // The modal stays mounted: start every opening from the vendor's current settings,
+  // not the defaults it was first rendered with before the workspace loaded.
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(settings);
+      setShowSavedToast(false);
+      setFormError('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // An error is about the last save attempt; editing a field clears it.
+  useEffect(() => setFormError(''), [formData]);
 
   if (!isOpen) return null;
+  const onBusyChange = (busy: boolean) => setUploading((n) => Math.max(0, n + (busy ? 1 : -1)));
 
   const colorPresets = [
     { name: 'كحلي فاخر', value: '#0A1A33' },
@@ -48,7 +181,29 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    if (uploading > 0) return;
+    // Checked here, not by the browser: a required field on another tab can't be
+    // focused, so the browser refused the save without saying why.
+    if (!String(formData.brandName || '').trim()) {
+      setActiveTab('profile');
+      setFormError('اكتب اسم البراند / المنشأة قبل الحفظ.');
+      return;
+    }
+    // These print on invoices and receive payouts, so a typo is stopped here.
+    const profileProblem = vatProblem(formData.vatNumber) || emailProblem(formData.email) || mobileProblem(formData.phone);
+    if (profileProblem) {
+      setActiveTab('profile');
+      setFormError(profileProblem);
+      return;
+    }
+    const bankProblem = ibanProblem(formData.iban);
+    if (bankProblem) {
+      setActiveTab('invoice');
+      setFormError(bankProblem);
+      return;
+    }
+    setFormError('');
+    onSave({ ...formData, iban: normalizeIban(formData.iban) });
     setShowSavedToast(true);
     setTimeout(() => {
       setShowSavedToast(false);
@@ -123,7 +278,12 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form onSubmit={handleSave} noValidate className="flex-1 overflow-y-auto p-6 space-y-6">
+          {formError ? (
+            <p role="alert" className="px-4 py-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700">
+              {formError}
+            </p>
+          ) : null}
           
           {activeTab === 'profile' && (
             <div className="space-y-4">
@@ -157,11 +317,10 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-slate-800 mb-1">
-                    رقم السجل التجاري / وثيقة العمل الحر *
+                    رقم السجل التجاري / وثيقة العمل الحر <span className="text-slate-400 font-normal">(اختياري)</span>
                   </label>
                   <input
                     type="text"
-                    required
                     value={formData.crNumber}
                     onChange={(e) => setFormData({ ...formData, crNumber: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-medium text-slate-900 focus:bg-white focus:border-action focus:outline-none"
@@ -170,42 +329,40 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
 
                 <div>
                   <label className="block text-xs font-medium text-slate-800 mb-1">
-                    الرقم الضريبي (VAT Number - 15 رقم) *
+                    الرقم الضريبي (VAT Number - 15 رقم) <span className="text-slate-400 font-normal">(اختياري)</span>
                   </label>
                   <input
                     type="text"
-                    required
+                    inputMode="numeric"
                     value={formData.vatNumber}
                     onChange={(e) => setFormData({ ...formData, vatNumber: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-medium text-slate-900 focus:bg-white focus:border-action focus:outline-none"
                   />
+                  <p className="mt-1 text-2xs text-slate-500">
+                    {formData.vatNumber && !/^3\d{13}3$/.test(formData.vatNumber.trim())
+                      ? 'الرقم الضريبي 15 رقماً يبدأ وينتهي بـ 3 — بدونه تطلع الفاتورة بدون رمز هيئة الزكاة.'
+                      : 'فقط إذا كنت مسجّلاً في ضريبة القيمة المضافة.'}
+                  </p>
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-800 mb-1">
-                    رابط صورة شعار المتجر (Logo URL)
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.logoUrl}
-                    onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-action focus:outline-none font-mono text-left"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-800 mb-1">
-                    رابط صورة الختم الرسمي / التوقيع (Stamp URL)
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.stampUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, stampUrl: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:border-action focus:outline-none font-mono text-left"
-                  />
-                </div>
+                <BrandImageField
+                  label="شعار المتجر"
+                  hint="يظهر في متجرك وصفحتك العامة والفواتير. JPG أو PNG أو WEBP حتى 5 ميجابايت."
+                  value={formData.logoUrl}
+                  purpose="logo"
+                  onChange={(url) => setFormData((prev) => ({ ...prev, logoUrl: url }))}
+                  onBusyChange={onBusyChange}
+                />
+                <BrandImageField
+                  label="الختم الرسمي / التوقيع"
+                  hint="يظهر أسفل الفواتير والسندات. يفضّل PNG بخلفية شفافة."
+                  value={formData.stampUrl || ''}
+                  purpose="stamp"
+                  onChange={(url) => setFormData((prev) => ({ ...prev, stampUrl: url }))}
+                  onBusyChange={onBusyChange}
+                />
               </div>
 
               <div className="grid sm:grid-cols-3 gap-4">
@@ -449,9 +606,10 @@ export const VendorBrandSettingsModal: React.FC<VendorBrandSettingsModalProps> =
 
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white text-xs sm:text-sm font-medium shadow-xs transition-colors"
+                disabled={uploading > 0}
+                className="px-6 py-2.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white text-xs sm:text-sm font-medium shadow-xs transition-colors disabled:opacity-60"
               >
-                حفظ بيانات الهوية والبراند
+                {uploading > 0 ? 'انتظر انتهاء رفع الصورة…' : 'حفظ بيانات الهوية والبراند'}
               </button>
             </div>
           </div>

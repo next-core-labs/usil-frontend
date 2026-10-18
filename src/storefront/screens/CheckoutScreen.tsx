@@ -48,6 +48,15 @@ export function CheckoutScreen() {
   const [notes, setNotes] = useState(() => items.map((c) => c.customNotes).filter(Boolean).join('\n'));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // false = the server has no Moyasar keys, so an instant cart can't be paid. Unknown stays null.
+  const [paymentsOn, setPaymentsOn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch('/api/payments/moyasar')
+      .then((res) => res.json())
+      .then((data: { configured?: unknown }) => setPaymentsOn(data?.configured === true))
+      .catch(() => setPaymentsOn(null));
+  }, []);
 
   useEffect(() => {
     if (sf.user) {
@@ -74,6 +83,8 @@ export function CheckoutScreen() {
 
   const total = useMemo(() => items.reduce((sum, c) => sum + (hasCheckoutPrice(c.service.price) ? c.service.price * c.quantity : 0), 0), [items]);
   const approval = items.some((c) => c.service.bookingMode === 'approval');
+  // Approval carts go to the vendor unpaid and are paid later, so only instant ones stop here.
+  const cannotPay = !approval && paymentsOn === false;
   const isEmpty = sf.cartReady && items.length === 0;
 
   // Wait for the saved cart before deciding it is empty, so a refresh on /checkout stays here.
@@ -148,8 +159,16 @@ export function CheckoutScreen() {
         success?: boolean;
         error?: string;
         awaitingApproval?: boolean;
+        slotTaken?: boolean;
         booking?: { id?: string; paymentUrl?: string; status?: string; awaitingApproval?: boolean };
       };
+      // The product is already booked that day (by someone else, or by this customer's own
+      // earlier order). Say so — never treat the order it names as this checkout.
+      if (data.slotTaken) {
+        setError(data.error || t.coErrNet);
+        setStep(0);
+        return;
+      }
       const sentToVendor =
         data.awaitingApproval || data.booking?.awaitingApproval || data.booking?.status === PENDING_APPROVAL;
       // Sent to the vendor; nothing to pay until they approve. A repeat tap on the same
@@ -224,12 +243,19 @@ export function CheckoutScreen() {
               >
                 {done ? <Check className="w-3.5 h-3.5" aria-hidden /> : i + 1}
               </span>
-              <span className={cn('text-sm font-semibold whitespace-nowrap', cur ? 'text-navy' : 'text-ink-3')}>{label}</span>
+              {/* On a phone only the current step is named, so the rail fits without clipping. */}
+              <span className={cn('text-sm font-semibold whitespace-nowrap', cur ? 'text-navy' : 'text-ink-3 hidden sm:inline')}>{label}</span>
               {i < steps.length - 1 ? <span className="w-8 h-px bg-navy-300 mx-1" aria-hidden /> : null}
             </li>
           );
         })}
       </ol>
+
+      {cannotPay ? (
+        <p role="status" className="mb-5 p-3.5 rounded-control bg-warning-bg text-warning text-sm font-semibold leading-relaxed">
+          {t.coPayOff}
+        </p>
+      ) : null}
 
       <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
         <div className="bg-surface border border-line rounded-card p-[clamp(18px,3vw,28px)]">
@@ -318,7 +344,7 @@ export function CheckoutScreen() {
                 <button
                   type="button"
                   onClick={() => void placeOrder()}
-                  disabled={busy}
+                  disabled={busy || cannotPay}
                   className="h-[50px] px-[26px] rounded-xl bg-action text-white text-[15px] font-bold inline-flex items-center gap-2 disabled:opacity-70 hover:bg-action-hover"
                 >
                   {busy ? (

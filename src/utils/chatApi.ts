@@ -121,10 +121,10 @@ export function senderLabel(message: ChatMessage, row: ConversationBase): string
   return row.clientName || message.senderName;
 }
 
-const TIME = new Intl.DateTimeFormat('ar-SA', { hour: 'numeric', minute: '2-digit' });
-// Gregorian on purpose: event dates across the app are Gregorian, and ar-SA defaults to Hijri.
-const DAY = new Intl.DateTimeFormat('ar-SA-u-ca-gregory', { weekday: 'long', day: 'numeric', month: 'long' });
-const SHORT_DAY = new Intl.DateTimeFormat('ar-SA-u-ca-gregory', { day: 'numeric', month: 'short' });
+const TIME = new Intl.DateTimeFormat('ar-SA-u-nu-latn', { hour: 'numeric', minute: '2-digit' });
+// Gregorian on purpose (ar-SA defaults to Hijri), with Western digits like the rest of the app.
+const DAY = new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' });
+const SHORT_DAY = new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn', { day: 'numeric', month: 'short' });
 
 function sameDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();

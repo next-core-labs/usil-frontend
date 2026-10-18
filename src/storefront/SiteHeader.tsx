@@ -40,7 +40,8 @@ export function SiteHeader() {
   ];
 
   const cityLabel = sf.selectedCity === ALL_CITIES_LABEL || !sf.selectedCity ? t.allRegions : sf.selectedCity;
-  const cartCount = sf.cart.reduce((sum, item) => sum + item.quantity, 0);
+  // Products in the cart, not units: 20 LED panels are one line.
+  const cartCount = sf.cart.length;
 
   const iconBtn =
     'relative w-10 h-10 rounded-control border border-line bg-surface text-navy grid place-items-center text-[18px] cursor-pointer transition-colors hover:border-action';

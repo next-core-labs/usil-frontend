@@ -18,6 +18,8 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { riyadhToday } from '../../utils/riyadhDate';
+import { ibanProblem, mobileProblem, normalizeIban } from '../../utils/vendorContactChecks';
+import { normalizeSaudiMobile } from '../../contracts/shared/booking-guards';
 
 interface VendorCrewDispatchProps {
   crewMembers: CrewMember[];
@@ -45,6 +47,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
   const [name, setName] = useState('');
   const [role, setRole] = useState<CrewMember['role']>('مباشر قهوة');
   const [phone, setPhone] = useState('');
+  const [addError, setAddError] = useState('');
   const [hourlyRate, setHourlyRate] = useState<number>(50);
   const [bankIban, setBankIban] = useState('');
   const [bankName, setBankName] = useState('مصرف الراجحي');
@@ -73,19 +76,26 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return;
+    const problem = mobileProblem(phone) || ibanProblem(bankIban);
+    if (problem) {
+      setAddError(problem);
+      return;
+    }
+    setAddError('');
 
     const newCrew: CrewMember = {
       id: `crew-${Date.now()}`,
       name,
       role,
-      phone: phone || '05XXXXXXXX',
+      phone: normalizeSaudiMobile(phone) || '',
       avatar: '',
       status: 'available',
       assignedBookingsCount: 0,
       hourlyRate,
       overtimeMultiplier: 1.5,
       bankName,
-      bankIban: bankIban || 'SA92 8000 0211 4455 6677 4012',
+      // Empty until the vendor has the real one: a made-up IBAN would get paid into.
+      bankIban: normalizeIban(bankIban),
       totalLoggedHours: 0,
       workLogs: [],
     };
@@ -246,7 +256,7 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                   <div className="flex items-center justify-between text-slate-600">
                     <span>إجمالي الساعات المسجلة:</span>
                     <span className="font-mono font-bold text-blue-700">
-                      {member.totalLoggedHours || 28} ساعة
+                      {member.totalLoggedHours || 0} ساعة
                     </span>
                   </div>
 
@@ -399,6 +409,12 @@ export const VendorCrewDispatch: React.FC<VendorCrewDispatchProps> = ({
                   className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-action text-right"
                 />
               </div>
+
+              {addError ? (
+                <p role="alert" className="text-xs font-medium text-rose-600">
+                  {addError}
+                </p>
+              ) : null}
 
               <div className="pt-2 flex items-center gap-3">
                 <button

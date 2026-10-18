@@ -23,7 +23,8 @@ import {
 interface VendorExternalBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSaveBooking: (newBooking: Omit<VendorBooking, 'id' | 'bookingNumber' | 'createdAt'>) => void;
+  /** Resolves to the server's refusal message, or null once saved. */
+  onSaveBooking: (newBooking: Omit<VendorBooking, 'id' | 'bookingNumber' | 'createdAt'>) => Promise<string | null>;
   existingBookings: VendorBooking[];
   blockedDates: BlockedDate[];
   crewMembers: CrewMember[];
@@ -56,6 +57,8 @@ const VendorExternalBookingModalBody: React.FC<VendorExternalBookingModalProps> 
   const [depositAmount, setDepositAmount] = useState(0);
   const [notes, setNotes] = useState('');
   const [assignedCrew, setAssignedCrew] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const selectedServiceObj = listings.find((s) => s.id === serviceId);
 
@@ -80,11 +83,13 @@ const VendorExternalBookingModalBody: React.FC<VendorExternalBookingModalProps> 
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerName || !date) return;
+    if (!customerName || !date || saving) return;
 
-    onSaveBooking({
+    setSaving(true);
+    setSaveError(null);
+    const refused = await onSaveBooking({
       serviceId,
       serviceTitle: selectedServiceObj?.title || customServiceTitle.trim() || 'خدمة من المورّد',
       customerName,
@@ -104,8 +109,10 @@ const VendorExternalBookingModalBody: React.FC<VendorExternalBookingModalProps> 
       assignedCrew,
       hasConflict,
     });
-
-    onClose();
+    setSaving(false);
+    // Refused (taken or blocked date, deposit over the total…): keep what was typed.
+    if (refused) setSaveError(refused);
+    else onClose();
   };
 
   return (
@@ -407,14 +414,21 @@ const VendorExternalBookingModalBody: React.FC<VendorExternalBookingModalProps> 
             />
           </div>
 
+          {saveError && (
+            <p role="alert" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+              {saveError}
+            </p>
+          )}
+
           {/* Submit Actions */}
           <div className="pt-3 border-t border-slate-200 flex items-center gap-3">
             <button
               type="submit"
-              className="flex-1 py-3.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
+              disabled={saving}
+              className="flex-1 py-3.5 rounded-xl bg-action hover:bg-action-hover active:bg-action-pressed disabled:opacity-60 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
             >
               <Plus className="w-4 h-4" />
-              <span>تثبيت الحجز وقفل التاريخ في التقويم</span>
+              <span>{saving ? 'جارٍ الحفظ…' : 'تثبيت الحجز وقفل التاريخ في التقويم'}</span>
             </button>
             <button
               type="button"

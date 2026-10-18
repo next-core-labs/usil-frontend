@@ -12,7 +12,7 @@ type MyOrder = {
   status: string;
   paymentStatus: 'unpaid' | 'paid';
   paymentUrl?: string;
-  cancellation?: { note: string; refundPercent: number };
+  cancellation?: { note: string; refundPercent: number; reason?: string };
 };
 
 /** Mirrors the server's closed/started states; the server still has the final say. */
@@ -140,7 +140,10 @@ export const MyOrdersPanel: React.FC = () => {
                 </div>
 
                 {order.cancellation ? (
-                  <p className="text-2xs text-slate-600">{order.cancellation.note}</p>
+                  <p className="text-2xs text-slate-600">
+                    {order.cancellation.reason ? <span className="block font-medium text-slate-800">السبب: {order.cancellation.reason}</span> : null}
+                    {order.cancellation.note}
+                  </p>
                 ) : null}
 
                 <div className="flex flex-wrap items-center gap-2">

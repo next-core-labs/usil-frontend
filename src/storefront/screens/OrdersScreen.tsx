@@ -25,7 +25,7 @@ export type MyOrder = {
   createdAt?: string;
   items?: Array<{ id: string; title: string; quantity: number; price: number; vendorId?: string }>;
   vendorIds?: string[];
-  cancellation?: { note: string; refundPercent: number };
+  cancellation?: { note: string; refundPercent: number; reason?: string };
 };
 
 const FINAL = new Set(['ملغي', 'مرفوض من المورّد', 'مكتمل']);
@@ -85,6 +85,7 @@ export function OrdersScreen() {
 
   /** Approved orders whose invoice was not raised yet (Moyasar was down at approval). */
   const payNow = async (id: string) => {
+    if (busy) return;
     setBusy(id);
     setMessage(null);
     try {
@@ -96,7 +97,8 @@ export function OrdersScreen() {
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; url?: string };
       if (!res.ok || !isMoyasarUrl(data.url)) {
-        setMessage({ tone: 'err', text: data.error || t.coErrPayUrl });
+        // 503 = no Moyasar keys on the server: a plain word for the client, not the server's.
+        setMessage({ tone: 'err', text: res.status === 503 ? t.payPaused : data.error || t.coErrPayUrl });
         return;
       }
       window.location.assign(String(data.url));
@@ -270,7 +272,9 @@ export function OrdersScreen() {
             const cancellable = !NOT_CANCELLABLE.has(o.status);
             const listing = listingOf(o);
             const vendor = vendorOf(o);
-            const qty = (o.items || []).reduce((sum, i) => sum + (Number(i.quantity) || 0), 0) || 1;
+            // One product: its quantity. Several: how many products — adding 8 hours to one كوشة means nothing.
+            const lines = o.items || [];
+            const qtyLabel = lines.length > 1 ? (ar ? `${lines.length} منتجات` : `${lines.length} items`) : `×${Number(lines[0]?.quantity) || 1}`;
             // The server stamps `createdAt` in UTC ("YYYY-MM-DD HH:mm" or ISO); show the Riyadh day.
             const createdTime = o.createdAt
               ? new Date(/Z|[+-]\d\d:?\d\d$/.test(o.createdAt) ? o.createdAt : `${o.createdAt.replace(' ', 'T')}Z`)
@@ -304,7 +308,7 @@ export function OrdersScreen() {
                     <div className="text-xs text-ink-3 truncate">{vendor?.vendorName || listing?.provider?.name || ''}</div>
                     <div className="text-[15px] font-semibold mt-0.5 leading-[1.4]">{o.serviceName}</div>
                     <div className="flex items-center gap-3 text-[13px] text-ink-3 mt-1 flex-wrap tnum">
-                      <span>×{qty}</span>
+                      <span>{qtyLabel}</span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" aria-hidden />
                         {o.eventDate}
@@ -332,6 +336,12 @@ export function OrdersScreen() {
                       <span>{t.status3}</span>
                     </div>
                   </>
+                ) : null}
+                {o.cancellation?.reason ? (
+                  <p className="mt-3 text-sm text-navy">
+                    <span className="font-semibold">{t.endReason}: </span>
+                    {o.cancellation.reason}
+                  </p>
                 ) : null}
                 {o.cancellation?.note ? <p className="mt-3 text-xs text-ink-1">{o.cancellation.note}</p> : null}
 

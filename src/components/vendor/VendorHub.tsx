@@ -97,7 +97,8 @@ interface VendorHubProps {
   payrollEntries: CrewPayrollEntry[];
   consolidatedVouchers?: ConsolidatedCrewPaymentVoucher[];
   inventoryItems?: InventoryItem[];
-  onAddBooking: (booking: Omit<VendorBooking, 'id' | 'bookingNumber' | 'createdAt'>) => void;
+  /** Resolves to the server's refusal message, or null once saved. */
+  onAddBooking: (booking: Omit<VendorBooking, 'id' | 'bookingNumber' | 'createdAt'>) => Promise<string | null>;
   onAddBlockedDate: (date: string, reason: string, type: BlockedDate['type']) => void;
   onRemoveBlockedDate: (id: string) => void;
   onAddInvoice: (invoice: VendorInvoice) => void;
