@@ -32,14 +32,19 @@ function firstBookableOffset(service: ServiceItem | null): number {
   return lanes.includes('hour') || lanes.includes('same_day') ? 0 : 1;
 }
 
-/** The vendor's closed days (public, dates only). Missing endpoint or offline → nothing blocked here; checkout re-checks. */
-function useVendorBlockedDates(vendorId: string): Set<string> {
+/**
+ * Days this listing can't be booked: the vendor's closed days plus the days the
+ * listing is already taken (one event per day). Public, dates only. Missing
+ * endpoint or offline → nothing hidden here; checkout re-checks.
+ */
+function useVendorBlockedDates(vendorId: string, listingId: string): Set<string> {
   const [dates, setDates] = useState<Set<string>>(() => new Set());
   useEffect(() => {
     setDates(new Set());
     if (!vendorId) return;
     let cancelled = false;
-    fetch(`/api/vendors/${encodeURIComponent(vendorId)}/blocked-dates`)
+    const query = listingId ? `?listingId=${encodeURIComponent(listingId)}` : '';
+    fetch(`/api/vendors/${encodeURIComponent(vendorId)}/blocked-dates${query}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { data?: { dates?: unknown } } | null) => {
         const list = data?.data?.dates;
@@ -49,7 +54,7 @@ function useVendorBlockedDates(vendorId: string): Set<string> {
     return () => {
       cancelled = true;
     };
-  }, [vendorId]);
+  }, [vendorId, listingId]);
   return dates;
 }
 
@@ -61,6 +66,8 @@ export function ProductScreen() {
 
   const [thumb, setThumb] = useState(0);
   const [day, setDay] = useState(0);
+  // A date past the quick strip (a wedding weeks away); '' = use the strip.
+  const [laterDate, setLaterDate] = useState('');
   const [slot, setSlot] = useState(1);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
@@ -68,6 +75,7 @@ export function ProductScreen() {
   useEffect(() => {
     setThumb(0);
     setDay(0);
+    setLaterDate('');
     setSlot(1);
     setQty(service?.minQuantity || 1);
     setAdded(false);
@@ -78,17 +86,18 @@ export function ProductScreen() {
     if (service?.id) recordListingView(service.id);
   }, [service?.id]);
 
-  const blocked = useVendorBlockedDates(String(service?.provider?.id || ''));
+  const blocked = useVendorBlockedDates(String(service?.provider?.id || ''), String(service?.id || ''));
   // Real Saudi calendar days from the first one this listing can serve, minus the vendor's closed days.
   const days = useMemo(() => {
     const fmt = new Intl.DateTimeFormat(ar ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB', { weekday: 'short', timeZone: 'UTC' });
+    const month = new Intl.DateTimeFormat(ar ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB', { month: 'short', timeZone: 'UTC' });
     const start = addDays(riyadhToday(), firstBookableOffset(service));
-    const out: Array<{ wd: string; n: number; iso: string }> = [];
+    const out: Array<{ wd: string; n: number; mo: string; iso: string }> = [];
     for (let i = 0; out.length < 7 && i < DAYS_SHOWN; i++) {
       const iso = addDays(start, i);
       if (blocked.has(iso)) continue;
       const dt = new Date(`${iso}T12:00:00Z`);
-      out.push({ wd: fmt.format(dt), n: dt.getUTCDate(), iso });
+      out.push({ wd: fmt.format(dt), n: dt.getUTCDate(), mo: month.format(dt), iso });
     }
     return out;
   }, [ar, service, blocked]);
@@ -127,7 +136,9 @@ export function ProductScreen() {
   const approval = service.bookingMode === 'approval';
   const total = service.price * qty;
   const minQty = service.minQuantity || 1;
-  const chosen = days[day] || days[0] || { wd: '', n: 0, iso: '' };
+  const firstDay = addDays(riyadhToday(), firstBookableOffset(service));
+  const chosen = laterDate ? { iso: laterDate } : days[day] || days[0] || { iso: '' };
+  const laterBlocked = Boolean(laterDate) && blocked.has(laterDate);
   const refundPct = chosen.iso ? customerRefundPercent(chosen.iso) : 0;
   const chosenTime = SLOTS[slot].split(' ')[0];
   const related = sf.services.filter((s) => s.id !== service.id && s.category === service.category).slice(0, 6);
@@ -233,9 +244,14 @@ export function ProductScreen() {
                   {t.askVendor}
                 </button>
               ) : null}
-              {service.audience && AUDIENCE_LABEL[service.audience] ? (
-                <span className="px-2.5 py-[5px] rounded-md bg-navy text-white text-xs font-semibold">{AUDIENCE_LABEL[service.audience]}</span>
-              ) : null}
+              {/* The vendor's picked audiences; the single legacy `audience` only when none were picked. */}
+              {(service.audiences?.length ? service.audiences : service.audience ? [service.audience] : [])
+                .filter((a) => AUDIENCE_LABEL[a as keyof typeof AUDIENCE_LABEL])
+                .map((a) => (
+                  <span key={a} className="px-2.5 py-[5px] rounded-md bg-navy text-white text-xs font-semibold">
+                    {AUDIENCE_LABEL[a as keyof typeof AUDIENCE_LABEL]}
+                  </span>
+                ))}
             </div>
             <h1 className="mt-3.5 mb-2.5 text-[clamp(26px,3.4vw,42px)] font-bold tracking-[-0.03em] leading-[1.15]">{service.title}</h1>
             <div className="flex items-center gap-3.5 flex-wrap text-sm text-ink-1">
@@ -251,7 +267,7 @@ export function ProductScreen() {
                   {t.minNotice}: {service.minNotice}
                 </span>
               ) : null}
-              {(service.fulfillment || []).map((lane) => (
+              {(service.fulfillment || []).filter((lane) => lane !== 'instant' || !approval).map((lane) => (
                 <span key={lane} className="px-2.5 py-1 rounded-md bg-action text-white text-xs font-semibold">
                   {FULFILLMENT_LANE_BY_ID[lane]?.chip || lane}
                 </span>
@@ -335,14 +351,17 @@ export function ProductScreen() {
           <div className="mt-5 text-[13px] font-semibold">{t.date}</div>
           <div className="flex gap-2 mt-2 overflow-x-auto scrollbar-none" role="radiogroup" aria-label={t.date}>
             {days.map((d, i) => {
-              const on = day === i;
+              const on = !laterDate && day === i;
               return (
                 <button
                   key={d.iso}
                   type="button"
                   role="radio"
                   aria-checked={on}
-                  onClick={() => setDay(i)}
+                  onClick={() => {
+                    setDay(i);
+                    setLaterDate('');
+                  }}
                   className={cn(
                     'flex-none min-w-[60px] px-2 py-2.5 rounded-control border-[1.5px] text-center transition-all min-h-0',
                     on ? 'bg-action border-action text-white' : 'bg-surface border-line text-navy hover:border-action',
@@ -350,10 +369,29 @@ export function ProductScreen() {
                 >
                   <span className="block text-[11px] opacity-75">{d.wd}</span>
                   <span className="block text-lg font-bold mt-0.5 tnum">{d.n}</span>
+                  <span className="block text-[10px] opacity-75">{d.mo}</span>
                 </button>
               );
             })}
           </div>
+          <label className="mt-2.5 flex items-center gap-2 text-[13px] text-ink-1">
+            <span className="flex-none">{t.laterDate}</span>
+            <input
+              type="date"
+              min={firstDay}
+              value={laterDate}
+              onChange={(e) => setLaterDate(e.target.value >= firstDay ? e.target.value : '')}
+              className={cn(
+                'flex-1 min-w-0 h-10 px-3 rounded-control border-[1.5px] bg-surface text-navy text-[13px] tnum',
+                laterDate ? 'border-action' : 'border-line',
+              )}
+            />
+          </label>
+          {laterBlocked ? (
+            <p role="alert" className="mt-1.5 text-xs font-medium text-danger">
+              {t.dateUnavailable}
+            </p>
+          ) : null}
 
           <div className="mt-4 text-[13px] font-semibold">{t.time}</div>
           <div className="grid grid-cols-2 gap-2 mt-2" role="radiogroup" aria-label={t.time}>
@@ -398,7 +436,8 @@ export function ProductScreen() {
           <button
             type="button"
             onClick={bookNow}
-            className="w-full mt-3.5 h-[52px] rounded-xl bg-action text-white text-base font-bold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:bg-action-hover"
+            disabled={laterBlocked}
+            className="w-full mt-3.5 h-[52px] rounded-xl bg-action text-white text-base font-bold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:bg-action-hover disabled:opacity-50 disabled:hover:translate-y-0"
           >
             <Zap className="w-[18px] h-[18px]" aria-hidden />
             {approval ? t.requestBook : t.book}
@@ -413,7 +452,7 @@ export function ProductScreen() {
               {t.added} · {t.goToCart}
             </button>
           ) : (
-            <button type="button" onClick={add} className="w-full mt-2 h-12 rounded-xl border border-navy-300 bg-surface text-navy text-[15px] font-semibold transition-colors hover:border-navy">
+            <button type="button" onClick={add} disabled={laterBlocked} className="w-full mt-2 h-12 rounded-xl border border-navy-300 bg-surface text-navy text-[15px] font-semibold transition-colors hover:border-navy disabled:opacity-50">
               {t.addCart}
             </button>
           )}

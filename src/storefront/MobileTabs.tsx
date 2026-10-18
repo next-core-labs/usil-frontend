@@ -9,7 +9,8 @@ export function MobileTabs() {
   const { t } = useLang();
   const sf = useStorefront();
   const page = sf.sitePage;
-  const cartCount = sf.cart.reduce((sum, item) => sum + item.quantity, 0);
+  // Products in the cart, not units: 20 LED panels are one line.
+  const cartCount = sf.cart.length;
 
   const tabs = [
     { id: 'home', label: t.tabHome, icon: Home, active: page === null, go: sf.goHome, badge: 0 },

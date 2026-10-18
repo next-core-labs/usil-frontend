@@ -5,6 +5,7 @@ import {
   generatePaymentReceiptPDF,
 } from '../../utils/zatcaPdfExporter';
 import { riyadhToday } from '../../utils/riyadhDate';
+import { invoiceTotals } from '../../utils/invoiceTotals';
 
 const PDF_ERROR_MSG = 'تعذّر إنشاء ملف PDF. تحقق من الاتصال ثم حاول مرة أخرى.';
 function runPdf(task: Promise<void>) {
@@ -65,6 +66,8 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
   const [depositPaid, setDepositPaid] = useState(0);
   const [channelSource, setChannelSource] = useState<VendorInvoice['channelSource']>('external_phone');
   const [items, setItems] = useState([{ description: '', quantity: 1, unitPrice: 0 }]);
+  // Platform prices are final and VAT-inclusive, so that is the default here too.
+  const [pricesIncludeVat, setPricesIncludeVat] = useState(true);
 
   const handleAddItem = () => {
     setItems([...items, { description: '', quantity: 1, unitPrice: 0 }]);
@@ -81,10 +84,9 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
   };
 
   // Computations
-  const subtotal = items.reduce((sum, item) => sum + item.quantity * Number(item.unitPrice), 0);
-  const taxRate = 0.15;
-  const taxAmount = subtotal * taxRate;
-  const grandTotal = subtotal + taxAmount;
+  const totals = invoiceTotals(items, pricesIncludeVat);
+  const { subtotal, taxRate, taxAmount } = totals;
+  const grandTotal = totals.total;
   const remaining = Math.max(0, grandTotal - depositPaid);
 
   const handleCreateInvoiceSubmit = (e: React.FormEvent) => {
@@ -93,8 +95,8 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
 
     const isPlatform = channelSource === 'mithyaf';
     const feeRate = isPlatform ? 0.15 : 0;
-    const feeAmount = grandTotal * feeRate;
-    const netAmount = grandTotal - feeAmount;
+    const feeAmount = Math.round(grandTotal * feeRate * 100) / 100;
+    const netAmount = Math.round((grandTotal - feeAmount) * 100) / 100;
 
     const newInv: VendorInvoice = {
       id: `inv-${Date.now()}`,
@@ -105,12 +107,7 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
       eventDate,
       issueDate: riyadhToday(),
       dueDate: eventDate,
-      items: items.map((it) => ({
-        description: it.description,
-        quantity: it.quantity,
-        unitPrice: Number(it.unitPrice),
-        total: it.quantity * Number(it.unitPrice),
-      })),
+      items: totals.items,
       subtotal,
       taxRate,
       taxAmount,
@@ -618,6 +615,15 @@ export const VendorInvoiceGenerator: React.FC<VendorInvoiceGeneratorProps> = ({
                     <span>إضافة بند آخر</span>
                   </button>
                 </div>
+
+                <label className="flex items-center gap-2 text-2xs text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={pricesIncludeVat}
+                    onChange={(e) => setPricesIncludeVat(e.target.checked)}
+                  />
+                  <span>الأسعار المكتوبة شاملة الضريبة (مثل أسعار يوصل)</span>
+                </label>
 
                 {items.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2">

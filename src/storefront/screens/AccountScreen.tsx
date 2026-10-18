@@ -12,6 +12,7 @@ import {
   MailCheck,
   MapPin,
   User,
+  Pencil,
 } from 'lucide-react';
 import { roleLabelAr } from '../../contracts/auth/roles';
 import { VendorOwnFileCard } from '../../components/vendor/VendorOwnFileCard';
@@ -23,6 +24,7 @@ import { ChevronForward } from '../primitives';
 import { ProductCard } from '../ProductCard';
 import { useFavorites } from '../favorites';
 import { formatCount } from '../money';
+import { ProfileEditModal } from '../ProfileEditModal';
 
 /** Account page: navy profile card, two honest tiles (orders, unread), menu list, favourites. */
 export function AccountScreen() {
@@ -30,6 +32,7 @@ export function AccountScreen() {
   const sf = useStorefront();
   const fav = useFavorites();
   const [orderCount, setOrderCount] = useState<number | null>(null);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     if (!sf.user || sf.user.role !== 'client') return;
@@ -70,7 +73,8 @@ export function AccountScreen() {
     ...(user.role === 'client' ? [{ label: t.mChats, Icon: MessageCircle, go: () => sf.navigate('/chat'), badge: sf.chatUnread }] : []),
     { label: t.mFav, Icon: Heart, go: () => document.getElementById('sf-favorites')?.scrollIntoView({ behavior: 'smooth' }) },
     { label: `${t.mRegion}: ${sf.selectedCity === ALL_CITIES_LABEL || !sf.selectedCity ? t.allRegions : sf.selectedCity}`, Icon: MapPin, go: sf.openRegionPicker },
-    { label: `${t.mLang}: ${ar ? 'English' : 'العربية'}`, Icon: Globe, go: toggle },
+    // Names the language shown now; tapping switches to the other one.
+    { label: `${t.mLang}: ${ar ? 'العربية — غيّرها إلى English' : 'English — switch to العربية'}`, Icon: Globe, go: toggle },
     { label: t.mSupport, Icon: Headset, go: () => sf.navigate('/support') },
     ...(sf.openDashboard ? [{ label: t.mDashboard, Icon: LayoutDashboard, go: sf.openDashboard }] : []),
     ...(sf.openCrewPortal ? [{ label: t.mCrew, Icon: Users, go: sf.openCrewPortal }] : []),
@@ -90,11 +94,18 @@ export function AccountScreen() {
         <div className="flex-1 min-w-[180px]">
           <div className="text-[22px] font-bold tracking-[-0.02em]">{user.name}</div>
           <div dir="ltr" className="text-sm text-on-navy-muted mt-1 text-start tnum">
-            {user.phone}
-            {user.email ? ` · ${user.email}` : ''}
+            {[user.phone, user.email].filter(Boolean).join(' · ')}
           </div>
           <div className="text-xs text-on-navy-muted mt-0.5">{roleLabel}</div>
         </div>
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="h-10 px-4 rounded-control bg-surface/10 border border-white/25 text-white text-sm font-semibold inline-flex items-center gap-1.5 hover:bg-surface/20"
+        >
+          <Pencil className="w-4 h-4" aria-hidden />
+          {t.mEditProfile}
+        </button>
         {user.emailVerified === false ? (
           <button type="button" onClick={() => sf.navigate('/login?mode=verify')} className="h-10 px-4 rounded-control bg-warning-bg text-warning text-sm font-semibold inline-flex items-center gap-1.5">
             <MailCheck className="w-4 h-4" aria-hidden />
@@ -168,6 +179,7 @@ export function AccountScreen() {
       </div>
 
       <Favorites items={favItems} />
+      <ProfileEditModal open={editing} onClose={() => setEditing(false)} user={user} onSaved={sf.onAuthSuccess} />
     </main>
   );
 }

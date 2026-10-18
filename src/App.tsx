@@ -81,12 +81,17 @@ import { motion, AnimatePresence } from 'motion/react';
 import { UserProfile } from './types';
 import {
   fetchVendorWorkspace,
+  fetchVendorPlatformOrders,
+  platformOrdersAsCalendar,
   saveVendorWorkspace,
   createVendorBooking,
   createBlockedDate,
   deleteBlockedDate,
   workspaceFromServer,
   officeFromServer,
+  snapshotWorkspace,
+  changedWorkspace,
+  type WorkspaceSnapshot,
   fetchCatalogListings,
   createVendorListing,
   updateVendorListing,
@@ -384,6 +389,8 @@ export default function App() {
   const [autoSaveNotification, setAutoSaveNotification] = useState<{ message: string; timestamp: number } | null>(null);
   const [vendorSync, setVendorSync] = useState<'idle' | 'loading' | 'synced' | 'error'>('idle');
   const vendorReadyRef = useRef(false);
+  /** What the server last had per workspace section, so autosave sends only real edits. */
+  const vendorSyncedRef = useRef<WorkspaceSnapshot>({});
   const vendorStateRef = useRef({
     bookings: vendorBookings,
     blockedDates,
@@ -491,11 +498,16 @@ export default function App() {
 
     const superviseId = isVendorSupervisor(currentUser?.role) ? supervisingVendor?.vendorId : undefined;
 
-    fetchVendorWorkspace(superviseId)
-      .then((res) => {
+    Promise.all([
+      fetchVendorWorkspace(superviseId),
+      // Accepted platform orders join the calendar read-only; without them the
+      // hub can't warn about clashes or plan crew for them.
+      fetchVendorPlatformOrders(superviseId).then((r) => r.data, () => []),
+    ])
+      .then(([res, orders]) => {
         if (cancelled) return;
         const next = workspaceFromServer(res.data || {});
-        setVendorBookings(next.bookings as VendorBooking[]);
+        setVendorBookings([...platformOrdersAsCalendar(orders), ...next.bookings] as VendorBooking[]);
         setBlockedDates(next.blockedDates as BlockedDate[]);
         setInventoryItems(next.inventoryItems as InventoryItem[]);
         setVendorContracts(next.contracts as SmartServiceContract[]);
@@ -513,10 +525,8 @@ export default function App() {
         setPosSales(office.posSales as POSSaleRecord[]);
         setReceivables(office.receivables as ReceivableDebt[]);
         setOrderTrackings(office.trackings as ClientOrderTracking[]);
-        setBrandSettings({
-          ...DEFAULT_VENDOR_BRAND_SETTINGS,
-          ...((office.brandSettings || {}) as Partial<VendorBrandSettings>),
-        });
+        const savedBrand = (office.brandSettings || {}) as Partial<VendorBrandSettings>;
+        let brand: VendorBrandSettings = { ...DEFAULT_VENDOR_BRAND_SETTINGS, ...savedBrand };
         const profile = (res.data as { profile?: VendorOwnProfile })?.profile;
         if (profile?.projectName) {
           setVendorOwnProfile((prev) => ({
@@ -532,15 +542,22 @@ export default function App() {
             listingCount: (next.listings as VendorListing[]).length,
             socials: prev?.socials,
           }));
-          const saved = (office.brandSettings || {}) as Partial<VendorBrandSettings>;
-          setBrandSettings((prev) => ({
-            ...prev,
-            brandName: saved.brandName || profile.projectName || prev.brandName,
-            phone: saved.phone || profile.phone || prev.phone,
-            email: saved.email || profile.email || prev.email,
-            logoUrl: saved.logoUrl || profile.logoUrl || prev.logoUrl,
-          }));
+          brand = {
+            ...brand,
+            brandName: savedBrand.brandName || profile.projectName || brand.brandName,
+            phone: savedBrand.phone || profile.phone || brand.phone,
+            email: savedBrand.email || profile.email || brand.email,
+            logoUrl: savedBrand.logoUrl || profile.logoUrl || brand.logoUrl,
+          };
         }
+        setBrandSettings(brand);
+        // Exactly what this tab now shows, so loading alone never writes anything back.
+        vendorSyncedRef.current = snapshotWorkspace({
+          inventoryItems: next.inventoryItems,
+          contracts: next.contracts,
+          listings: next.listings,
+          office: { ...office, brandSettings: brand as unknown as Record<string, unknown> },
+        });
       })
       .then(() => {
         if (cancelled) return;
@@ -564,9 +581,8 @@ export default function App() {
     if (!vendorReadyRef.current) return;
     if (!canUseVendorHub(currentUser?.role)) return;
     const timer = setTimeout(() => {
-      saveVendorWorkspace({
-        bookings: vendorBookings,
-        blockedDates,
+      // Bookings and blocked dates have their own routes; the server ignores them here.
+      const changes = changedWorkspace({
         inventoryItems,
         contracts: vendorContracts,
         listings: vendorListings,
@@ -583,14 +599,17 @@ export default function App() {
           trackings: orderTrackings,
           brandSettings: brandSettings as unknown as Record<string, unknown>,
         },
-      }, isVendorSupervisor(currentUser?.role) ? supervisingVendor?.vendorId : undefined)
-        .then(() => setVendorSync('synced'))
+      }, vendorSyncedRef.current);
+      if (!changes) return;
+      saveVendorWorkspace(changes.payload, isVendorSupervisor(currentUser?.role) ? supervisingVendor?.vendorId : undefined)
+        .then(() => {
+          vendorSyncedRef.current = { ...vendorSyncedRef.current, ...changes.snapshot };
+          setVendorSync('synced');
+        })
         .catch(() => setVendorSync('error'));
     }, 700);
     return () => clearTimeout(timer);
   }, [
-    vendorBookings,
-    blockedDates,
     inventoryItems,
     vendorContracts,
     vendorListings,
@@ -730,7 +749,8 @@ export default function App() {
   };
 
   // Vendor OS Action Handlers
-  const handleVendorAddBooking = (bookingData: Omit<VendorBooking, 'id' | 'bookingNumber' | 'createdAt'>) => {
+  /** Resolves to the server's refusal message, or null once the booking is saved. */
+  const handleVendorAddBooking = (bookingData: Omit<VendorBooking, 'id' | 'bookingNumber' | 'createdAt'>): Promise<string | null> => {
     const newBooking: VendorBooking = {
       ...bookingData,
       id: `bk-${Date.now()}`,
@@ -740,16 +760,19 @@ export default function App() {
     setVendorBookings((prev) => [newBooking, ...prev]);
     // The server owns the id, number, remainder and validation (past or blocked
     // dates, foreign listings), so swap the optimistic row for its answer.
-    createVendorBooking(newBooking as unknown as Record<string, unknown>, superviseId)
+    return createVendorBooking(newBooking as unknown as Record<string, unknown>, superviseId)
       .then((res) => {
         const saved = res.booking as Partial<VendorBooking> | undefined;
-        if (!saved?.id) return;
-        setVendorBookings((prev) => prev.map((row) => (row.id === newBooking.id ? { ...row, ...saved } as VendorBooking : row)));
+        if (saved?.id) {
+          setVendorBookings((prev) => prev.map((row) => (row.id === newBooking.id ? { ...row, ...saved } as VendorBooking : row)));
+        }
+        return null;
       })
       .catch((error: Error) => {
         setVendorBookings((prev) => prev.filter((row) => row.id !== newBooking.id));
-        triggerAutoSaveToast(error.message || 'تعذر إنشاء الحجز');
-        setVendorSync('error');
+        const message = error.message || 'تعذر إنشاء الحجز';
+        triggerAutoSaveToast(message);
+        return message;
       });
   };
 
@@ -822,7 +845,23 @@ export default function App() {
   };
 
   const handleUpdateBrandSettings = (newSettings: VendorBrandSettings) => {
+    const logoChanged = newSettings.logoUrl !== brandSettings.logoUrl;
     setBrandSettings(newSettings);
+    // The store, the vendor page and the sidebar show the profile logo, not the
+    // invoice branding — a new logo has to reach the profile too. The server only
+    // takes its own uploads there, so an old pasted link stays invoice-only.
+    const logo = String(newSettings.logoUrl || '');
+    if (!logoChanged || (logo && !logo.startsWith('/uploads/'))) return;
+    const projectName = vendorOwnProfile?.projectName || newSettings.brandName;
+    saveVendorWorkspace({ profile: { projectName, logoUrl: logo } }, superviseId)
+      .then(() => {
+        setVendorOwnProfile((prev) => (prev ? { ...prev, logoUrl: logo || undefined } : prev));
+        triggerAutoSaveToast(logo ? 'تم تحديث شعار متجرك' : 'تمت إزالة شعار متجرك');
+      })
+      .catch((error: Error) => {
+        triggerAutoSaveToast(error.message || 'تعذر حفظ الشعار');
+        setVendorSync('error');
+      });
   };
 
   const handleUpdateTrackingStep = (trackingId: string, stepId: string, isCompleted: boolean) => {

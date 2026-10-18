@@ -34,6 +34,9 @@ describe('saudi places catalog', () => {
     assert.equal(cityFilterMatches(['الرياض'], 'الدرعية'), true);
     assert.equal(cityFilterMatches(['الدرعية'], 'الرياض'), true);
     assert.equal(cityFilterMatches(['جدة'], 'الدرعية'), false);
+    // Same region, different towns: a Jeddah-only listing doesn't serve Taif.
+    assert.equal(cityFilterMatches(['جدة'], 'الطائف'), false);
+    assert.equal(cityFilterMatches(['مكة المكرمة'], 'الطائف'), true);
   });
 
   it('keeps combined eastern and asir aliases', () => {

@@ -62,7 +62,8 @@ export function ProductCard({
   const photo = productPhoto(service);
   const price = hasCheckoutPrice(service.price) ? money(service.price, ar) : '';
   const cta = service.bookingMode === 'approval' ? t.requestBook : t.book;
-  const lanes = (service.fulfillment || []).slice(0, 2);
+  // The «حجز فوري» lane reads as "book instantly" next to an approval badge, so it's left off those.
+  const lanes = (service.fulfillment || []).filter((lane) => lane !== 'instant' || service.bookingMode !== 'approval').slice(0, 2);
 
   const actions = (
     <div className="absolute top-3 end-3 z-[3] flex gap-1.5">

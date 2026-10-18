@@ -33,6 +33,8 @@ export type VendorPlatformOrder = {
   status: string;
   paymentStatus: 'unpaid' | 'paid';
   createdAt?: string;
+  /** Moyasar pay link, set once the client can pay. */
+  paymentUrl?: string;
 };
 
 export const PENDING_APPROVAL = 'بانتظار موافقة المورّد';
@@ -137,6 +139,8 @@ export function VendorPlatformOrdersPanel({
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<PendingAction | null>(null);
+  // Shown to the client on their order, so they know why without a chat.
+  const [reason, setReason] = useState('');
 
   const visible = useMemo(() => {
     const rows =
@@ -148,7 +152,7 @@ export function VendorPlatformOrdersPanel({
     return [...rows].sort((a, b) => String(a.eventDate).localeCompare(String(b.eventDate)));
   }, [orders, filter]);
 
-  const changeStatus = async (order: VendorPlatformOrder, next: string) => {
+  const changeStatus = async (order: VendorPlatformOrder, next: string, why = '') => {
     setBusy(order.id);
     setError(null);
     try {
@@ -157,7 +161,7 @@ export function VendorPlatformOrdersPanel({
           method: 'PATCH',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: next }),
+          body: JSON.stringify(why.trim() ? { status: next, reason: why.trim() } : { status: next }),
         }),
       );
       // Take only the state change from the reply: it is the full order row, while this list
@@ -170,7 +174,9 @@ export function VendorPlatformOrdersPanel({
       });
       onNotify?.(
         next === CONFIRMED
-          ? `تم قبول الطلب ${order.id} — أرسلنا للعميل رابط الدفع`
+          ? saved.paymentUrl
+            ? `تم قبول الطلب ${order.id} — أرسلنا للعميل رابط الدفع`
+            : `تم قبول الطلب ${order.id} — يدفع العميل من «طلباتي»`
           : next === REJECTED
             ? `تم رفض الطلب ${order.id}`
             : `تم تحديث الطلب ${order.id} إلى «${next}»`,
@@ -184,6 +190,7 @@ export function VendorPlatformOrdersPanel({
   };
 
   const ask = (order: VendorPlatformOrder, next: string) => {
+    setReason('');
     if (next === CONFIRMED) {
       setConfirm({
         order,
@@ -379,9 +386,28 @@ export function VendorPlatformOrdersPanel({
       <ConfirmDialog
         open={Boolean(confirm)}
         onClose={() => setConfirm(null)}
-        onConfirm={() => confirm && void changeStatus(confirm.order, confirm.next)}
+        onConfirm={() => confirm && void changeStatus(confirm.order, confirm.next, reason)}
         title={confirm?.title || ''}
-        message={confirm?.message || ''}
+        message={
+          confirm?.next === REJECTED || confirm?.next === CANCELLED ? (
+            <>
+              {confirm.message}
+              <label className="block mt-3 text-xs font-medium text-ink-1">
+                السبب (يظهر للعميل في طلباته)
+                <textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  maxLength={300}
+                  rows={2}
+                  placeholder="مثال: الفريق محجوز في هذا التاريخ"
+                  className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-sm text-slate-900"
+                />
+              </label>
+            </>
+          ) : (
+            confirm?.message || ''
+          )
+        }
         confirmLabel={confirm?.title || 'تأكيد'}
         tone={confirm?.tone || 'primary'}
         loading={Boolean(confirm && busy === confirm.order.id)}

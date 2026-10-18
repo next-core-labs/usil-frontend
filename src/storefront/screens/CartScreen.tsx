@@ -12,7 +12,7 @@ export function CartScreen() {
   const { t, ar } = useLang();
   const sf = useStorefront();
   const items = sf.cart;
-  const count = items.reduce((sum, c) => sum + c.quantity, 0);
+  const count = items.length;
   const total = items.reduce((sum, c) => sum + (hasCheckoutPrice(c.service.price) ? c.service.price * c.quantity : 0), 0);
 
   return (

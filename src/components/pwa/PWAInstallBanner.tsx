@@ -79,10 +79,11 @@ export const PWAInstallBanner: React.FC = () => {
 
   return (
     <>
-      {/* Floating Modern PWA Install Banner */}
+      {/* Floating install banner. On phones it sits above the tab bar and the
+          WhatsApp button (bottom 92px + 54px), so neither covers its close button. */}
       <aside 
         aria-label="تثبيت تطبيق يوصل"
-        className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] md:top-3 md:bottom-auto left-3 right-3 sm:left-auto sm:right-6 sm:max-w-md z-30 bg-navy text-white p-3.5 rounded-2xl shadow-2xl border border-sand/40 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-300 pointer-events-auto"
+        className="fixed bottom-[calc(10rem+env(safe-area-inset-bottom))] md:top-3 md:bottom-auto left-3 right-3 sm:left-auto sm:right-6 sm:max-w-md z-[75] bg-navy text-white p-3.5 rounded-2xl shadow-2xl border border-sand/40 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-300 pointer-events-auto"
       >
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-action to-[#2E90FA] p-0.5 flex-shrink-0 shadow-md">
@@ -119,7 +120,7 @@ export const PWAInstallBanner: React.FC = () => {
             </button>
             <button
               onClick={handleDismiss}
-              className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="p-2.5 -m-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
               title="إغلاق" aria-label="إغلاق"
             >
               <X className="w-4 h-4" />

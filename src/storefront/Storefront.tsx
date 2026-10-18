@@ -7,7 +7,7 @@ import type { ChatTarget } from '../components/chat/ClientChatModal';
 import type { SitePage } from '../utils/siteRoutes';
 import { pathForProduct } from '../utils/siteRoutes';
 import { applySeo } from '../utils/seo';
-import { categoryForSearchQuery, type FulfillmentFilter, FULFILLMENT_IDS } from '../data/saudiMarket';
+import { type FulfillmentFilter, FULFILLMENT_IDS } from '../data/saudiMarket';
 import { CATEGORIES } from '../data/services';
 import { PrivacyPolicy } from '../components/legal/PrivacyPolicy';
 import { TermsOfUse } from '../components/legal/TermsOfUse';
@@ -150,10 +150,11 @@ export function Storefront(props: StorefrontProps) {
   const setFilters = useCallback((patch: Partial<CatalogFilters>) => {
     setFiltersState((prev) => {
       const next = { ...prev, ...patch };
-      // A free-text search that names a category also narrows to it, as before.
-      if (patch.query !== undefined && patch.category === undefined) {
-        const mapped = categoryForSearchQuery(patch.query);
-        if (mapped && CATEGORY_IDS.has(mapped)) next.category = mapped;
+      // A new search looks across every category. Narrowing to the category the
+      // words suggest hid matches filed elsewhere («مباشرين» hid a listing under
+      // صبابين), and the category then stuck to the next, unrelated search.
+      if (patch.query !== undefined && patch.category === undefined && patch.query !== prev.query) {
+        next.category = 'all';
       }
       return next;
     });
@@ -378,7 +379,8 @@ export function Storefront(props: StorefrontProps) {
         {sitePage !== 'chat' && sitePage !== 'login' ? <SiteFooter /> : null}
         <CompareBar />
         <MobileTabs />
-        <WhatsAppFab />
+        {/* Off where it sat on the form or prices: checkout, cart, orders, chat (which is support already). */}
+        {sitePage !== 'checkout' && sitePage !== 'cart' && sitePage !== 'orders' && sitePage !== 'chat' ? <WhatsAppFab /> : null}
       </div>
     </StorefrontProvider>
   );

@@ -145,7 +145,7 @@ export function LoginScreen({
     setError(null);
 
     const nextFieldErrors: Record<string, string> = {};
-    if (!email.trim()) nextFieldErrors.email = 'اكتب بريدك الإلكتروني.';
+    if (!email.trim()) nextFieldErrors.email = mode === 'login' ? 'اكتب بريدك أو رقم جوالك.' : 'اكتب بريدك الإلكتروني.';
     // The mobile is optional for a customer; when given at sign-up it must look like one.
     if (mode === 'register' && phone.trim() && phone.replace(/\D/g, '').length < 9) {
       nextFieldErrors.phone = 'رقم الجوال غير صحيح — اكتبه بصيغة 05xxxxxxxx أو اتركه فارغاً.';
@@ -162,12 +162,11 @@ export function LoginScreen({
 
     if (Object.keys(nextFieldErrors).length) {
       if (!email.trim() || !password) {
-        setError('البريد الإلكتروني والرقم السري مطلوبان.');
+        setError(mode === 'login' ? 'اكتب بريدك أو رقم جوالك، والرقم السري.' : 'البريد الإلكتروني والرقم السري مطلوبان.');
       } else if (mode === 'register' && !name.trim()) {
         setError('اكتب الاسم لإكمال إنشاء حساب العميل.');
-      } else if (mode === 'register' && password.length < 8) {
-        setError('الرقم السري يجب ألا يقل عن 8 خانات.');
       }
+      // A short password is already said under its field; saying it again above was noise.
       // Move focus to the first offending field so keyboard and screen-reader
       // users are not left hunting for what failed.
       const first = Object.keys(nextFieldErrors)[0];
@@ -183,7 +182,7 @@ export function LoginScreen({
         credentials: 'include',
         body: JSON.stringify({
           email: email.trim(),
-          // Sign-in is by email and password; the mobile only travels with a sign-up that has one.
+          // Sign-in takes an email or a Saudi mobile here; the separate mobile only travels with a sign-up.
           phone: mode === 'register' && phone.trim() ? phone.trim() : undefined,
           password,
           name: name.trim(),
@@ -444,11 +443,13 @@ export function LoginScreen({
           <label className="block text-sm">
             <span className={labelClass}>
               <Mail className="w-4 h-4 text-action" />
-              البريد الإلكتروني {req}
+              {mode === 'login' ? 'البريد الإلكتروني أو رقم الجوال' : 'البريد الإلكتروني'} {req}
             </span>
             <input
               id="usil-login-email"
-              type="email"
+              type={mode === 'login' ? 'text' : 'email'}
+              inputMode="email"
+              dir="ltr"
               required
               value={email}
               onChange={(e) => {
@@ -456,8 +457,8 @@ export function LoginScreen({
                 clearFieldError('email');
               }}
               className={`${inputClass} ${fieldErrors.email ? 'border-danger bg-danger-bg' : ''}`}
-              placeholder="name@company.sa"
-              autoComplete="email"
+              placeholder={mode === 'login' ? 'name@company.sa / 05xxxxxxxx' : 'name@company.sa'}
+              autoComplete={mode === 'login' ? 'username' : 'email'}
               aria-invalid={fieldErrors.email ? true : undefined}
               aria-describedby={fieldErrors.email ? 'usil-login-email-error' : undefined}
             />
@@ -605,7 +606,8 @@ export function LoginScreen({
               ) : null
             : !email.trim() && !password && !error && !successMsg && !loading ? (
                 <p className="text-2xs text-ink-3 leading-relaxed">
-                  الحقول فارغة — البريد والرقم السري مطلوبان.
+                  {/* A hint, not an error: nothing has been typed yet. */}
+                  {mode === 'login' ? 'اكتب بريدك أو رقم جوالك والرقم السري للدخول.' : 'اكتب بياناتك لإنشاء الحساب.'}
                 </p>
               ) : null}
 
@@ -705,7 +707,7 @@ export function LoginScreen({
           </button>
         ) : null}
         <p className="mt-5 text-2xs text-ink-3 text-center leading-relaxed">
-          حسابك محمي بجلسة آمنة. المورّد الجديد يبقى معلّقًا حتى موافقة إدارة يوصل.
+          {mode === 'verify' ? 'حسابك محمي بجلسة آمنة.' : 'حسابك محمي بجلسة آمنة. المورّد الجديد يبقى معلّقًا حتى موافقة إدارة يوصل.'}
         </p>
       </div>
     );
@@ -734,7 +736,7 @@ export function LoginScreen({
         {body}
 
         <p className="mt-5 text-2xs text-white/50 text-center leading-relaxed">
-          حسابك محمي بجلسة آمنة. المورّد الجديد يبقى معلّقًا حتى موافقة إدارة يوصل.
+          {mode === 'verify' ? 'حسابك محمي بجلسة آمنة.' : 'حسابك محمي بجلسة آمنة. المورّد الجديد يبقى معلّقًا حتى موافقة إدارة يوصل.'}
         </p>
       </div>
     </div>

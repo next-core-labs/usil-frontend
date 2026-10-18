@@ -36,10 +36,12 @@ export function EmailVerifyPanel({
     }
   }, [initialCode, initialEmailSent]);
 
-  const code = useBoxes ? digits.join('') : single.replace(/\D/g, '').slice(0, 6);
+  const currentCode = useBoxes ? digits.join('') : single.replace(/\D/g, '').slice(0, 6);
 
-  const submit = async (event?: React.FormEvent) => {
+  /** `typed` is the code just entered: an auto-submit runs before `digits` re-renders. */
+  const submit = async (event?: React.FormEvent, typed?: string) => {
     event?.preventDefault();
+    const code = typed ?? currentCode;
     setError(null);
     setSuccess(null);
     if (code.length !== 6) {
@@ -117,18 +119,14 @@ export function EmailVerifyPanel({
         next[i] = d;
       });
       setDigits(next);
-      if (pasted.length === 6) {
-        setTimeout(() => submit(), 0);
-      }
+      if (pasted.length === 6) void submit(undefined, next.join(''));
       return;
     }
     const next = [...digits];
     next[index] = nextDigit.slice(-1);
     setDigits(next);
     if (nextDigit && index < 5) inputsRef.current[index + 1]?.focus();
-    if (index === 5 && nextDigit && next.join('').length === 6) {
-      setTimeout(() => submit(), 0);
-    }
+    if (index === 5 && nextDigit && next.join('').length === 6) void submit(undefined, next.join(''));
   };
 
   return (

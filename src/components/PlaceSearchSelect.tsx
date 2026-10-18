@@ -89,7 +89,8 @@ export function PlaceSearchSelect({
           autoComplete="off"
           className="w-full bg-transparent text-xs sm:text-sm font-medium text-slate-900 focus:outline-none min-w-0"
         />
-        <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+        {/* `hideIcon` is for hosts that draw their own search icon (the region gate). */}
+        {hideIcon ? null : <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
       </div>
       {open ? (
         <ul
