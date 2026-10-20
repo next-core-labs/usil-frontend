@@ -6,7 +6,6 @@ import {
   Clock,
   User,
   ShoppingBag,
-  Users,
   Home,
 } from 'lucide-react';
 import { UserProfile } from '../../types';
@@ -18,7 +17,6 @@ interface MobileBottomNavProps {
   onOpenCart: () => void;
   onOpenVoiceAI: () => void;
   onOpenTracker?: () => void;
-  onOpenCrewPortal: () => void;
   onOpenAuth: () => void;
   onGoHome?: () => void;
   currentUser: UserProfile | null;
@@ -79,7 +77,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   cartCount,
   onOpenCart,
   onOpenTracker,
-  onOpenCrewPortal,
   onOpenAuth,
   accountBadge,
   onGoHome,
@@ -87,7 +84,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onOpenVendorHub,
 }) => {
   const isStaff = currentUser?.role === 'admin' || currentUser?.role === 'accounts_manager';
-  const isVendor = currentUser?.role === 'vendor';
   const openVendorHub = () => {
     if (isStaff && onOpenVendorHub) {
       onOpenVendorHub();
@@ -102,9 +98,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     ? { key: 'dashboard', label: 'لوحة المورد', short: 'اللوحة', icon: LayoutDashboard, onClick: openVendorHub }
     : { key: 'store', label: 'المتجر العام', short: 'المتجر', icon: Store, onClick: openVendorHub, tone: 'accent' };
 
-  const secondaryItem: NavItem = isVendor
-    ? { key: 'crew', label: 'بوابة الطاقم', short: 'الطاقم', icon: Users, onClick: onOpenCrewPortal, tone: 'crew' }
-    : { key: 'track', label: 'تتبع المناسبة', short: 'تتبع', icon: Clock, onClick: () => onOpenTracker?.(), tone: 'accent' };
+  const secondaryItem: NavItem = { key: 'track', label: 'تتبع المناسبة', short: 'تتبع', icon: Clock, onClick: () => onOpenTracker?.(), tone: 'accent' };
 
   // Exactly two slots per side so the cart FAB lands on the true centre line.
   const leftItems: NavItem[] = [

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { isKnownSpaPath, parseLocation } from './siteRoutes.ts';
+import { isKnownSpaPath, parseLocation, pathForSign, signTokenFromPath } from './siteRoutes.ts';
 
 describe('siteRoutes', () => {
   it('maps store, legal, about, and package paths', () => {
@@ -59,5 +59,24 @@ describe('storefront routes (redesign)', () => {
     for (const path of ['/catalog', '/cart', '/checkout', '/orders', '/account', '/chat', '/login', '/request', '/providers', '/compare']) {
       assert.equal(isKnownSpaPath(path), true, path);
     }
+  });
+});
+
+describe('contract signing route', () => {
+  const token = 'Ab3_x-9QzLmN0pQrStUvWxYz0123456789abcdEFGH';
+  it('maps /sign/<token> to the sign page and keeps the token case', () => {
+    assert.equal(parseLocation(`/sign/${token}`).sitePage, 'sign');
+    assert.equal(parseLocation(`/sign/${token}/`).sitePage, 'sign');
+    assert.equal(signTokenFromPath(`/sign/${token}`), token);
+    assert.equal(isKnownSpaPath(`/sign/${token}`), true);
+    assert.equal(pathForSign(token), `/sign/${token}`);
+  });
+
+  it('treats a malformed signing link as not found', () => {
+    assert.equal(parseLocation('/sign/').sitePage, 'notfound');
+    assert.equal(parseLocation('/sign/short').sitePage, 'notfound');
+    assert.equal(parseLocation('/sign/has spaces in it but long enough').sitePage, 'notfound');
+    assert.equal(signTokenFromPath('/sign'), null);
+    assert.equal(signTokenFromPath(`/signx/${token}`), null);
   });
 });

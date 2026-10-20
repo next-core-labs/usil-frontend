@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "test": "node --import tsx --test src/auth-ui-contracts.test.ts src/native-origin.test.ts src/data/catalog-shelf.test.ts src/data/catalog-filters.test.ts src/data/fulfillment-lanes.test.ts src/data/saudiPlaces.test.ts src/utils/brandedAvatar.test.ts src/utils/catalogMedia.test.ts src/utils/chatApi.test.ts src/utils/eventTracking.test.ts src/utils/ownerWhatsApp.test.ts src/utils/vendorWhatsApp.test.ts src/utils/region-gate.test.ts src/utils/siteRoutes.test.ts src/utils/trendingApi.test.ts src/utils/vendorContracts.test.ts src/utils/vendorWorkspace.test.ts src/utils/adminBookings.test.ts src/utils/pendingPayment.test.ts src/utils/invoiceTotals.test.ts src/utils/vendorContactChecks.test.ts",
+    "test": "node --import tsx --test src/auth-ui-contracts.test.ts src/native-origin.test.ts src/data/catalog-shelf.test.ts src/data/catalog-filters.test.ts src/data/fulfillment-lanes.test.ts src/data/saudiPlaces.test.ts src/utils/brandedAvatar.test.ts src/utils/catalogMedia.test.ts src/utils/chatApi.test.ts src/utils/eventTracking.test.ts src/utils/ownerWhatsApp.test.ts src/utils/region-gate.test.ts src/utils/siteRoutes.test.ts src/utils/trendingApi.test.ts src/utils/vendorContracts.test.ts src/utils/vendorWorkspace.test.ts src/utils/adminBookings.test.ts src/utils/pendingPayment.test.ts",
     "cap:sync": "npm run build && npx cap sync",
     "cap:sync:android": "npx cap sync android",
     "cap:sync:ios": "npx cap sync ios",
@@ -24,18 +24,14 @@
     "@capacitor/status-bar": "^7.0.1",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
-    "html5-qrcode": "^2.3.8",
     "i18next": "^25.4.2",
-    "jspdf": "^3.0.2",
-    "jspdf-autotable": "^5.0.2",
     "localforage": "^1.10.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-i18next": "^15.7.3",
-    "vite": "^6.2.3",
-    "xlsx": "^0.18.5"
+    "vite": "^6.2.3"
   },
   "devDependencies": {
     "@capacitor/android": "^7.6.8",

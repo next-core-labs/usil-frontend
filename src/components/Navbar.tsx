@@ -9,7 +9,6 @@ import {
   UserPlus,
   LogOut,
   Clock,
-  Users,
   Languages,
   Coins,
   Scale,
@@ -48,7 +47,6 @@ interface NavbarProps {
   /** Signed-in clients: open «رسائلي». */
   onOpenChats?: () => void;
   chatUnread?: number;
-  onOpenCrewPortal?: () => void;
   onOpenCompare?: () => void;
   compareCount?: number;
   viewMode: 'client' | 'vendor' | 'admin';
@@ -82,7 +80,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTracker,
   onOpenChats,
   chatUnread = 0,
-  onOpenCrewPortal,
   onOpenCompare,
   compareCount = 0,
   viewMode,
@@ -338,18 +335,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               رسائلي
               <CountBadge count={chatUnread} tone="action" label="رسائل غير مقروءة" />
-            </Button>
-          )}
-
-          {onOpenCrewPortal && currentUser?.role === 'vendor' && (
-            <Button
-              size="sm"
-              variant="secondary"
-              icon={Users}
-              onClick={onOpenCrewPortal}
-              className="hidden xl:inline-flex"
-            >
-              {t('crewPortal', 'الطاقم')}
             </Button>
           )}
 
