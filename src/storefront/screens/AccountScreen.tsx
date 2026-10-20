@@ -7,7 +7,6 @@ import {
   Headset,
   LogOut,
   LayoutDashboard,
-  Users,
   Mic,
   MailCheck,
   MapPin,
@@ -77,7 +76,6 @@ export function AccountScreen() {
     { label: `${t.mLang}: ${ar ? 'العربية — غيّرها إلى English' : 'English — switch to العربية'}`, Icon: Globe, go: toggle },
     { label: t.mSupport, Icon: Headset, go: () => sf.navigate('/support') },
     ...(sf.openDashboard ? [{ label: t.mDashboard, Icon: LayoutDashboard, go: sf.openDashboard }] : []),
-    ...(sf.openCrewPortal ? [{ label: t.mCrew, Icon: Users, go: sf.openCrewPortal }] : []),
     { label: t.mVoice, Icon: Mic, go: sf.openVoiceAI },
   ];
 

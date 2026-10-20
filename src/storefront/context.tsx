@@ -67,7 +67,6 @@ export type StorefrontValue = {
   onAuthSuccess: (user: SessionUser) => void;
   logout: () => void | Promise<void>;
   openDashboard?: () => void;
-  openCrewPortal?: () => void;
   openVoiceAI: () => void;
   openVendorRegister: () => void;
   openCourierRegister: () => void;

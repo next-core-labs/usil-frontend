@@ -37,6 +37,7 @@ import { ChatScreen } from './screens/ChatScreen';
 import { LoginPage } from './screens/LoginPage';
 import { RequestScreen } from './screens/RequestScreen';
 import { ProvidersScreen } from './screens/ProvidersScreen';
+import { SignContractScreen } from './screens/SignContractScreen';
 
 export type StorefrontProps = {
   sitePage: SitePage;
@@ -70,7 +71,6 @@ export type StorefrontProps = {
   onAuthSuccess: (user: SessionUser) => void;
   logout: () => void | Promise<void>;
   openDashboard?: () => void;
-  openCrewPortal?: () => void;
   openVoiceAI: () => void;
   openVendorRegister: () => void;
   openCourierRegister: () => void;
@@ -293,7 +293,6 @@ export function Storefront(props: StorefrontProps) {
     onAuthSuccess: props.onAuthSuccess,
     logout: props.logout,
     openDashboard: props.openDashboard,
-    openCrewPortal: props.openCrewPortal,
     openVoiceAI: props.openVoiceAI,
     openVendorRegister: props.openVendorRegister,
     openCourierRegister: props.openCourierRegister,
@@ -358,6 +357,8 @@ export function Storefront(props: StorefrontProps) {
         return <PaymentSuccessPage onBack={goHome} onOrders={() => navigate('/orders')} onPaid={props.clearCart} />;
       case 'payment-cancelled':
         return <PaymentCancelledPage onBack={goHome} onCart={() => navigate('/cart')} />;
+      case 'sign':
+        return <SignContractScreen />;
       default:
         return (
           <LegalFrame>
@@ -370,6 +371,9 @@ export function Storefront(props: StorefrontProps) {
         );
     }
   })();
+
+  // A client signing a contract gets the page alone — no store header, tabs or cart.
+  if (sitePage === 'sign') return screen;
 
   return (
     <StorefrontProvider value={value}>
