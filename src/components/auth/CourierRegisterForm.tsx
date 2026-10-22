@@ -53,9 +53,8 @@ function clientValidate(form: FormState): string {
   if (!/^[12]\d{9}$/.test(form.nationalId.replace(/\s+/g, ''))) {
     return 'رقم الهوية أو الإقامة يجب أن يكون 10 أرقام ويبدأ بـ 1 أو 2';
   }
-  if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-    return 'البريد الإلكتروني غير صحيح';
-  }
+  if (!form.email.trim()) return 'اكتب البريد الإلكتروني';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'البريد الإلكتروني غير صحيح';
   if (form.phone.trim() && !/^(05\d{8}|5\d{8}|(\+|00)?9665\d{8})$/.test(form.phone.replace(/[\s-]/g, ''))) {
     return 'رقم الجوال غير صحيح — اكتبه بصيغة 05xxxxxxxx';
   }
@@ -250,7 +249,7 @@ export function CourierRegisterForm({
           firstName: form.firstName.trim(),
           familyName: form.familyName.trim(),
           nationalId: form.nationalId.replace(/\s+/g, ''),
-          email: form.email.trim() || undefined,
+          email: form.email.trim(),
           phone: form.phone.trim() || undefined,
           plateLetters: form.plateLetters,
           plateNumbers: form.plateNumbers,
@@ -350,7 +349,7 @@ export function CourierRegisterForm({
             ) : (
             <>
             <p className="mb-5 text-xs text-ink-1 leading-relaxed">
-              املأ الاسم والعائلة والهوية أو الإقامة وحروف ورقم اللوحة ونوع السيارة. الطلب يبقى معلّقاً حتى توافق إدارة يوصل.
+              املأ الاسم والعائلة والهوية أو الإقامة والبريد الإلكتروني وحروف ورقم اللوحة ونوع السيارة. الطلب يبقى معلّقاً حتى توافق إدارة يوصل.
             </p>
 
             {done ? (
@@ -406,6 +405,7 @@ export function CourierRegisterForm({
                     <input
                       className={inputClass}
                       type="email"
+                      aria-required="true"
                       value={form.email}
                       onChange={(e) => set('email', e.target.value)}
                       placeholder="name@example.com"
@@ -414,7 +414,9 @@ export function CourierRegisterForm({
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="text-slate-600 mb-1.5 block font-bold">رقم الجوال</span>
+                    <span className="text-slate-600 mb-1.5 block font-bold">
+                      رقم الجوال <span className="text-slate-400 font-normal">(اختياري)</span>
+                    </span>
                     <input
                       className={`${inputClass} font-mono`}
                       type="tel"
@@ -427,7 +429,7 @@ export function CourierRegisterForm({
                     />
                   </label>
                   <p className="text-2xs text-slate-500 sm:col-span-2 -mt-1">
-                    اكتب بريد أو جوال حسابك في يوصل — نفعّل عليه دور المندوب بعد الاعتماد.
+                    نراسلك على البريد بنتيجة المراجعة. إذا كنت مسجّل دخول، نفعّل دور المندوب على حسابك بعد الاعتماد.
                   </p>
                   <label className="block text-sm">
                     <span className="text-slate-600 mb-1.5 block font-bold">حروف اللوحة</span>

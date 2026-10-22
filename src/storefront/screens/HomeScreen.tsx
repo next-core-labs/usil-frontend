@@ -44,6 +44,7 @@ import { ArrowIcon, ArrowLink, Blobs, Marquee, Reveal, SectionHead, ChevronForwa
 import { productPhoto, Rating } from '../ProductCard';
 import { countPhrase, fill } from '../copy';
 import { TRENDING_SHELF_MIN, TRENDING_SHELF_SIZE, trendingShelf, type TrendingShelfItem } from '../../utils/trendingApi';
+import { useHeroCards, type HeroCard } from '../../utils/siteAppearance';
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Sparkles,
@@ -99,10 +100,17 @@ const OCCASION_EN: Record<string, { name: string; sub: string }> = {
   condolence: { name: 'Condolence', sub: 'Chairs, rugs, coffee & dates' },
 };
 
+/** A hero card's photo as the owner set it in «مظهر الواجهة»; nothing until that is known, or when hidden. */
+function HeroPhoto({ card, ready, fallback }: { card: HeroCard; ready: boolean; fallback: string }) {
+  if (!ready || !card.showImage) return null;
+  return <img src={card.image || fallback} alt="" className="w-full h-full object-cover block" />;
+}
+
 export function HomeScreen() {
   const { t, ar, L, categoryName } = useLang();
   const sf = useStorefront();
   const [query, setQuery] = useState('');
+  const hero = useHeroCards();
   // Counts and the trending shelf follow the region the visitor picked.
   const services = useMemo(
     () => sf.services.filter((s) => cityFilterMatches(s.cities, sf.selectedCity)),
@@ -227,24 +235,24 @@ export function HomeScreen() {
 
           <div className="relative h-[clamp(380px,46vw,540px)] max-w-[580px] mx-auto w-full">
             <div
-              className="absolute start-[4%] top-[6%] w-[58%] aspect-[4/5] rounded-[20px] overflow-hidden bg-navy-700 shadow-[0_30px_60px_-20px_rgba(0,0,0,.6)]"
-              style={{ ['--r' as string]: '-4deg', animation: 'lm-float 7s ease-in-out infinite' }}
+              className="absolute start-[4%] top-[6%] w-[58%] aspect-[4/5] rounded-[20px] overflow-hidden shadow-[0_30px_60px_-20px_rgba(0,0,0,.6)]"
+              style={{ ['--r' as string]: '-4deg', animation: 'lm-float 7s ease-in-out infinite', background: hero.cards[0].color }}
             >
-              <img src="/design/hero-1.webp" alt="" className="w-full h-full object-cover block" />
+              <HeroPhoto card={hero.cards[0]} ready={hero.ready} fallback="/design/hero-1.webp" />
               <div className="absolute start-3.5 bottom-3.5 px-3.5 py-2 rounded-lg bg-navy text-white text-[13px] font-semibold">{t.tag1}</div>
             </div>
             <div
-              className="absolute end-[2%] top-0 w-[42%] aspect-square rounded-[18px] overflow-hidden bg-action shadow-[0_24px_50px_-18px_rgba(0,0,0,.6)]"
-              style={{ ['--r' as string]: '5deg', animation: 'lm-float 8s ease-in-out infinite', animationDelay: '-2s' }}
+              className="absolute end-[2%] top-0 w-[42%] aspect-square rounded-[18px] overflow-hidden shadow-[0_24px_50px_-18px_rgba(0,0,0,.6)]"
+              style={{ ['--r' as string]: '5deg', animation: 'lm-float 8s ease-in-out infinite', animationDelay: '-2s', background: hero.cards[1].color }}
             >
-              <img src="/design/hero-2.webp" alt="" className="w-full h-full object-cover block" />
+              <HeroPhoto card={hero.cards[1]} ready={hero.ready} fallback="/design/hero-2.webp" />
               <div className="absolute start-3 bottom-3 px-3 py-1.5 rounded-lg bg-surface text-navy text-xs font-semibold">{t.tag2}</div>
             </div>
             <div
-              className="absolute end-[6%] bottom-[4%] w-[40%] aspect-[5/4] rounded-card overflow-hidden bg-tint-blue shadow-[0_24px_50px_-18px_rgba(0,0,0,.6)]"
-              style={{ ['--r' as string]: '-2deg', animation: 'lm-float 6s ease-in-out infinite', animationDelay: '-4s' }}
+              className="absolute end-[6%] bottom-[4%] w-[40%] aspect-[5/4] rounded-card overflow-hidden shadow-[0_24px_50px_-18px_rgba(0,0,0,.6)]"
+              style={{ ['--r' as string]: '-2deg', animation: 'lm-float 6s ease-in-out infinite', animationDelay: '-4s', background: hero.cards[2].color }}
             >
-              <img src="/design/hero-3.webp" alt="" className="w-full h-full object-cover block" />
+              <HeroPhoto card={hero.cards[2]} ready={hero.ready} fallback="/design/hero-3.webp" />
               <div className="absolute start-3 bottom-3 px-3 py-1.5 rounded-lg bg-surface text-navy text-xs font-semibold">{t.tag3}</div>
             </div>
             <div
