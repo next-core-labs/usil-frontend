@@ -61,7 +61,7 @@ export const PAGE_SEO: Record<SeoPage, { title: string; description: string }> =
   chat: { title: 'المحادثات | يوصل', description: 'راسل المورّدين قبل الحجز وبعده من مكان واحد.' },
   login: { title: 'تسجيل الدخول | يوصل', description: 'سجّل دخولك إلى يوصل أو أنشئ حساب عميل جديد.' },
   request: { title: 'طلب خاص | يوصل', description: 'احكِ لنا عن مناسبتك ونطابق طلبك مع مورّد يغطي مدينتك.' },
-  providers: { title: 'انضم كمزوّد | يوصل', description: 'سجّل كمورّد معتمد في يوصل واستقبل حجوزات مدفوعة عبر ميسر.' },
+  providers: { title: 'سجّل كمورّد مناسبات | يوصل', description: 'سجّل كمورّد معتمد في يوصل واستقبل حجوزات مدفوعة عبر ميسر.' },
   'payment-success': { title: 'تم تأكيد حجزك | يوصل', description: 'ميسر أكّد الدفع. تابع طلبك من حسابك.' },
   'payment-cancelled': { title: 'أُلغيت عملية الدفع | يوصل', description: 'ما خصمنا شيئاً. ارجع للسلة وادفع متى ما جاهز.' },
 };
