@@ -7,6 +7,7 @@ import { useLang } from '../lang';
 import { useStorefront } from '../context';
 import { ArrowIcon, Reveal } from '../primitives';
 import { formatCount } from '../money';
+import { openVendorConsole } from '../../utils/vendorConsole';
 
 /** «انضم كمزوّد» landing: blue hero with honest platform facts, benefits, 3-step wizard preview. */
 export function ProvidersScreen() {
@@ -45,6 +46,16 @@ export function ProvidersScreen() {
               {t.prCta}
               <ArrowIcon className="w-[18px] h-[18px]" />
             </button>
+            <p className="mt-4 text-[15px] text-sky-100">
+              {t.prHaveAccount}{' '}
+              <button
+                type="button"
+                onClick={sf.openDashboard || (() => openVendorConsole())}
+                className="font-bold text-white underline underline-offset-4 decoration-white/50 hover:decoration-white"
+              >
+                {t.prLogin}
+              </button>
+            </p>
           </div>
           <div className="grid grid-cols-3 gap-px bg-white/20 rounded-card overflow-hidden">
             {stats.map((s) => (

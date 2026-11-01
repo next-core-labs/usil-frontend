@@ -19,7 +19,7 @@ import { ALL_CITIES_LABEL } from '../../data/saudiPlaces';
 import { cn } from '../../components/ui/cn';
 import { useLang } from '../lang';
 import { useStorefront } from '../context';
-import { ChevronForward } from '../primitives';
+import { ArrowIcon, ChevronForward } from '../primitives';
 import { ProductCard } from '../ProductCard';
 import { useFavorites } from '../favorites';
 import { formatCount } from '../money';
@@ -111,6 +111,23 @@ export function AccountScreen() {
           </button>
         ) : null}
       </div>
+
+      {sf.openDashboard ? (
+        <button
+          type="button"
+          onClick={sf.openDashboard}
+          className="mt-3 w-full bg-action text-white rounded-card p-[18px] flex items-center gap-3.5 text-start transition-colors hover:bg-navy"
+        >
+          <span className="w-11 h-11 rounded-xl bg-white/15 grid place-items-center shrink-0">
+            <LayoutDashboard className="w-[22px] h-[22px]" aria-hidden />
+          </span>
+          <span className="flex-1">
+            <span className="block text-[17px] font-bold">{t.mDashboard}</span>
+            {user.role === 'vendor' ? <span className="block text-[13px] text-sky-100 mt-0.5">{t.dashboardHint}</span> : null}
+          </span>
+          <ArrowIcon className="w-5 h-5 shrink-0" />
+        </button>
+      ) : null}
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] gap-3 mt-3">
         <button type="button" onClick={() => sf.navigate('/orders')} className="bg-surface border border-line rounded-card p-[18px] flex items-center gap-3.5 text-start hover:border-action transition-colors">

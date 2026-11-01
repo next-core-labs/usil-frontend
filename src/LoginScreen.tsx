@@ -57,6 +57,8 @@ type LoginScreenProps = {
   onSuccess: (user: SessionUser, meta?: AuthSuccessMeta) => void;
   onClose?: () => void;
   onOpenVendorRegister?: () => void;
+  /** «دخول المورّدين»: the vendor dashboard has its own sign-in. */
+  onOpenVendorConsole?: () => void;
   onOpenCourierRegister?: () => void;
   defaultMode?: 'login' | 'register' | 'verify';
   verifyPrefill?: { email?: string; phone?: string };
@@ -88,6 +90,7 @@ export function LoginScreen({
   onSuccess,
   onClose,
   onOpenVendorRegister,
+  onOpenVendorConsole,
   onOpenCourierRegister,
   defaultMode = 'login',
   verifyPrefill,
@@ -661,8 +664,18 @@ export function LoginScreen({
             </button>
           ) : null}
 
-          {mode !== 'forgot' && (onOpenVendorRegister || onOpenCourierRegister) ? (
+          {mode !== 'forgot' && (onOpenVendorRegister || onOpenVendorConsole || onOpenCourierRegister) ? (
             <div className="pt-3 mt-1 border-t border-line-soft grid gap-2">
+              {onOpenVendorConsole ? (
+                <button
+                  type="button"
+                  onClick={onOpenVendorConsole}
+                  className="w-full h-11 px-3.5 rounded-xl border border-line bg-paper text-navy text-[13px] font-semibold flex items-center justify-between gap-2 transition-colors hover:border-action hover:text-action"
+                >
+                  <span>عندك حساب مورّد؟ ادخل لوحة التحكم</span>
+                  <ArrowRight className="w-4 h-4 rotate-180 shrink-0" aria-hidden />
+                </button>
+              ) : null}
               {onOpenVendorRegister ? (
                 <button
                   type="button"
