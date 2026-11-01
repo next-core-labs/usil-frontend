@@ -47,7 +47,7 @@ import { fetchCatalogListings, fetchMyVendorFile } from './utils/vendorWorkspace
 import { openVendorConsole } from './utils/vendorConsole';
 import { fetchTrending, type TrendingService } from './utils/trendingApi';
 import { clearPendingPayment } from './utils/pendingPayment';
-import { disablePush, enablePush, listenForPush } from './native-push';
+import { disablePush, enablePush, listenForPush, requestPushPermission } from './native-push';
 
 export default function App() {
   // The store, or the admin dashboard for staff. Vendors work in the vendor console (vendor.usil.app).
@@ -231,7 +231,12 @@ export default function App() {
     });
   }, [navigate, toast]);
 
-  // Signed in on the native app: ask for notifications and register this device.
+  // Native app: ask for notifications as soon as it opens, signed in or not.
+  useEffect(() => {
+    void requestPushPermission();
+  }, []);
+
+  // Signed in on the native app: tie this device to the account.
   useEffect(() => {
     if (currentUser?.id) void enablePush();
   }, [currentUser?.id]);

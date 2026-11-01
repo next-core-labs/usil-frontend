@@ -27,6 +27,7 @@ export type PushHandlers = {
 
 let token: string | null = null;
 let listening = false;
+let asking: Promise<void> | null = null;
 
 function linkOf(data: unknown): string {
   const link = (data as { link?: unknown } | null)?.link;
@@ -78,8 +79,20 @@ async function firebaseReady(): Promise<boolean> {
   }
 }
 
-/** Asks once for permission, then registers this device for the signed-in account. */
-export async function enablePush(): Promise<void> {
+/**
+ * Called at launch: asks once for permission and registers this device with
+ * Firebase. The token only reaches the backend while someone is signed in
+ * (the register call answers 401 otherwise); enablePush sends it after sign-in.
+ */
+export function requestPushPermission(): Promise<void> {
+  // Launch and a restored session can both ask at once; share the one prompt.
+  asking ??= askAndRegister().finally(() => {
+    asking = null;
+  });
+  return asking;
+}
+
+async function askAndRegister(): Promise<void> {
   if (!Capacitor.isNativePlatform() || !(await firebaseReady())) return;
   try {
     let permission = await PushNotifications.checkPermissions();
@@ -100,6 +113,17 @@ export async function enablePush(): Promise<void> {
     await PushNotifications.register();
   } catch (error) {
     console.warn('[push] could not enable', error);
+  }
+}
+
+/** After sign-in: ties this device's token to the account, asking first if launch did not. */
+export async function enablePush(): Promise<void> {
+  if (!Capacitor.isNativePlatform()) return;
+  if (!token) return requestPushPermission();
+  try {
+    await postToken('/api/push/register', { token, platform: Capacitor.getPlatform(), app: 'store' });
+  } catch {
+    /* offline: the next launch registers again */
   }
 }
 
