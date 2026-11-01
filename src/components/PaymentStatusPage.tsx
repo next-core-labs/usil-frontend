@@ -72,8 +72,9 @@ export function PaymentSuccessPage({
             <span className="inline-grid place-items-center w-[72px] h-[72px] rounded-panel bg-action text-white" style={{ animation: 'lm-wiggle 1.2s ease-in-out' }}>
               <Check className="w-[34px] h-[34px]" aria-hidden />
             </span>
-            <h1 className="mt-5 mb-2 text-[clamp(24px,3vw,34px)] font-bold tracking-[-0.03em]">{t.doneTitle}</h1>
-            <p className="mx-auto max-w-[420px] text-[15px] leading-[1.7] text-ink-1">{t.doneSub}</p>
+            {/* No order behind it: a provider's invoice or quotation paid by link, by a client without an account. */}
+            <h1 className="mt-5 mb-2 text-[clamp(24px,3vw,34px)] font-bold tracking-[-0.03em]">{orderId ? t.doneTitle : t.linkPaidTitle}</h1>
+            <p className="mx-auto max-w-[420px] text-[15px] leading-[1.7] text-ink-1">{orderId ? t.doneSub : t.linkPaidSub}</p>
             <div className="inline-flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-[18px] px-4 py-2.5 rounded-control bg-paper text-sm">
               {orderId ? (
                 <span className="inline-flex items-center gap-2">
@@ -91,9 +92,11 @@ export function PaymentSuccessPage({
               ) : null}
             </div>
             <div className="flex gap-2.5 justify-center mt-[22px] flex-wrap">
-              <button type="button" onClick={onOrders || onBack} className="h-12 px-[22px] rounded-xl bg-navy text-white text-[15px] font-semibold">
-                {t.trackOrder}
-              </button>
+              {orderId ? (
+                <button type="button" onClick={onOrders || onBack} className="h-12 px-[22px] rounded-xl bg-navy text-white text-[15px] font-semibold">
+                  {t.trackOrder}
+                </button>
+              ) : null}
               <button type="button" onClick={onBack} className="h-12 px-[22px] rounded-xl border border-navy-300 bg-surface text-navy text-[15px] font-semibold">
                 {t.backHome}
               </button>
