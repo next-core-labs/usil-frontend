@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapPin, ChevronDown, MessageCircle, ShoppingBag, User, Menu, X } from 'lucide-react';
 import { UsilMark } from '../components/UsilMark';
+import { openVendorConsole } from '../utils/vendorConsole';
 import { cn } from '../components/ui/cn';
 import { ALL_CITIES_LABEL } from '../data/saudiPlaces';
 import { useLang } from './lang';
@@ -25,7 +26,10 @@ export function SiteHeader() {
     { id: 'home', label: t.navHome, go: sf.goHome, active: page === null },
     { id: 'catalog', label: t.navCatalog, go: () => sf.goCatalog(), active: page === 'catalog' || page === 'product' },
     { id: 'request', label: t.navRequest, go: () => sf.navigate('/request'), active: page === 'request' },
-    { id: 'providers', label: t.navProviders, go: () => sf.navigate('/providers'), active: page === 'providers' },
+    // A signed-in vendor (or staff) needs their dashboard, not the sign-up pitch.
+    sf.openDashboard
+      ? { id: 'dashboard', label: t.mDashboard, go: sf.openDashboard, active: false }
+      : { id: 'providers', label: t.navProviders, go: () => sf.navigate('/providers'), active: page === 'providers' },
   ];
   const menuItems = [
     ...navItems,
@@ -37,6 +41,7 @@ export function SiteHeader() {
       go: () => sf.navigate(sf.user ? '/account' : '/login'),
       active: page === 'account' || page === 'login',
     },
+    ...(sf.user ? [] : [{ id: 'vendor-login', label: t.vendorLogin, go: () => openVendorConsole(), active: false }]),
   ];
 
   const cityLabel = sf.selectedCity === ALL_CITIES_LABEL || !sf.selectedCity ? t.allRegions : sf.selectedCity;

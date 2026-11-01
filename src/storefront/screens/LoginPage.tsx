@@ -4,6 +4,7 @@ import { LoginScreen } from '../../LoginScreen';
 import { UsilMark } from '../../components/UsilMark';
 import { useLang } from '../lang';
 import { useStorefront } from '../context';
+import { openVendorConsole } from '../../utils/vendorConsole';
 
 /**
  * `/login` — the auth card from the design, with a navy brand panel beside it
@@ -80,6 +81,7 @@ export function LoginPage() {
               sf.navigate(next || '/account', { replace: true });
             }}
             onOpenVendorRegister={sf.openVendorRegister}
+            onOpenVendorConsole={() => openVendorConsole()}
             onOpenCourierRegister={sf.openCourierRegister}
             guestLabel={t.orGuest}
             onContinueAsGuest={() => sf.goHome()}

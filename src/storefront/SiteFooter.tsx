@@ -4,6 +4,7 @@ import { SAUDI_REGIONS } from '../data/saudiPlaces';
 import { useLang } from './lang';
 import { useStorefront } from './context';
 import { fill } from './copy';
+import { openVendorConsole, vendorConsoleUrl } from '../utils/vendorConsole';
 
 /** Navy four-column footer from the design: brand, Browse, Company, Regions, then the legal strip. */
 export function SiteFooter() {
@@ -24,6 +25,9 @@ export function SiteFooter() {
       title: t.footCompany,
       links: [
         { label: t.navProviders, go: () => sf.navigate('/providers'), href: '/providers' },
+        sf.openDashboard
+          ? { label: t.mDashboard, go: sf.openDashboard, href: vendorConsoleUrl() }
+          : { label: t.vendorLogin, go: () => openVendorConsole(), href: vendorConsoleUrl() },
         { label: t.footAbout, go: () => sf.navigate('/about'), href: '/about' },
         { label: t.footContact, go: () => sf.navigate('/support'), href: '/support' },
         { label: t.footRefund, go: () => sf.navigate('/refund'), href: '/refund' },
