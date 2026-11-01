@@ -47,6 +47,7 @@ import { fetchCatalogListings, fetchMyVendorFile } from './utils/vendorWorkspace
 import { openVendorConsole } from './utils/vendorConsole';
 import { fetchTrending, type TrendingService } from './utils/trendingApi';
 import { clearPendingPayment } from './utils/pendingPayment';
+import { disablePush, enablePush, listenForPush, requestPushPermission } from './native-push';
 
 export default function App() {
   // The store, or the admin dashboard for staff. Vendors work in the vendor console (vendor.usil.app).
@@ -175,6 +176,7 @@ export default function App() {
   const [vendorOwnProfile, setVendorOwnProfile] = useState<VendorOwnProfile | null>(null);
 
   const signOutFromStore = async () => {
+    await disablePush();
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     } catch {
@@ -214,6 +216,30 @@ export default function App() {
     },
     [applyIntent],
   );
+
+  // Native app: a tapped notification opens its order screen, or hands a
+  // vendor's console link to the browser the way «لوحة المورّد» does.
+  useEffect(() => {
+    const open = (link: string) => {
+      if (/^https?:\/\//i.test(link)) window.location.assign(link);
+      else navigate(link);
+    };
+    listenForPush({
+      open,
+      foreground: (title, body, link) =>
+        toast([title, body].filter(Boolean).join(' — '), 'info', link ? { label: 'عرض', onClick: () => open(link) } : undefined),
+    });
+  }, [navigate, toast]);
+
+  // Native app: ask for notifications as soon as it opens, signed in or not.
+  useEffect(() => {
+    void requestPushPermission();
+  }, []);
+
+  // Signed in on the native app: tie this device to the account.
+  useEffect(() => {
+    if (currentUser?.id) void enablePush();
+  }, [currentUser?.id]);
 
   const goHome = () => {
     setIsCourierRegisterOpen(false);

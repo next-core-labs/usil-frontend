@@ -13,6 +13,7 @@ def capacitor_pods
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorKeyboard', :path => '../../node_modules/@capacitor/keyboard'
+  pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
   pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
 end
@@ -20,6 +21,8 @@ end
 target 'App' do
   capacitor_pods
   # Add your Pods here
+  # Turns the APNs token into the FCM token the backend sends to (AppDelegate.swift).
+  pod 'FirebaseMessaging'
 end
 
 post_install do |installer|
