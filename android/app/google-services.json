@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "259506792912",
+    "project_id": "usil-ca24b",
+    "storage_bucket": "usil-ca24b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:259506792912:android:b75679723b349cd6ca31d5",
+        "android_client_info": {
+          "package_name": "sa.usil.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9iN0ipVyXKUn3-06FpNn8O7lXERdHn18"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

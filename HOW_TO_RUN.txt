@@ -43,3 +43,17 @@ Native apps (Capacitor) — iOS + Android:
   That command also rewrites public/manifest.json with broken PWA entries
   (relative ../icons paths, .webp files typed as image/png) — revert that file
   afterwards.
+
+Push notifications (Firebase Cloud Messaging) — src/native-push.ts:
+
+  The app registers for push after sign-in and the backend sends to that
+  device (usil-backend/server/push/). It stays off until the Firebase files
+  for app id sa.usil.app are in place, then needs a fresh cap:sync + build:
+
+    android/app/google-services.json        Firebase → Android app
+    ios/App/App/GoogleService-Info.plist    Firebase → iOS app (add it to the
+                                            App target in Xcode)
+
+  iOS also needs an APNs key uploaded in Firebase → Project settings →
+  Cloud Messaging, and the Push Notifications capability (App.entitlements)
+  on the App ID in the Apple developer account.

@@ -42,6 +42,11 @@ const config: CapacitorConfig = {
       style: 'DARK',
       backgroundColor: '#0A1A33',
     },
+    // A notification that arrives while the app is open still shows as a banner on iOS.
+    // (Android has no such option; src/native-push.ts shows a toast instead.)
+    PushNotifications: {
+      presentationOptions: ['badge', 'sound', 'alert'],
+    },
     Keyboard: {
       resize: KeyboardResize.Body,
       resizeOnFullScreen: true,
