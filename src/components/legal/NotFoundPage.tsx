@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Search, Store } from 'lucide-react';
-import { CATEGORIES } from '../../data/services';
+import { useCategories } from '../../utils/siteCategories';
 
 interface NotFoundPageProps {
   onBack: () => void;
@@ -9,6 +9,7 @@ interface NotFoundPageProps {
 }
 
 export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onBack, onSearch, onSelectCategory }) => {
+  const categories = useCategories();
   const [query, setQuery] = React.useState('');
 
   useEffect(() => {
@@ -46,7 +47,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onBack, onSearch, on
       </form>
 
       <div className="flex flex-wrap gap-2 mb-8">
-        {CATEGORIES.filter((c) => c.id !== 'all').slice(0, 8).map((cat) => (
+        {categories.slice(0, 8).map((cat) => (
           <button
             key={cat.id}
             type="button"

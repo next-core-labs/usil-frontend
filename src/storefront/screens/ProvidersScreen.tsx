@@ -1,6 +1,6 @@
 import React from 'react';
 import { Wallet, LayoutGrid, MessageCircle, ShieldCheck } from 'lucide-react';
-import { CATEGORIES } from '../../data/services';
+import { useCategories } from '../../utils/siteCategories';
 import { SAUDI_REGIONS } from '../../data/saudiPlaces';
 import { FULFILLMENT_LANES } from '../../data/saudiMarket';
 import { useLang } from '../lang';
@@ -12,10 +12,11 @@ import { openVendorConsole } from '../../utils/vendorConsole';
 /** «انضم كمزوّد» landing: blue hero with honest platform facts, benefits, 3-step wizard preview. */
 export function ProvidersScreen() {
   const { t } = useLang();
+  const categories = useCategories();
   const sf = useStorefront();
 
   const stats = [
-    { v: formatCount(CATEGORIES.length - 1), l: t.prStats1 },
+    { v: formatCount(categories.length), l: t.prStats1 },
     { v: formatCount(SAUDI_REGIONS.length), l: t.prStats2 },
     { v: formatCount(FULFILLMENT_LANES.length), l: t.prStats3 },
   ];

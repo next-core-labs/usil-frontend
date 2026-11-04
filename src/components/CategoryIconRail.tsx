@@ -18,7 +18,7 @@ import {
   Car,
   Flower2,
 } from 'lucide-react';
-import { CATEGORIES } from '../data/services';
+import { ALL_CATEGORY, useCategories } from '../utils/siteCategories';
 import { cn } from './ui/cn';
 
 const ICONS: Record<string, LucideIcon> = {
@@ -54,6 +54,7 @@ type CategoryIconRailProps = {
  * where the vertical budget is not scarce.
  */
 export function CategoryIconRail({ selectedCategory, onSelectCategory }: CategoryIconRailProps) {
+  const categories = [ALL_CATEGORY, ...useCategories()];
   const select = (id: string) => {
     onSelectCategory(id);
     document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
@@ -63,7 +64,7 @@ export function CategoryIconRail({ selectedCategory, onSelectCategory }: Categor
     <nav className="border-t border-line bg-surface" aria-label="أقسام المتجر">
       {/* Mobile — compact pills */}
       <div className="sm:hidden container mx-auto px-3 flex items-center gap-1.5 overflow-x-auto scrollbar-none py-2">
-        {CATEGORIES.map((cat) => {
+        {categories.map((cat) => {
           const Icon = ICONS[cat.icon] || Sparkles;
           const active = selectedCategory === cat.id;
           return (
@@ -89,7 +90,7 @@ export function CategoryIconRail({ selectedCategory, onSelectCategory }: Categor
 
       {/* Desktop — icon tiles */}
       <div className="hidden sm:flex container mx-auto px-4 lg:px-8 items-start gap-1 overflow-x-auto scrollbar-none py-2.5">
-        {CATEGORIES.map((cat) => {
+        {categories.map((cat) => {
           const Icon = ICONS[cat.icon] || Sparkles;
           const active = selectedCategory === cat.id;
           return (

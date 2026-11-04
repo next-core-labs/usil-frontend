@@ -8,7 +8,7 @@ import type { SitePage } from '../utils/siteRoutes';
 import { pathForProduct } from '../utils/siteRoutes';
 import { applySeo } from '../utils/seo';
 import { type FulfillmentFilter, FULFILLMENT_IDS } from '../data/saudiMarket';
-import { CATEGORIES } from '../data/services';
+import { isKnownCategoryId } from '../utils/siteCategories';
 import { PrivacyPolicy } from '../components/legal/PrivacyPolicy';
 import { TermsOfUse } from '../components/legal/TermsOfUse';
 import { RefundPolicy } from '../components/legal/RefundPolicy';
@@ -78,13 +78,12 @@ export type StorefrontProps = {
 };
 
 const DEFAULT_FILTERS: CatalogFilters = { category: 'all', audience: 'all', query: '', sort: 'popular', price: 'all', lane: 'all' };
-const CATEGORY_IDS = new Set<string>(CATEGORIES.map((c) => c.id));
 const PENDING_CHAT_KEY = 'usil_pending_chat';
 
 function readFiltersFromSearch(search: URLSearchParams, hospitality: boolean): Partial<CatalogFilters> {
   const patch: Partial<CatalogFilters> = {};
   const cat = search.get('cat');
-  if (cat && CATEGORY_IDS.has(cat)) patch.category = cat;
+  if (cat && isKnownCategoryId(cat)) patch.category = cat;
   if (hospitality) patch.category = 'hospitality';
   const q = search.get('q');
   if (q !== null) patch.query = q;
