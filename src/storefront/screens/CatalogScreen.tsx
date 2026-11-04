@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { createPortal } from 'react-dom';
 import { Search, LayoutGrid, MapPin, Wallet, Users, Truck, ChevronDown, RotateCcw, Check, ArrowUpDown } from 'lucide-react';
 import type { ServiceItem } from '../../types';
-import { CATEGORIES } from '../../data/services';
+import { useCategories } from '../../utils/siteCategories';
 import {
   AUDIENCE_OPTIONS,
   PRICE_RANGES,
@@ -207,6 +207,7 @@ function FilterMenu({
 
 export function CatalogScreen() {
   const { t, ar, L, categoryName } = useLang();
+  const categories = useCategories();
   const sf = useStorefront();
   const mobile = useIsMobile();
   const fav = useFavorites();
@@ -252,7 +253,7 @@ export function CatalogScreen() {
   }, [sf.services, f, sf.selectedCity]);
 
   const cityLabel = sf.selectedCity === ALL_CITIES_LABEL || !sf.selectedCity ? t.allRegions : sf.selectedCity;
-  const activeCat = CATEGORIES.find((c) => c.id === f.category);
+  const activeCat = categories.find((c) => c.id === f.category);
   const heading = f.category === 'all' ? t.catTitle : categoryName(f.category, activeCat?.name || '');
   const visible = results.slice(0, shown);
 
@@ -330,7 +331,7 @@ export function CatalogScreen() {
           </div>
 
           <div className="flex gap-2.5 overflow-x-auto scrollbar-none pt-[26px] pb-[22px] mt-1.5" role="group" aria-label={t.secCatsKicker}>
-            {[{ id: 'all', name: t.all, icon: 'All', count: counts.all }, ...CATEGORIES.filter((c) => c.id !== 'all').map((c, i) => ({ id: c.id, name: categoryName(c.id, c.name), icon: c.icon, count: counts[c.id] || 0, tint: categoryTint(i) }))].map(
+            {[{ id: 'all', name: t.all, icon: 'All', count: counts.all }, ...categories.map((c, i) => ({ id: c.id, name: categoryName(c.id, c.name), icon: c.icon, count: counts[c.id] || 0, tint: categoryTint(i) }))].map(
               (c: any) => {
                 const on = f.category === c.id;
                 return (

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { CATEGORY_EN, STOREFRONT_COPY, type StorefrontCopy, type StorefrontLang } from './copy';
+import { categoryEnglishName } from '../utils/siteCategories';
 
 export type Lang = {
   lang: StorefrontLang;
@@ -28,6 +29,6 @@ export function useLang(): Lang {
     flip: ar ? 'scaleX(-1)' : 'none',
     flipInv: ar ? 'none' : 'scaleX(-1)',
     toggle: () => void i18n.changeLanguage(ar ? 'en' : 'ar'),
-    categoryName: (id, arName) => (ar ? arName : CATEGORY_EN[id] || arName),
+    categoryName: (id, arName) => (ar ? arName : CATEGORY_EN[id] || categoryEnglishName(id) || arName),
   };
 }

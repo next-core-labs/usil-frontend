@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ServiceItem } from '../../types';
-import { CATEGORIES } from '../../data/services';
+import { useCategories } from '../../utils/siteCategories';
 import { OCCASION_PACKAGES, CATALOG_SEARCH_CHIPS } from '../../data/saudiMarket';
 import { SAUDI_REGIONS, ALL_CITIES_LABEL, cityFilterMatches } from '../../data/saudiPlaces';
 import { TESTIMONIALS } from '../../data/services';
@@ -108,6 +108,7 @@ function HeroPhoto({ card, ready, fallback }: { card: HeroCard; ready: boolean; 
 
 export function HomeScreen() {
   const { t, ar, L, categoryName } = useLang();
+  const categories = useCategories();
   const sf = useStorefront();
   const [query, setQuery] = useState('');
   const hero = useHeroCards();
@@ -137,7 +138,7 @@ export function HomeScreen() {
 
   const stats = [
     { v: formatCount(services.length), l: t.statListings },
-    { v: formatCount(CATEGORIES.length - 1), l: t.statCategories },
+    { v: formatCount(categories.length), l: t.statCategories },
     { v: formatCount(SAUDI_REGIONS.length), l: t.statRegions },
   ];
 
@@ -289,7 +290,7 @@ export function HomeScreen() {
           />
         </Reveal>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,160px),1fr))] gap-px bg-surface border border-line rounded-card overflow-hidden">
-          {CATEGORIES.filter((c) => c.id !== 'all').map((c, i) => (
+          {categories.map((c, i) => (
             <Reveal
               key={c.id}
               as="div"
