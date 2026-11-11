@@ -5,6 +5,7 @@ import { UsilLockup } from './components/UsilLockup';
 import { UsilMark } from './components/UsilMark';
 import { EmailVerifyPanel } from './components/auth/EmailVerifyPanel';
 import type { AccountRole } from './contracts/auth/roles';
+import { fileToDataUrl } from './utils/dataUrl';
 export type { AccountRole };
 
 const REMEMBER_FLAG_KEY = 'usil_remember_login';
@@ -79,10 +80,7 @@ function readImageFile(file: File): Promise<string> {
       reject(new Error('حجم الصورة يجب ألا يتجاوز 2 ميغابايت.'));
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('تعذر قراءة الصورة.'));
-    reader.readAsDataURL(file);
+    fileToDataUrl(file).then(resolve, () => reject(new Error('تعذر قراءة الصورة.')));
   });
 }
 

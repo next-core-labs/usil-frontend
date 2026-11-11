@@ -5,6 +5,7 @@ import { cn } from '../components/ui/cn';
 import type { SessionUser } from '../LoginScreen';
 import type { UserProfile } from '../types';
 import { useLang } from './lang';
+import { fileToDataUrl } from '../utils/dataUrl';
 
 const inputCls =
   'h-[46px] px-3.5 rounded-control border border-navy-300 bg-surface text-[15px] text-navy outline-none focus:border-action focus:ring-4 focus:ring-action/10 w-full';
@@ -64,9 +65,9 @@ export function ProfileEditModal({
       setError(L('حجم الصورة كبير — الحد الأقصى 2 ميغابايت.', 'The image is too large (2 MB max).'));
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => setAvatar(String(reader.result || ''));
-    reader.readAsDataURL(file);
+    fileToDataUrl(file)
+      .then(setAvatar)
+      .catch(() => setError(L('تعذرت قراءة الصورة.', "Couldn't read the image.")));
   };
 
   const save = async (event: React.FormEvent) => {
